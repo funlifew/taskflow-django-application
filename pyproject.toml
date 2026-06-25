@@ -1,0 +1,25 @@
+[project]
+name = "taskflow"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Mehdi Radfar",email = "81019265+funlifew@users.noreply.github.com"}
+]
+license = "MIT"
+requires-python = ">=3.14"
+dependencies = [
+    "django (>=6.0.6,<7.0.0)",
+    "python-decouple (>=3.8,<4.0)",
+    "pillow (>=12.2.0,<13.0.0)",
+    "redis (>=8.0.1,<9.0.0)",
+    "django-redisboard (>=9.0.0,<10.0.0)",
+    "hiredis (>=3.4.0,<4.0.0)",
+    "django-debug-toolbar (>=7.0.0,<8.0.0)",
+    "django-redis (>=7.0.0,<8.0.0)",
+    "ipython (>=9.14.1,<10.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
