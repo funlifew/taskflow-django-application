@@ -1,0 +1,56 @@
+{% load static %}
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <title>TaskFlow</title>
+        <link rel="stylesheet" href="{% static "css/app.css" %}">
+    </head>
+    <body data-page="landing">
+
+    <nav class="landing-nav">
+    <div class="container landing-nav-inner">
+        <a class="brand" href="index.html"><span class="brand-mark">T</span><span>TaskFlow</span></a>
+        <div class="inline">
+            <button class="icon-btn" data-theme-toggle><span data-theme-icon>🌙</span></button>
+            {% if request.user.is_authenticated %}
+                <a class="btn btn-ghost hide-sm" href="accounts/login.html">داشبورد</a>
+            {% else %}
+                <a class="btn btn-ghost hide-sm" href="accounts/login.html">ورود</a>
+            {% endif %}
+        </div>
+    </div>
+    </nav>
+    <main class="container hero page">
+        <div class="hero-grid">
+            <section class="stack-lg">
+            <h1>پروژه ی TsakFlow</h1>
+            <p>پروژه ای برای Manage کردن Task ها مناسب شرکت ها و تیم های حرفه ای</p>
+            <div class="actions">
+                {% if request.user.is_authenticated %}
+                    <a class="btn btn-primary" href="dashboard.html">ورود به داشبورد</a>
+                {% else %}
+                    <a class="btn btn-primary" href="dashboard.html">ثبت نام</a>
+                    <a class="btn" href="boards/detail.html">ورود</a>
+                {% endif %}
+            </div>
+            </section>
+            <section class="hero-preview">
+            <div class="preview-phone">
+                <div class="spread"><span class="badge badge-primary">Mobile-first</span><span>☰</span></div>
+                <div class="stat-grid">
+                <div class="stat-card"><div class="stat-label">تسک‌ها</div><div class="stat-value">۲۴</div></div>
+                <div class="stat-card"><div class="stat-label">بردها</div><div class="stat-value">۶</div></div>
+                </div>
+                <article class="task-card"><span class="badge badge-warning">Doing</span><h3>پیاده‌سازی فرم ساخت تسک</h3><div class="progress"><span style="width:64%"></span></div></article>
+                <article class="task-card"><span class="badge badge-success">Done</span><h3>صفحه Login و Register</h3></article>
+            </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="toast-wrap"></div>
+    <script src="{% static "js/app.js" %}"></script>
+    </body>
+</html>
