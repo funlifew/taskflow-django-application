@@ -1,0 +1,24 @@
+{% load static %}
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <title>{% block title %}TaskFlow | Dashboard{% endblock title %}</title>
+        <link rel="stylesheet" href="{% static "css/app.css" %}">
+    </head>
+    <body data-page="dashboard">
+        <div class="app-shell page">
+            {% include "includes/sidebar.html" %}
+            {% include "includes/mobile_drawer.html" %}
+            {% include "includes/header.html" %}
+            <main class="page-content">
+                {% block content %}
+                {% endblock content %}
+            </main>
+            {% include "includes/footer.html" %}
+        </div>
+        <div class="toast-wrap"></div>
+        <script src="{% static "js/app.js" %}"></script>
+    </body>
+</html>
