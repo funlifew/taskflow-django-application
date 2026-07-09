@@ -1,0 +1,66 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}TaskFlow - ثبت نام{% endblock title %}
+
+{% block data_page %}auth{% endblock data_page %}
+
+{% block content %}
+<a class="brand" href="{% url "landing" %}"><span class="brand-mark">T</span><span>TaskFlow</span></a>
+    <h1>ساخت حساب</h1>
+    <p>اولین Workspace خودت را بعد از ثبت‌نام بساز.</p>
+    <form class="form-grid register-form" method="POST" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class='form-errors'>
+                {% for error in form.non_field_errors %}
+                    <p class="error-text">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    <div class="grid-2">
+        <div class="field">
+            <div class="label-row" for="{{ form.first_name.id_for_label }}"><label>نام:</label></div>
+            {{ form.first_name }}
+            {% for error in form.first_name.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+            <div class="label-row" for="{{ form.last_name.id_for_label }}"><label>نام خانوادگی:</label></div>
+            {{ form.last_name }}
+            {% for error in form.last_name.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label-row" for="{{ form.username.id_for_label }}"><label>نام کاربری:</label></div>
+        {{ form.username }}
+        {% for error in form.username.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+        <div class="label-row" for="{{ form.email.id_for_label }}"><label>ایمیل:</label></div>
+        {{ form.email }}
+        {% for error in form.username.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="grid-2">
+        <div class="field">
+            <div class="label-row" for="{{ form.password1.id_for_label }}"><label>رمز عبور:</label></div>
+            {{ form.password1 }}
+            {% for error in form.password1.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+            <div class="label-row" for="{{ form.password2.id_for_label }}"><label>تکرار رمز عبور:</label></div>
+            {{ form.password2 }}
+            {% for error in form.password2.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+        </div>
+    </div>
+
+        <button class="btn btn-primary btn-block" type="submit">ثبت‌نام</button>
+    </form>
+    <div class="divider"></div>
+    <div class="spread"><span class="muted">قبلاً حساب داری؟</span><a class="btn btn-soft" href="{% url "accounts:login" %}">ورود</a></div>
+{% endblock content %}

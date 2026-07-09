@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static "css/app.css" %}">
+    </head>
+    <body class="auth-page" data-page="{% block data_page %}{% endblock data_page %}">
+
+    <section class="auth-card">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message message-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock content %}
+    </section>
+
+    <div class="toast-wrap"></div>
+    <script src="{% static "js/app.js" %}"></script>
+    </body>
+</html>

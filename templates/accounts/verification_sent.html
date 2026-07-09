@@ -1,0 +1,12 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}لینک فعالسازی{% endblock title %}
+
+{% block data_page %}error{% endblock data_page %}
+
+{% block content %}
+    <span class="badge badge-primary">لینک فعالسازی</span>
+    <p>لینک حاوی ایمیل فعالسازی حساب کاربری برای شما ارسال شد. لطفا ایمیل خود را چک بفرمایید</p>
+
+    <a class="btn btn-primary btn-block" href="{% url "accounts:resend_verification" %}">درخواست ارسال مجدد</a>
+{% endblock content %}

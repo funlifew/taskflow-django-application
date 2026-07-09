@@ -1,0 +1,29 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}TaskFlow - درخواست ارسال مجدد لینک فعالسازی{% endblock title %}
+
+{% block data_page %}auth{% endblock data_page %}
+
+{% block content %}
+    <a class="brand" href="{% url "landing" %}"><span class="brand-mark">T</span><span>TaskFlow</span></a>
+    <h1>درخواست ارسال مجدد لینک فعالسازی</h1>
+    <form class="form-grid register-form" method="POST" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class='form-errors'>
+                {% for error in form.non_field_errors %}
+                    <p class="error-text">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    <div class="field">
+        <div class="label-row" for="{{ form.email.id_for_label }}"><label>ایمیل:</label></div>
+        {{ form.email }}
+        {% for error in form.email.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+
+    <button class="btn btn-primary btn-block" type="submit">ارسال</button>
+
+{% endblock content %}
+

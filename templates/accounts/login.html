@@ -1,0 +1,41 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}TaskFlow - ورود{% endblock title %}
+
+{% block data_page %}auth{% endblock data_page %}
+
+{% block content %}
+<a class="brand" href="{% url "landing" %}"><span class="brand-mark">T</span><span>TaskFlow</span></a>
+    <h1>ورود به حساب</h1>
+    <p>به پنل مدیریت پروژه‌هایت برگرد.</p>
+    <form class="form-grid register-form" method="POST" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class='form-errors'>
+                {% for error in form.non_field_errors %}
+                    <p class="error-text">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    <div class="field">
+        <div class="label-row" for="{{ form.username.id_for_label }}"><label>نام کاربری:</label></div>
+        {{ form.username }}
+        {% for error in form.username.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+        <div class="label-row" for="{{ form.password.id_for_label }}"><label>رمز عبور:</label></div>
+        {{ form.password }}
+        {% for error in form.password.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+
+    <button class="btn btn-primary btn-block" type="submit">ورود</button>
+    </form>
+    <div class="divider"></div>
+    <a class="help" href="password_reset.html">رمز عبور را فراموش کردی؟</a>
+    </form>
+    <div class="divider"></div>
+    <div class="spread"><span class="muted">حساب نداری؟</span><a class="btn btn-soft" href="{% url "accounts:register" %}">ثبت‌نام</a></div>
+{% endblock content %}

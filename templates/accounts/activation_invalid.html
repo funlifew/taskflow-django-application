@@ -1,0 +1,12 @@
+{% extends "accounts/accounts_base.html" %}
+
+{% block title %}خطای فعالسازی{% endblock title %}
+
+{% block data_page %}error{% endblock data_page %}
+
+{% block content %}
+    <span class="badge badge-danger">خطا</span>
+    <p>متاسفانه نتوانستیم حساب کاربری شمارا تایید بکنیم، احتمالا لینک یا اشتباه است و یا منقضی شده است.</p>
+
+    <a class="btn btn-primary btn-block" href="{% url "accounts:resend_verification" %}">درخواست ارسال مجدد</a>
+{% endblock content %}

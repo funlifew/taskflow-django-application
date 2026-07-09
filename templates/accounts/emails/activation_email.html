@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<body style="font-family: Tahoma, sans-serif; line-height: 1.8;">
+  <h2>فعال‌سازی حساب TaskFlow</h2>
+
+  <p>سلام {{ user.username }}</p>
+
+  <p>برای فعال‌سازی حساب خود روی دکمه زیر کلیک کنید:</p>
+
+  <p>
+    <a href="{{ activation_url }}"
+       style="display:inline-block; padding:12px 18px; background:#635bff; color:white; text-decoration:none; border-radius:12px;">
+      فعال‌سازی حساب
+    </a>
+  </p>
+
+  <p>اگر دکمه کار نکرد، این لینک را در مرورگر باز کنید:</p>
+
+  <p>{{ activation_url }}</p>
+</body>
+</html>

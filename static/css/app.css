@@ -1696,3 +1696,50 @@ label {
     border-radius: 14px;
   }
 }
+
+
+.auth-card--register {
+  width: min(100%, 560px);
+}
+
+.register-form .grid-2 {
+  display: grid;
+  gap: 14px;
+}
+
+.form-errors {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--danger-soft);
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, var(--line));
+}
+
+.form-errors .error-text {
+  margin: 0;
+}
+
+.field .error-text {
+  margin: 0;
+}
+
+.input[aria-invalid="true"],
+.input.is-invalid {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.auth-switch {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 420px) {
+  .auth-switch {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .auth-switch .btn {
+    width: 100%;
+  }
+}
