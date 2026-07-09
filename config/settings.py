@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     
+    'redisboard',
+    
     'apps.core',
     'apps.accounts',
     'apps.workspaces',
@@ -159,3 +161,10 @@ if DEBUG:
     INTERNAL_IPS = [
         '127.0.0.1'
     ]
+    
+# AUTH MODEL
+AUTH_USER_MODEL = 'accounts.User'
+
+# EMAIL SECTION
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'TaskFlow <noreply@taskflow.local>'
