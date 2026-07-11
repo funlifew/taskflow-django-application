@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
@@ -8,6 +9,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.views import View
 from django.views.generic import CreateView, FormView, TemplateView
 from django.contrib.auth.views import LoginView as OldLoginView
+from django.contrib.auth import views as auth_views
 
 from apps.core.mixins import IfAuthenticatedRedirectDashboard
 
@@ -145,3 +147,38 @@ class ResendActivationEmailView(IfAuthenticatedRedirectDashboard, FormView):
             'اگر حسابی با این ایمیل وجود داشته باشد، لینک فعالسازی ارسال میشود.'
         )
         return redirect(self.success_url)
+    
+# Password Resets
+class PasswordResetView(auth_views.PasswordResetView):
+    template_name = 'accounts/password_reset.html'
+    email_template_name = 'accounts/emails/password_reset_email.txt'
+    html_email_template_name = 'accounts/emails/password_reset_email.html'
+    subject_template_name = 'accounts/emails/password_reset_subject.txt'
+    success_url = reverse_lazy('accounts:password_reset_done')
+
+class PasswordResetDoneView(auth_views.PasswordResetDoneView):
+    template_name = 'accounts/password_reset_done.html'
+
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = "accounts/password_reset_confirm.html"
+    success_url = reverse_lazy("accounts:password_reset_complete")
+
+class PasswordResetCompleteView(auth_views.PasswordResetConfirmView):
+    template_name = "accounts/password_reset_complete.html"
+    
+
+# Password Change
+
+class PasswordChangeView(LoginRequiredMixin, auth_views.PasswordChangeView):
+    template_name = 'accounts/password_change.html'
+    success_url = reverse_lazy('dashboard:profile')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        
+        messages.success(
+            self.request,
+            'رمز عبور شما با موفقیت تغییر کرد.'
+        )
+        
+        return response
