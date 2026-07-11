@@ -24,6 +24,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include('apps.accounts.urls', namespace='accounts')),
+    path('dashboard/', include('apps.dashboard.urls', namespace='dashboard')),
     path("", TemplateView.as_view(template_name="landing.html"), name="landing"),
     path("__debug__/", include('debug_toolbar.urls')),
 ]
