@@ -5,9 +5,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <title>{% block title %}TaskFlow | Dashboard{% endblock title %}</title>
-        <link rel="stylesheet" href="{% static "css/app.css" %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css">
+        <link rel="stylesheet" href="{% static 'css/app.css' %}">
     </head>
-    <body data-page="dashboard">
+    <body data-page="{% block data_page %}{% endblock data_page %}">
         <div class="app-shell page">
             {% include "includes/sidebar.html" %}
             {% include "includes/mobile_drawer.html" %}
@@ -28,6 +29,6 @@
             {% include "includes/footer.html" %}
         </div>
         <div class="toast-wrap"></div>
-        <script src="{% static "js/app.js" %}"></script>
+        <script src="{% static 'js/app.js' %}"></script>
     </body>
 </html>

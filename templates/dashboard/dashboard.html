@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block data_page %}dashboard{% endblock data_page %}
+
+{% block content %}
+<section class="card dashboard-profile-card motion-card" style="margin-bottom:18px">
+    <div class="dashboard-profile-row">
+        <a class="profile-avatar-lg" href="accounts/profile_detail.html" aria-label="مشاهده پروفایل">
+            <span class="avatar-initials"><img src="{{ request.user.avatar.url }}" /></span>
+        </a>
+        <div>
+            <span class="badge badge-primary">خوش برگشتی</span>
+            <h1 class="card-title" style="font-size:26px;margin-top:10px">{{ request.user.first_name }}، امروز ۴ تسک مهم داری</h1>
+            <p class="card-text">آواتار اینجا ثابت و تمیز نمایش داده می‌شود و از صفحه پروفایل قابل تغییر است.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="tasks/create.html">+ تسک جدید</a>
+                <a class="btn" href="accounts/profile_update.html">تغییر آواتار</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-head">
+    <div>
+        <span class="badge badge-primary eyebrow">TaskFlow</span>
+        <h1 class="page-title">داشبورد</h1>
+        <p class="page-subtitle">یک نمای ساده، سریع و موبایل‌فرست از وضعیت پروژه‌هایت.</p>
+    </div>
+    <div class="actions"><a class="btn btn-primary" href="tasks/create.html">+ تسک جدید</a><a class="btn" href="workspaces/create.html">+ Workspace</a></div>
+</section>
+
+<section class="stat-grid">
+    <article class="stat-card motion-card"><div class="stat-label">Workspace</div><div class="stat-value">۳</div></article>
+    <article class="stat-card motion-card"><div class="stat-label">Board</div><div class="stat-value">۷</div></article>
+    <article class="stat-card motion-card"><div class="stat-label">تسک باز</div><div class="stat-value">۲۴</div></article>
+    <article class="stat-card motion-card"><div class="stat-label">دیر شده</div><div class="stat-value">۲</div></article>
+</section>
+
+<section class="stack-lg" style="margin-top:22px">
+    <div class="spread">
+        <h2 style="margin:0">تسک‌های امروز</h2>
+        <a class="btn btn-ghost" href="boards/detail.html">برد اصلی</a>
+    </div>
+    <div class="list">
+        <a class="list-card motion-card" href="tasks/detail.html">
+            <div class="meta-row"><span class="badge badge-danger">High</span><span class="badge badge-warning">امروز</span></div>
+            <strong>رفع مشکل redirect بعد از login</strong>
+            <div class="progress"><span style="width:70%"></span></div>
+        </a>
+        <a class="list-card motion-card" href="tasks/detail.html">
+            <div class="meta-row"><span class="badge badge-primary">Backend</span><span class="badge badge-info">Doing</span></div>
+            <strong>ساخت permission برای Board</strong>
+            <div class="progress"><span style="width:44%"></span></div>
+        </a>
+    </div>
+</section>
+{% endblock content %}

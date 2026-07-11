@@ -34,7 +34,7 @@
     <button class="btn btn-primary btn-block" type="submit">ورود</button>
     </form>
     <div class="divider"></div>
-    <a class="help" href="password_reset.html">رمز عبور را فراموش کردی؟</a>
+    <a class="help" href="{% url "accounts:password_reset" %}">رمز عبور را فراموش کردی؟</a>
     </form>
     <div class="divider"></div>
     <div class="spread"><span class="muted">حساب نداری؟</span><a class="btn btn-soft" href="{% url "accounts:register" %}">ثبت‌نام</a></div>
