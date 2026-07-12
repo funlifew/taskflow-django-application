@@ -57,13 +57,15 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path(
-        'password-change/',
+        'change-password/',
         views.PasswordChangeView.as_view(),
-        name="password_change",
+        name="change_password",
     ),
     path(
         'logout/',
-        auth_views.LogoutView.as_view(),
+        auth_views.LogoutView.as_view(
+            next_page="accounts:login",
+        ),
         name="logout",
     ),
 ]
