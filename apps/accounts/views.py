@@ -29,6 +29,9 @@ User = get_user_model()
 class LoginView(IfAuthenticatedRedirectDashboard, OldLoginView):
     redirect_authenticated_user = True
     
+    def get_success_url(self):
+        return reverse_lazy("dashboard:profile")
+    
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         
