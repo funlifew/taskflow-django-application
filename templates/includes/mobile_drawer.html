@@ -1,19 +1,81 @@
 <div class="mobile-drawer" data-drawer>
-        <div class="drawer-backdrop"></div>
-            <div class="drawer-panel">
-                <div class="spread">
-                    <a class="brand" href="dashboard.html">
-                        <span class="brand-mark">T</span>
-                        <span>TaskFlow</span>
-                    </a>
-                    <button class="icon-btn" data-drawer-close>×</button>
-                </div>
-            <nav class="nav-list">
-                <a class="nav-link" data-nav="dashboard" href="dashboard.html"><span>🏠</span><span>داشبورد</span></a>
-                <a class="nav-link" data-nav="workspaces" href="workspaces/list.html"><span>🧩</span><span>ورک‌اسپیس</span></a>
-                <a class="nav-link" data-nav="boards" href="boards/list.html"><span>📌</span><span>بردها</span></a>
-                <a class="nav-link" data-nav="tasks" href="tasks/detail.html"><span>✅</span><span>تسک‌ها</span></a>
-                <a class="nav-link" data-nav="profile" href="accounts/profile_detail.html"><span>👤</span><span>پروفایل</span></a>
-            </nav>
+    <div class="drawer-backdrop" data-drawer-close></div>
+
+    <div class="drawer-panel">
+        <div class="spread">
+            <a class="brand" href="{% url 'dashboard:dashboard' %}">
+                <span class="brand-mark">T</span>
+                <span>TaskFlow</span>
+            </a>
+
+            <button
+                class="icon-btn"
+                type="button"
+                data-drawer-close
+                aria-label="بستن منو"
+            >
+                ×
+            </button>
+        </div>
+
+        <nav class="nav-list">
+            <a
+                class="nav-link"
+                data-nav="dashboard"
+                href="{% url 'dashboard:dashboard' %}"
+            >
+                <span>🏠</span>
+                <span>داشبورد</span>
+            </a>
+
+            <a
+                class="nav-link"
+                data-nav="workspaces"
+                href="#"
+            >
+                <span>🧩</span>
+                <span>ورک‌اسپیس</span>
+            </a>
+
+            <a
+                class="nav-link"
+                data-nav="boards"
+                href="#"
+            >
+                <span>📌</span>
+                <span>بردها</span>
+            </a>
+
+            <a
+                class="nav-link"
+                data-nav="tasks"
+                href="#"
+            >
+                <span>✅</span>
+                <span>تسک‌ها</span>
+            </a>
+
+            <a
+                class="nav-link"
+                data-nav="profile"
+                href="{% url 'dashboard:profile' %}"
+            >
+                <span>👤</span>
+                <span>پروفایل</span>
+            </a>
+
+            <form
+                class="nav-logout-form"
+                method="post"
+                action="{% url 'accounts:logout' %}"
+            >
+                {% csrf_token %}
+
+                <button class="nav-link nav-logout" type="submit">
+                    <span>🚪</span>
+                    <span>خروج از حساب</span>
+                </button>
+            </form>
+        </nav>
     </div>
 </div>
