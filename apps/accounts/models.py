@@ -33,8 +33,8 @@ class User(AbstractUser):
         default=create_random_avatar
     )
     bio = models.TextField(
-        null=True,
-        blank=True
+        blank=True,
+        default='',
     )
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'email']
