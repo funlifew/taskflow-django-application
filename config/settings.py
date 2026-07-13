@@ -168,3 +168,7 @@ AUTH_USER_MODEL = 'accounts.User'
 # EMAIL SECTION
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'TaskFlow <noreply@taskflow.local>'
+
+# LOGIN SECTION
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'dashboard:dashboard'
