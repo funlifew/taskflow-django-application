@@ -114,8 +114,8 @@ function initAvatarUpload() {
         return;
       }
 
-      if (file.size > 2 * 1024 * 1024) {
-        toast("حجم تصویر بهتر است کمتر از ۲ مگابایت باشد.");
+      if (file.size > 5 * 1024 * 1024) {
+        toast("حجم تصویر بهتر است کمتر از 5 مگابایت باشد.");
       }
 
       const reader = new FileReader();
@@ -217,10 +217,10 @@ function initAvatarEditorsV4() {
         return;
       }
 
-      const maxSize = 2 * 1024 * 1024;
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         input.value = "";
-        showError("حجم تصویر باید کمتر از ۲ مگابایت باشد.");
+        showError("حجم تصویر باید کمتر از 5 مگابایت باشد.");
         return;
       }
 
