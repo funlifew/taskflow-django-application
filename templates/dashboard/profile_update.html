@@ -1,96 +1,224 @@
 {% extends "base.html" %}
 
 {% block data_page %}profile{% endblock data_page %}
-{% block title %}TaskFlow | Update Profile{% endblock title %}
+{% block title %}TaskFlow | ویرایش پروفایل{% endblock title %}
 
 {% block content %}
 <section class="page-head">
   <div>
-    <span class="badge badge-primary eyebrow">TaskFlow</span>
+    <span class="badge badge-primary eyebrow">تنظیمات حساب</span>
     <h1 class="page-title">ویرایش پروفایل</h1>
-    <p class="page-subtitle">این نسخه آواتار را داخل یک کامپوننت تمیز، پایدار و موبایل‌فرست نشان می‌دهد.</p>
+    <p class="page-subtitle">
+      اطلاعات عمومی و تصویر پروفایلت را ویرایش کن.
+    </p>
   </div>
-
 </section>
 
-<form class="stack-lg" enctype="multipart/form-data">
+<form
+  class="stack-lg"
+  method="post"
+  enctype="multipart/form-data"
+  novalidate
+>
+  {% csrf_token %}
 
-<section class="form-card avatar-editor-card">
-  <div class="avatar-editor" data-avatar-editor-v4>
-    <div class="avatar-editor__preview-zone">
-      <label class="avatar-editor__picker" aria-label="انتخاب تصویر پروفایل">
-        <input data-avatar-input-v4 type="file" accept="image/*">
-        <span class="avatar-editor__ring"></span>
-        <span class="avatar-editor__inner">
-          <img data-avatar-image-v4 class="avatar-editor__image" alt="">
-          <span class="avatar-editor__fallback">م</span>
-          <span class="avatar-editor__overlay">
-            <span class="avatar-editor__overlay-content">
-              <span class="avatar-editor__camera">📷</span>
-              <span class="avatar-editor__overlay-text">برای تغییر عکس کلیک کن</span>
+  {% if form.non_field_errors %}
+    <div class="form-errors">
+      {% for error in form.non_field_errors %}
+        <p class="error-text">{{ error }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <section class="form-card avatar-editor-card">
+    <div
+      class="avatar-editor{% if request.user.avatar %} has-image{% endif %}"
+      data-avatar-editor-v4
+    >
+      <div class="avatar-editor__preview-zone">
+        <label
+          class="avatar-editor__picker"
+          for="{{ form.avatar.id_for_label }}"
+          aria-label="انتخاب تصویر پروفایل"
+        >
+          {{ form.avatar }}
+
+          <span class="avatar-editor__ring"></span>
+
+          <span class="avatar-editor__inner">
+            <img
+              data-avatar-image-v4
+              class="avatar-editor__image"
+              {% if request.user.avatar %}
+                src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}"
+              {% endif %}
+              alt="تصویر پروفایل {{ request.user.username }}"
+            >
+
+            <span class="avatar-editor__fallback">
+              {{ request.user.first_name|default:request.user.username|slice:":1" }}
+            </span>
+
+            <span class="avatar-editor__overlay">
+              <span class="avatar-editor__overlay-content">
+                <span class="avatar-editor__camera">📷</span>
+                <span class="avatar-editor__overlay-text">
+                  برای تغییر عکس کلیک کن
+                </span>
+              </span>
             </span>
           </span>
-        </span>
-      </label>
+        </label>
+      </div>
+
+      <div class="avatar-editor__content">
+        <div class="avatar-editor__title-row">
+          <h2 class="avatar-editor__title">تصویر پروفایل</h2>
+
+          <p class="avatar-editor__desc">
+            یک تصویر مربعی JPG، PNG یا WebP با حجم حداکثر 5 مگابایت انتخاب کن.
+          </p>
+        </div>
+
+        <div data-avatar-meta-v4 class="avatar-editor__file-meta">
+          تصویر انتخاب‌شده:
+          <span
+            data-avatar-filename-v4
+            class="avatar-editor__filename"
+          ></span>
+        </div>
+
+        <div
+          data-avatar-error-v4
+          class="avatar-editor__error"
+        ></div>
+
+        {% for error in form.avatar.errors %}
+          <p class="error-text">{{ error }}</p>
+        {% endfor %}
+
+        <div class="avatar-editor__actions">
+          <button
+            class="btn btn-primary"
+            data-avatar-choose-v4
+            type="button"
+          >
+            انتخاب تصویر
+          </button>
+
+          <button
+            class="btn"
+            data-avatar-clear-v4
+            type="button"
+          >
+            حذف پیش‌نمایش
+          </button>
+        </div>
+      </div>
     </div>
-
-    <div class="avatar-editor__content">
-      <div class="avatar-editor__title-row">
-        <h2 class="avatar-editor__title">عکس پروفایل</h2>
-        <p class="avatar-editor__desc">
-          روی خود آواتار کلیک کن یا از دکمه پایین استفاده کن. تصویر داخل همین کادر preview می‌شود و از فرم بیرون نمی‌زند.
-        </p>
-      </div>
-
-      <div data-avatar-meta-v4 class="avatar-editor__file-meta">
-        تصویر انتخاب‌شده:
-        <span data-avatar-filename-v4 class="avatar-editor__filename"></span>
-      </div>
-
-      <div data-avatar-error-v4 class="avatar-editor__error"></div>
-
-      <div class="avatar-editor__actions">
-        <button class="btn btn-primary" data-avatar-choose-v4 type="button">انتخاب تصویر</button>
-        <button class="btn" data-avatar-clear-v4 type="button">حذف preview</button>
-      </div>
-
-      <p class="help">
-        پیشنهاد: JPG/PNG/WebP، نسبت مربعی، حداکثر ۲MB. در Django فرم باید
-        <code>enctype="multipart/form-data"</code>
-        داشته باشد.
-      </p>
-    </div>
-  </div>
-</section>
-
+  </section>
 
   <section class="form-card">
-    <h2 style="margin:0 0 14px">اطلاعات حساب</h2>
+    <h2 style="margin: 0 0 14px">اطلاعات حساب</h2>
+
     <div class="form-grid">
+      <div class="grid-2">
+        <div class="field">
+          <div class="label-row">
+            <label for="{{ form.first_name.id_for_label }}">
+              نام
+            </label>
+          </div>
 
-<div class="field">
-  <div class="label-row"><label>نام کاربری</label></div>
-  <input class="input" type="text" placeholder="mehdi">
-</div>
+          {{ form.first_name }}
 
+          {% for error in form.first_name.errors %}
+            <p class="error-text">{{ error }}</p>
+          {% endfor %}
+        </div>
 
-<div class="field">
-  <div class="label-row"><label>ایمیل</label></div>
-  <input class="input" type="email" placeholder="example@email.com">
-</div>
+        <div class="field">
+          <div class="label-row">
+            <label for="{{ form.last_name.id_for_label }}">
+              نام خانوادگی
+            </label>
+          </div>
 
+          {{ form.last_name }}
 
-<div class="field">
-  <div class="label-row"><label>Bio کوتاه</label></div>
-  <textarea class="textarea" placeholder="مثلاً Backend Developer with Django"></textarea>
-</div>
+          {% for error in form.last_name.errors %}
+            <p class="error-text">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="{{ form.username.id_for_label }}">
+            نام کاربری
+          </label>
+        </div>
+
+        {{ form.username }}
+
+        {% for error in form.username.errors %}
+          <p class="error-text">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="profile-email">ایمیل</label>
+
+          {% if request.user.email_verified %}
+            <span class="badge badge-success">تأیید شده</span>
+          {% else %}
+            <span class="badge badge-warning">تأیید نشده</span>
+          {% endif %}
+        </div>
+
+        <input
+          class="input"
+          id="profile-email"
+          type="email"
+          value="{{ request.user.email }}"
+          disabled
+        >
+
+        <small class="help">
+          تغییر ایمیل از طریق بخش امنیت حساب انجام خواهد شد.
+        </small>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="{{ form.bio.id_for_label }}">
+            درباره من
+          </label>
+
+          <span class="help">حداکثر ۵۰۰ کاراکتر</span>
+        </div>
+
+        {{ form.bio }}
+
+        {% for error in form.bio.errors %}
+          <p class="error-text">{{ error }}</p>
+        {% endfor %}
+      </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" type="button" data-toast="پروفایل ذخیره شد">ذخیره پروفایل</button>
-        <a class="btn btn-ghost" href="profile_detail.html">انصراف</a>
+        <button class="btn btn-primary" type="submit">
+          ذخیره تغییرات
+        </button>
+
+        <a
+          class="btn btn-ghost"
+          href="{% url 'dashboard:profile' %}"
+        >
+          انصراف
+        </a>
       </div>
     </div>
   </section>
 </form>
-
 {% endblock content %}

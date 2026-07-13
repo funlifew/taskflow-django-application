@@ -10,7 +10,16 @@
         <div class="inline">
             <button class="icon-btn" data-theme-toggle aria-label="تغییر تم"><span data-theme-icon>🌙</span></button>
             <a class="profile-avatar-sm" href="accounts/profile_detail.html" aria-label="پروفایل">
-                <span class="avatar-initials"><img src="{{ request.user.avatar.url }}" /></span>
+                {% if request.user.avatar %}
+                <img
+                    src="{{ request.user.avatar.url }}"
+                    alt="{{ request.user.username }}"
+                >
+                {% else %}
+                <span class="avatar-initials">
+                    {{ request.user.first_name|default:request.user.username|slice:":1" }}
+                </span>
+                {% endif %}
             </a>
         </div>
     </div>

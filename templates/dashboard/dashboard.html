@@ -5,7 +5,16 @@
 <section class="card dashboard-profile-card motion-card" style="margin-bottom:18px">
     <div class="dashboard-profile-row">
         <a class="profile-avatar-lg" href="accounts/profile_detail.html" aria-label="مشاهده پروفایل">
-            <span class="avatar-initials"><img src="{{ request.user.avatar.url }}" /></span>
+            {% if request.user.avatar %}
+            <img
+                src="{{ request.user.avatar.url }}"
+                alt="{{ request.user.username }}"
+            >
+            {% else %}
+            <span class="avatar-initials">
+                {{ request.user.first_name|default:request.user.username|slice:":1" }}
+            </span>
+            {% endif %}
         </a>
         <div>
             <span class="badge badge-primary">خوش برگشتی</span>

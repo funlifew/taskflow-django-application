@@ -5,21 +5,23 @@
 
 {% block content %}
 <section class="card profile-hero motion-card" style="margin-bottom:18px">
-  <a class="profile-avatar-lg" href="profile_update.html" title="ویرایش آواتار">
-    <span class="avatar-initials" style="font-size:44px"><img src="{{ request.user.avatar.url }}" /></span>
+  <a class="profile-avatar-lg" href="{% url "dashboard:profile_update" %}" title="ویرایش آواتار">
+    <span class="avatar-initials" style="font-size:44px"><img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}" /></span>
   </a>
   <div>
     <span class="badge badge-primary">پروفایل کاربر</span>
     <h1 class="page-title" style="margin-top:8px">{{ request.user.get_full_name }}</h1>
-    <p class="page-subtitle">
-      {% if request.user.bio %}
+    {% if request.user.bio %}
+      <p class="page-subtitle">
         {{ request.user.bio }}
-      {% else %}
-        <p class="text-sm text-muted">کاربر بیوگرافی ندارد.</p>
-      {% endif %}
-    </p>
+      </p>
+    {% else %}
+      <p class="page-subtitle muted">
+        کاربر بیوگرافی ندارد.
+      </p>
+    {% endif %}
     <div class="actions">
-      <a class="btn btn-primary" href="profile_update.html">ویرایش پروفایل و آواتار</a>
+      <a class="btn btn-primary" href="{% url "dashboard:profile_update" %}">ویرایش پروفایل و آواتار</a>
       <a class="btn" href="{% url "accounts:change_password" %}">تغییر رمز</a>
     </div>
   </div>
