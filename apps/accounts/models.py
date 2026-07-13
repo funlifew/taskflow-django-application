@@ -3,10 +3,18 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from random import randint
+from uuid import uuid4
+from pathlib import Path
 import os
 
 def user_directory_path(instance, filename):
-    return os.path.join('avatars', instance.user.username, filename)
+    extension = Path(filename).suffix.lower()
+    user_id = instance.pk or "new"
+
+    return (
+        f"avatars/{user_id}/"
+        f"{uuid4().hex}{extension}"
+    )
 
 def create_random_avatar():
     random_number = randint(1, 10)
