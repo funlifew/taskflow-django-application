@@ -50,29 +50,40 @@ class LoginView(IfAuthenticatedRedirectDashboard, OldLoginView):
         })
         
         return form
-class RegisterView(IfAuthenticatedRedirectDashboard, CreateView):
-    template_name = 'accounts/register.html'
-    form_class = RegisterForm
-    success_url = reverse_lazy('accounts:verification_sent')
-    
-    def form_valid(self, form):
-        user = form.save(commit=False)
-        
-        user.email = user.email.lower().strip()
-        user.is_active = False
-        user.email_verified = False
-        user.save()
 
-        super().form_valid(form)
-        
-        transaction.on_commit(
-            lambda: self._send_activation_email_after_commit(user)
+class RegisterView(
+    IfAuthenticatedRedirectDashboard,
+    CreateView,
+):
+    template_name = "accounts/register.html"
+    form_class = RegisterForm
+    success_url = reverse_lazy(
+        "accounts:verification_sent"
+    )
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+
+        self.object.email = (
+            self.object.email.lower().strip()
         )
-        
+        self.object.is_active = False
+        self.object.email_verified = False
+        self.object.save()
+
+        user = self.object
+
+        transaction.on_commit(
+            lambda: self._send_activation_email_after_commit(
+                user
+            )
+        )
+
         messages.success(
             self.request,
-            'حساب ساخته شد. لینک فعالسازی به ایمیلت ارسال شد.'
+            "حساب ساخته شد. لینک فعال‌سازی به ایمیلت ارسال شد.",
         )
+
         return redirect(self.success_url)
     
     def _send_activation_email_after_commit(self, user):
@@ -166,7 +177,7 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
     template_name = "accounts/password_reset_confirm.html"
     success_url = reverse_lazy("accounts:password_reset_complete")
 
-class PasswordResetCompleteView(auth_views.PasswordResetConfirmView):
+class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
     template_name = "accounts/password_reset_complete.html"
     
 
