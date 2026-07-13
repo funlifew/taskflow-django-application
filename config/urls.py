@@ -26,8 +26,10 @@ urlpatterns = [
     path("", include('apps.accounts.urls', namespace='accounts')),
     path('dashboard/', include('apps.dashboard.urls', namespace='dashboard')),
     path("", TemplateView.as_view(template_name="landing.html"), name="landing"),
-    path("__debug__/", include('debug_toolbar.urls')),
 ]
 
 if settings.DEBUG:
+    urlpatterns += [
+        path("__debug__/", include('debug_toolbar.urls')),
+    ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
