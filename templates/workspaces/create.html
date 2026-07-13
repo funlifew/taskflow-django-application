@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | ساخت Workspace{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-primary eyebrow">Workspace</span>
+
+    <h1 class="page-title">ساخت Workspace</h1>
+
+    <p class="page-subtitle">
+      یک فضای کاری جدید برای پروژه یا تیم خودت بساز.
+    </p>
+  </div>
+</section>
+
+<section class="form-card">
+  <h2 style="margin: 0 0 14px">
+    اطلاعات Workspace
+  </h2>
+
+  <form
+    class="form-grid"
+    method="post"
+    novalidate
+  >
+    {% csrf_token %}
+
+    {% include "workspaces/includes/_form.html" %}
+
+    <div class="form-actions">
+      <button
+        class="btn btn-primary"
+        type="submit"
+      >
+        ساخت Workspace
+      </button>
+
+      <a
+        class="btn btn-ghost"
+        href="{% url 'workspaces:list' %}"
+      >
+        انصراف
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock content %}

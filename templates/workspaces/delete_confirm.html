@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | حذف Workspace{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-danger eyebrow">منطقه خطر</span>
+
+    <h1 class="page-title">حذف Workspace</h1>
+
+    <p class="page-subtitle">
+      این عملیات قابل بازگشت نیست.
+    </p>
+  </div>
+</section>
+
+<section class="form-card danger-zone">
+  <h2 style="margin: 0 0 14px">
+    آیا از حذف «{{ workspace.name }}» مطمئنی؟
+  </h2>
+
+  <form
+    class="form-grid"
+    method="post"
+  >
+    {% csrf_token %}
+
+    <p class="page-subtitle">
+      با حذف Workspace، اطلاعات وابسته به آن نیز حذف خواهند شد.
+      برای ادامه روی دکمه حذف کلیک کن.
+    </p>
+
+    <div class="form-actions">
+      <button
+        class="btn btn-danger"
+        type="submit"
+      >
+        حذف Workspace
+      </button>
+
+      <a
+        class="btn btn-ghost"
+        href="{% url 'workspaces:detail' workspace.pk %}"
+      >
+        انصراف
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock content %}

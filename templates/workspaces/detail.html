@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | {{ workspace.name }}{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-primary eyebrow">Workspace</span>
+
+    <h1 class="page-title">
+      {{ workspace.name }}
+    </h1>
+
+    <p class="page-subtitle">
+      {% if workspace.description %}
+        {{ workspace.description }}
+      {% else %}
+        توضیحی برای این Workspace ثبت نشده است.
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="actions">
+    {% if request.user == workspace.owner %}
+      <a
+        class="btn"
+        href="{% url 'workspaces:update' workspace.pk %}"
+      >
+        ویرایش
+      </a>
+
+      <a
+        class="btn btn-danger"
+        href="{% url 'workspaces:delete' workspace.pk %}"
+      >
+        حذف
+      </a>
+    {% endif %}
+  </div>
+</section>
+
+<section class="stat-grid">
+  <article class="stat-card">
+    <div class="stat-label">اعضا</div>
+
+    <div class="stat-value">
+      {{ workspace.memberships.count }}
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-label">مالک</div>
+
+    <div class="stat-value" style="font-size: 18px">
+      {{ workspace.owner.get_full_name|default:workspace.owner.username }}
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-label">تاریخ ساخت</div>
+
+    <div class="stat-value" style="font-size: 18px">
+      {{ workspace.created_at|date:"Y/m/d" }}
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-label">وضعیت</div>
+
+    <div class="stat-value" style="font-size: 18px">
+      {% if workspace.is_archived %}
+        آرشیو
+      {% else %}
+        فعال
+      {% endif %}
+    </div>
+  </article>
+</section>
+
+<div class="stack-lg" style="margin-top: 22px">
+  <div class="spread">
+    <h2 style="margin: 0">بردها</h2>
+
+    {# بعد از ساخت app مربوط به Board این لینک را فعال کن #}
+    <span class="badge badge-info">مرحله بعد</span>
+  </div>
+
+  <section class="empty-state">
+    <div class="empty-icon">📌</div>
+
+    <h2>هنوز بردی وجود ندارد</h2>
+
+    <p class="page-subtitle">
+      بعد از تکمیل Workspace، قابلیت ساخت Board را اضافه می‌کنیم.
+    </p>
+  </section>
+
+  <div class="spread">
+    <h2 style="margin: 0">اعضا</h2>
+
+    {% if request.user == workspace.owner %}
+      <span class="badge">
+        مدیریت اعضا در مرحله بعد
+      </span>
+    {% endif %}
+  </div>
+
+  <section class="panel list">
+    {% for membership in workspace.memberships.all %}
+      <article class="list-card">
+        <div class="spread">
+          <div class="inline">
+            <div class="profile-avatar-sm">
+              {% if membership.user.avatar %}
+                <img
+                  src="{{ membership.user.avatar.url }}"
+                  alt="{{ membership.user.username }}"
+                >
+              {% else %}
+                <span class="avatar-initials">
+                  {{ membership.user.first_name|default:membership.user.username|slice:":1" }}
+                </span>
+              {% endif %}
+            </div>
+
+            <div>
+              <strong>
+                {{ membership.user.get_full_name|default:membership.user.username }}
+              </strong>
+
+              <div class="muted" style="font-size: 12px">
+                {{ membership.user.email }}
+              </div>
+            </div>
+          </div>
+
+          {% if membership.role == "owner" %}
+            <span class="badge badge-primary">مالک</span>
+          {% elif membership.role == "admin" %}
+            <span class="badge badge-info">مدیر</span>
+          {% elif membership.role == "viewer" %}
+            <span class="badge">مشاهده‌گر</span>
+          {% else %}
+            <span class="badge badge-success">عضو</span>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        <p class="page-subtitle">
+          عضوی برای این Workspace ثبت نشده است.
+        </p>
+      </div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock content %}

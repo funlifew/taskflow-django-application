@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | ویرایش Workspace{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-primary eyebrow">Workspace</span>
+
+    <h1 class="page-title">ویرایش Workspace</h1>
+
+    <p class="page-subtitle">
+      اطلاعات «{{ workspace.name }}» را تغییر بده.
+    </p>
+  </div>
+</section>
+
+<section class="form-card">
+  <h2 style="margin: 0 0 14px">
+    ویرایش اطلاعات
+  </h2>
+
+  <form
+    class="form-grid"
+    method="post"
+    novalidate
+  >
+    {% csrf_token %}
+
+    {% include "workspaces/includes/_form.html" %}
+
+    <div class="form-actions">
+      <button
+        class="btn btn-primary"
+        type="submit"
+      >
+        ذخیره تغییرات
+      </button>
+
+      <a
+        class="btn btn-ghost"
+        href="{% url 'workspaces:detail' workspace.pk %}"
+      >
+        انصراف
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock content %}

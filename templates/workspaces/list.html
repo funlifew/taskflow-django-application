@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | ورک‌اسپیس‌ها{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-primary eyebrow">TaskFlow</span>
+
+    <h1 class="page-title">ورک‌اسپیس‌ها</h1>
+
+    <p class="page-subtitle">
+      فضای کاری پروژه‌ها و تیم‌هایت را مدیریت کن.
+    </p>
+  </div>
+
+  <div class="actions">
+    <a
+      class="btn btn-primary"
+      href="{% url 'workspaces:create' %}"
+    >
+      + ساخت Workspace
+    </a>
+  </div>
+</section>
+
+{% if workspaces %}
+  <div class="grid-3">
+    {% for workspace in workspaces %}
+      <a
+        class="card motion-card"
+        href="{% url 'workspaces:detail' workspace.pk %}"
+      >
+        <div class="stack">
+          <div class="meta-row">
+            {% if workspace.owner_id == request.user.id %}
+              <span class="badge badge-primary">مالک</span>
+            {% else %}
+              <span class="badge badge-success">عضو</span>
+            {% endif %}
+
+            {% if workspace.is_archived %}
+              <span class="badge badge-warning">آرشیو شده</span>
+            {% else %}
+              <span class="badge badge-success">فعال</span>
+            {% endif %}
+          </div>
+
+          <h2 class="card-title">
+            {{ workspace.name }}
+          </h2>
+
+          <p class="card-text">
+            {% if workspace.description %}
+              {{ workspace.description|truncatechars:120 }}
+            {% else %}
+              توضیحی برای این Workspace ثبت نشده است.
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="card-footer">
+          <span class="muted">
+            {{ workspace.memberships.count }} عضو
+          </span>
+
+          <span>باز کردن ←</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  {% if is_paginated %}
+    <div class="actions" style="margin-top: 22px">
+      {% if page_obj.has_previous %}
+        <a
+          class="btn"
+          href="?page={{ page_obj.previous_page_number }}"
+        >
+          صفحه قبل
+        </a>
+      {% endif %}
+
+      <span class="badge">
+        صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a
+          class="btn"
+          href="?page={{ page_obj.next_page_number }}"
+        >
+          صفحه بعد
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+{% else %}
+  <section class="empty-state">
+    <div class="empty-icon">🧩</div>
+
+    <h2>هنوز Workspace نداری</h2>
+
+    <p class="page-subtitle">
+      اولین فضای کاری خودت را برای مدیریت پروژه‌ها بساز.
+    </p>
+
+    <div class="actions">
+      <a
+        class="btn btn-primary"
+        href="{% url 'workspaces:create' %}"
+      >
+        ساخت اولین Workspace
+      </a>
+    </div>
+  </section>
+{% endif %}
+{% endblock content %}
