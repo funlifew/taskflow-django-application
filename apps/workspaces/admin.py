@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Workspace, WorkspaceMembership
+from .models import Workspace, WorkspaceMembership, WorkspaceInvitation
 
 # Register your models here.
 
@@ -30,20 +30,55 @@ class WorkspaceAdmin(admin.ModelAdmin):
     autocomplete_fields = ("owner",)
     inlines = (WorkspaceMembershipInline,)
 
-@admin.register(WorkspaceMembership)
-class WorkspaceMembershipAdmin(admin.ModelAdmin):
+
+@admin.register(WorkspaceInvitation)
+class WorkspaceInvitationAdmin(admin.ModelAdmin):
     list_display = (
+        "email",
         "workspace",
-        "user",
+        "role",
+        "status",
+        "invited_by",
+        "expires_at",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
         "role",
         "created_at",
     )
-    list_filter = ("role",)
+
     search_fields = (
+        "email",
         "workspace__name",
+        "invited_by__username",
+    )
+
+    readonly_fields = (
+        "token",
+        "created_at",
+        "updated_at",
+    )
+
+
+@admin.register(WorkspaceMembership)
+class WorkspaceMembershipAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "workspace",
+        "role",
+        "created_at",
+    )
+
+    list_filter = ("role",)
+
+    search_fields = (
         "user__username",
         "user__email",
+        "workspace__name",
     )
+    
     autocomplete_fields = (
         "workspace",
         "user",
