@@ -1,5 +1,5 @@
 from django import forms
-from .models import Workspace
+from .models import Workspace, WorkspaceMembership, WorkspaceInvitation
 
 
 class WorkspaceForm(forms.ModelForm):
@@ -35,3 +35,46 @@ class WorkspaceForm(forms.ModelForm):
             )
         
         return name
+
+class WorkspaceInviteForm(forms.ModelForm):
+    class Meta:
+        model = WorkspaceInvitation
+        fields = ('email', 'role')
+        widgets = {
+            'email': forms.EmailInput(
+                attrs={
+                    'class': 'input',
+                    'placeholder': 'example@email.com',
+                    'autocomplete': 'email',
+                }
+            ),
+            'role': forms.Select(
+                attrs={
+                    'class': 'select',
+                }
+            ),
+        }
+    
+    def clean_email(self):
+        return self.cleaned_data['email'].lower().strip()
+
+class WorkspaceMembershipUpdateFomr(forms.ModelForm):
+    class Meta:
+        model = WorkspaceMembership
+        fields = ('role', )
+        widgets = {
+            'role': forms.Select(
+                attrs={
+                    'class': 'select',
+                }
+            ),
+        }
+    
+    def clean_role(self):
+        role = self.cleaned_data['role']
+        if role == WorkspaceMembership.Role.OWNER:
+            raise forms.ValidationError(
+                'انتقال مالکیت باید از بخش جداگانه انجام شود.'
+            )
+        
+        return role
