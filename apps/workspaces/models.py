@@ -1,7 +1,10 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 from apps.core.models import TimeStampedModel
+
+import uuid
 
 # Create your models here.
 
@@ -68,3 +71,60 @@ class WorkspaceMembership(TimeStampedModel):
             f'{self.user.username} - '
             f'{self.workspace.name}'
         )
+
+class WorkspaceInvitation(TimeStampedModel):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'در انتظار'
+        ACCEPTED = 'accepted', 'پذیرفته‌شده'
+        DECLINED = 'declined', 'ردشده'
+        EXPIRED = 'expired', 'منقضی‌شده'
+
+    workspace = models.ForeignKey(
+        "Workspace",
+        on_delete=models.CASCADE,
+        related_name='invitations',
+    )
+    
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_workspace_invitations',
+    )
+    
+    email = models.EmailField()
+    
+    role = models.CharField(
+        max_length=20,
+        choices=WorkspaceMembership.Role.choices,
+        default=WorkspaceMembership.Role.MEMBER,
+    )
+    
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    
+    expires_at = models.DateTimeField()
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('workspace', 'email'),
+                condition=models.Q(status="pending"),
+                name='unique_pending_workspace_invitation',
+            ),
+        ]
+    
+    @property
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+    
+    def __str__(self):
+        return f"{self.email} → {self.workspace.name}"
