@@ -37,6 +37,18 @@ class WorkspaceForm(forms.ModelForm):
         return name
 
 class WorkspaceInviteForm(forms.ModelForm):
+    
+    def __init__(
+        self,
+        *args,
+        workspace=None,
+        request_user=None,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.workspace = workspace
+        self.request_user = request_user
+    
     class Meta:
         model = WorkspaceInvitation
         fields = ('email', 'role')
@@ -56,9 +68,33 @@ class WorkspaceInviteForm(forms.ModelForm):
         }
     
     def clean_email(self):
-        return self.cleaned_data['email'].lower().strip()
+        email = self.cleaned_data['email'].lower().strip()
+        
+        if self.request_user.email.lower() == email:
+            raise forms.ValidationError(
+                'نمیتوانید خودتان را دعوت کنید.'
+            )
+        
+        if WorkspaceMembership.objects.filter(
+            workspace=self.workspace,
+            user__email__iexact=email,
+        ).exists():
+            raise forms.ValidationError(
+                'کاربر از قبل عضو Workspace است.'
+            )
+        
+        if WorkspaceMembership.objects.filter(
+            workspace=self.workspace,
+            email__iexact=email,
+            status=WorkspaceInvitation.Status.PENDING,
+        ).exists():
+            raise forms.ValidationError(
+                'برای این ایمیل یک دعوتنامه در انتظار وجود دارد.'
+            )
+        
+        return email
 
-class WorkspaceMembershipUpdateFomr(forms.ModelForm):
+class WorkspaceMembershipUpdateForm(forms.ModelForm):
     class Meta:
         model = WorkspaceMembership
         fields = ('role', )
