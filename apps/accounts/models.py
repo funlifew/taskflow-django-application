@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from random import randint
@@ -39,5 +40,19 @@ class User(AbstractUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'email']
     
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower('email'),
+                name='accounts_user_email_ci_unique',
+            ),
+        ]
+    
     def __str__(self):
         return self.username
+    
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+            
+        super().save(*args, **kwargs)

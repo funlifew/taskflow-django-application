@@ -13,10 +13,11 @@ from apps.core.cache_keys import verification_resend_key
 from .tokens import account_activation_token
 
 from random import randint
-import os
+import os, logging
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
-ACTIVATION_EMAIL_COOLDOWN = 60 * 2 # 2 minutes
+ACTIVATION_EMAIL_COOLDOWN = 120
 
 def can_send_activation_email(user) -> bool:
     cache_key = verification_resend_key(user.id)
@@ -66,3 +67,44 @@ def send_activation_email(request, user) -> None:
     
     email.attach_alternative(html_body, 'text/html')
     email.send()
+    
+
+def acquire_activation_email_lock(user_id: int) -> bool:
+    cache_key = verification_resend_key(user_id)
+    
+    try:
+        return cache.add(
+            cache_key,
+            True,
+            timeout=ACTIVATION_EMAIL_COOLDOWN,
+        )
+    except Exception:
+        logger.exception(
+            'Activation-email cache is unavailable for user %s',
+            user_id
+        )
+        
+        return True
+
+def release_activation_email_lock(user_id: int) -> None:
+    cache_key = verification_resend_key(user_id)
+
+    try:
+        cache.delete(cache_key)
+    except Exception:
+        logger.exception(
+            'Could not release activation-email lock for user %s',
+            user_id,
+        )
+
+def send_activation_email_with_cooldown(request, user) -> bool:
+    if not acquire_activation_email_lock(user.pk):
+        return False
+    
+    try:
+        send_activation_email(request, user)
+    except Exception:
+        release_activation_email_lock(user.pk)
+        raise
+    
+    return True

@@ -17,7 +17,7 @@ urlpatterns = [
         name='verification_sent',
     ),
     path(
-        'resend-activation',
+        'resend-activation/',
         views.ResendActivationEmailView.as_view(),
         name='resend_verification',
     ),
@@ -28,9 +28,7 @@ urlpatterns = [
     ),
     path(
         'login/',
-        views.LoginView.as_view(
-            template_name='accounts/login.html',
-        ),
+        views.LoginView.as_view(),
         name="login",
     ),
     path(
