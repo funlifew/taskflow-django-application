@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | اعضای {{ workspace.name }}{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-primary eyebrow">مدیریت دسترسی</span>
+    <h1 class="page-title">اعضای {{ workspace.name }}</h1>
+    <p class="page-subtitle">نقش‌ها، اعضای فعلی و دعوت‌های در انتظار را مدیریت کن.</p>
+  </div>
+
+  <div class="actions">
+    {% if can_manage_members %}
+      <a class="btn btn-primary" href="{% url 'workspaces:member_invite' workspace.pk %}">دعوت عضو</a>
+    {% endif %}
+    <a class="btn btn-ghost" href="{% url 'workspaces:detail' workspace.pk %}">برگشت</a>
+  </div>
+</section>
+
+<section class="workspace-member-summary">
+  <article class="stat-card"><div class="stat-label">کل اعضا</div><div class="stat-value">{{ memberships|length }}</div></article>
+  <article class="stat-card"><div class="stat-label">مدیران</div><div class="stat-value">{{ admins_count|default:0 }}</div></article>
+  <article class="stat-card"><div class="stat-label">دعوت در انتظار</div><div class="stat-value">{{ pending_invitations|length }}</div></article>
+</section>
+
+<section class="panel">
+  <div class="spread workspace-section-head">
+    <div><h2 class="card-title">اعضای فعلی</h2><p class="card-text">هر عضو فقط به اندازه نقش خود دسترسی دارد.</p></div>
+    <span class="badge">{{ memberships|length }} عضو</span>
+  </div>
+
+  <div class="workspace-member-list">
+    {% for membership in memberships %}
+      <article class="workspace-member-card">
+        <div class="workspace-member-card__identity">
+          {% include "workspaces/includes/_avatar.html" with user=membership.user %}
+          <div>
+            <strong>{{ membership.user.get_full_name|default:membership.user.username }}</strong>
+            <span>{{ membership.user.email }}</span>
+          </div>
+        </div>
+
+        <div class="workspace-member-card__role">
+          {% include "workspaces/includes/_role_badge.html" with role=membership.role %}
+        </div>
+
+        <div class="workspace-member-card__actions">
+          {% if can_manage_members and membership.role != "owner" %}
+            <a class="btn btn-soft" href="{% url 'workspaces:member_update' workspace.pk membership.pk %}">تغییر نقش</a>
+            <a class="btn btn-danger" href="{% url 'workspaces:member_remove' workspace.pk membership.pk %}">حذف</a>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <div class="empty-state"><p>عضوی ثبت نشده است.</p></div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel workspace-pending-panel">
+  <div class="spread workspace-section-head">
+    <div><h2 class="card-title">دعوت‌های در انتظار</h2><p class="card-text">این کاربران هنوز دعوت را قبول نکرده‌اند.</p></div>
+    <span class="badge badge-warning">{{ pending_invitations|length }}</span>
+  </div>
+
+  <div class="workspace-pending-list">
+    {% for invitation in pending_invitations %}
+      <article class="workspace-pending-card">
+        <div>
+          <strong>{{ invitation.email }}</strong>
+          <span>دعوت‌شده توسط {{ invitation.invited_by.username }}</span>
+        </div>
+        {% include "workspaces/includes/_role_badge.html" with role=invitation.role %}
+        <time>{{ invitation.expires_at|timeuntil }} دیگر</time>
+      </article>
+    {% empty %}
+      <p class="page-subtitle">دعوتی در انتظار نیست.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock content %}

@@ -6,45 +6,34 @@
 {% block content %}
 <section class="page-head">
   <div>
-    <span class="badge badge-primary eyebrow">Workspace</span>
-
-    <h1 class="page-title">ساخت Workspace</h1>
-
-    <p class="page-subtitle">
-      یک فضای کاری جدید برای پروژه یا تیم خودت بساز.
-    </p>
+    <span class="badge badge-primary eyebrow">Workspace جدید</span>
+    <h1 class="page-title">یک فضای کاری تازه بساز</h1>
+    <p class="page-subtitle">برای یک پروژه، تیم یا هدف شخصی Workspace جدا داشته باش.</p>
   </div>
 </section>
 
-<section class="form-card">
-  <h2 style="margin: 0 0 14px">
-    اطلاعات Workspace
-  </h2>
+<div class="workspace-form-layout">
+  <section class="form-card">
+    <form class="form-grid" method="post" novalidate>
+      {% csrf_token %}
+      {% include "workspaces/includes/_form.html" %}
 
-  <form
-    class="form-grid"
-    method="post"
-    novalidate
-  >
-    {% csrf_token %}
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">ساخت Workspace</button>
+        <a class="btn btn-ghost" href="{% url 'workspaces:list' %}">انصراف</a>
+      </div>
+    </form>
+  </section>
 
-    {% include "workspaces/includes/_form.html" %}
-
-    <div class="form-actions">
-      <button
-        class="btn btn-primary"
-        type="submit"
-      >
-        ساخت Workspace
-      </button>
-
-      <a
-        class="btn btn-ghost"
-        href="{% url 'workspaces:list' %}"
-      >
-        انصراف
-      </a>
+  <aside class="workspace-form-note panel">
+    <span class="badge badge-info">بعد از ساخت</span>
+    <h2 class="card-title">مرحله بعد چه می‌شود؟</h2>
+    <p class="card-text">تو به‌صورت خودکار مالک Workspace می‌شوی و می‌توانی اعضا را دعوت کنی.</p>
+    <div class="info-list">
+      <div class="info-row"><span>نقش تو</span><strong>Owner</strong></div>
+      <div class="info-row"><span>دسترسی اولیه</span><strong>خصوصی</strong></div>
+      <div class="info-row"><span>قابل ویرایش</span><strong>بله</strong></div>
     </div>
-  </form>
-</section>
+  </aside>
+</div>
 {% endblock content %}

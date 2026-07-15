@@ -4,155 +4,110 @@
 {% block title %}TaskFlow | {{ workspace.name }}{% endblock title %}
 
 {% block content %}
-<section class="page-head">
-  <div>
-    <span class="badge badge-primary eyebrow">Workspace</span>
+<section class="workspace-detail-hero">
+  <div class="workspace-detail-hero__mark" aria-hidden="true">{{ workspace.name|slice:":1"|upper }}</div>
 
-    <h1 class="page-title">
-      {{ workspace.name }}
-    </h1>
+  <div class="workspace-detail-hero__body">
+    <div class="meta-row">
+      {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
+      {% if workspace.is_archived %}<span class="badge badge-warning">آرشیوشده</span>{% else %}<span class="badge badge-success">فعال</span>{% endif %}
+    </div>
 
+    <h1 class="page-title">{{ workspace.name }}</h1>
     <p class="page-subtitle">
-      {% if workspace.description %}
-        {{ workspace.description }}
-      {% else %}
-        توضیحی برای این Workspace ثبت نشده است.
-      {% endif %}
+      {% if workspace.description %}{{ workspace.description }}{% else %}توضیحی برای این Workspace ثبت نشده است.{% endif %}
     </p>
   </div>
 
-  <div class="actions">
-    {% if request.user == workspace.owner %}
-      <a
-        class="btn"
-        href="{% url 'workspaces:update' workspace.pk %}"
-      >
-        ویرایش
-      </a>
-
-      <a
-        class="btn btn-danger"
-        href="{% url 'workspaces:delete' workspace.pk %}"
-      >
-        حذف
-      </a>
+  <div class="actions workspace-detail-hero__actions">
+    {% if can_manage_members %}
+      <a class="btn btn-primary" href="{% url 'workspaces:member_invite' workspace.pk %}">دعوت عضو</a>
+      <a class="btn btn-soft" href="{% url 'workspaces:members' workspace.pk %}">مدیریت اعضا</a>
+    {% endif %}
+    {% if can_edit_workspace %}
+      <a class="btn" href="{% url 'workspaces:update' workspace.pk %}">ویرایش</a>
+    {% endif %}
+    {% if can_delete_workspace %}
+      <a class="btn btn-danger" href="{% url 'workspaces:delete' workspace.pk %}">حذف</a>
     {% endif %}
   </div>
 </section>
 
-<section class="stat-grid">
+<section class="workspace-detail-stats">
   <article class="stat-card">
     <div class="stat-label">اعضا</div>
-
-    <div class="stat-value">
-      {{ workspace.memberships.count }}
-    </div>
+    <div class="stat-value">{{ workspace.memberships.count }}</div>
   </article>
-
   <article class="stat-card">
-    <div class="stat-label">مالک</div>
-
-    <div class="stat-value" style="font-size: 18px">
-      {{ workspace.owner.get_full_name|default:workspace.owner.username }}
-    </div>
+    <div class="stat-label">دعوت‌های در انتظار</div>
+    <div class="stat-value">{{ pending_invitations_count|default:0 }}</div>
   </article>
-
   <article class="stat-card">
-    <div class="stat-label">تاریخ ساخت</div>
-
-    <div class="stat-value" style="font-size: 18px">
-      {{ workspace.created_at|date:"Y/m/d" }}
-    </div>
+    <div class="stat-label">بردها</div>
+    <div class="stat-value">{{ boards_count|default:0 }}</div>
   </article>
-
   <article class="stat-card">
-    <div class="stat-label">وضعیت</div>
-
-    <div class="stat-value" style="font-size: 18px">
-      {% if workspace.is_archived %}
-        آرشیو
-      {% else %}
-        فعال
-      {% endif %}
-    </div>
+    <div class="stat-label">آخرین تغییر</div>
+    <div class="stat-value workspace-stat-date">{{ workspace.updated_at|date:"Y/m/d" }}</div>
   </article>
 </section>
 
-<div class="stack-lg" style="margin-top: 22px">
-  <div class="spread">
-    <h2 style="margin: 0">بردها</h2>
+<div class="workspace-detail-grid">
+  <section class="panel">
+    <div class="spread workspace-section-head">
+      <div>
+        <h2 class="card-title">بردهای Workspace</h2>
+        <p class="card-text">پروژه‌ها و جریان‌های کاری این Workspace.</p>
+      </div>
+      {% if can_create_board and boards_url %}
+        <a class="btn btn-primary" href="{{ boards_url }}">ساخت Board</a>
+      {% endif %}
+    </div>
 
-    {# بعد از ساخت app مربوط به Board این لینک را فعال کن #}
-    <span class="badge badge-info">مرحله بعد</span>
-  </div>
-
-  <section class="empty-state">
-    <div class="empty-icon">📌</div>
-
-    <h2>هنوز بردی وجود ندارد</h2>
-
-    <p class="page-subtitle">
-      بعد از تکمیل Workspace، قابلیت ساخت Board را اضافه می‌کنیم.
-    </p>
+    {% if boards %}
+      <div class="grid-2 workspace-board-preview-grid">
+        {% for board in boards %}
+          <a class="card" href="{% url 'boards:detail' board.pk %}">
+            <span class="badge badge-primary">Board</span>
+            <h3 class="card-title">{{ board.name }}</h3>
+            <p class="card-text">{{ board.description|default:"بدون توضیح"|truncatechars:90 }}</p>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state workspace-compact-empty">
+        <div class="empty-icon">📌</div>
+        <h3>هنوز بردی ساخته نشده</h3>
+        <p class="page-subtitle">بعد از شروع بخش Board، بردهای این Workspace اینجا نمایش داده می‌شوند.</p>
+      </div>
+    {% endif %}
   </section>
 
-  <div class="spread">
-    <h2 style="margin: 0">اعضا</h2>
+  <aside class="panel workspace-members-preview">
+    <div class="spread workspace-section-head">
+      <div>
+        <h2 class="card-title">اعضا</h2>
+        <p class="card-text">افرادی که به این فضا دسترسی دارند.</p>
+      </div>
+      <a class="btn btn-ghost" href="{% url 'workspaces:members' workspace.pk %}">همه اعضا</a>
+    </div>
 
-    {% if request.user == workspace.owner %}
-      <span class="badge">
-        مدیریت اعضا در مرحله بعد
-      </span>
-    {% endif %}
-  </div>
-
-  <section class="panel list">
-    {% for membership in workspace.memberships.all %}
-      <article class="list-card">
-        <div class="spread">
+    <div class="list">
+      {% for membership in workspace.memberships.all|slice:":5" %}
+        <div class="workspace-member-row">
           <div class="inline">
-            <div class="profile-avatar-sm">
-              {% if membership.user.avatar %}
-                <img
-                  src="{{ membership.user.avatar.url }}"
-                  alt="{{ membership.user.username }}"
-                >
-              {% else %}
-                <span class="avatar-initials">
-                  {{ membership.user.first_name|default:membership.user.username|slice:":1" }}
-                </span>
-              {% endif %}
-            </div>
-
-            <div>
-              <strong>
-                {{ membership.user.get_full_name|default:membership.user.username }}
-              </strong>
-
-              <div class="muted" style="font-size: 12px">
-                {{ membership.user.email }}
-              </div>
+            {% include "workspaces/includes/_avatar.html" with user=membership.user %}
+            <div class="workspace-member-row__identity">
+              <strong>{{ membership.user.get_full_name|default:membership.user.username }}</strong>
+              <span>{{ membership.user.email }}</span>
             </div>
           </div>
-
-          {% if membership.role == "owner" %}
-            <span class="badge badge-primary">مالک</span>
-          {% elif membership.role == "admin" %}
-            <span class="badge badge-info">مدیر</span>
-          {% elif membership.role == "viewer" %}
-            <span class="badge">مشاهده‌گر</span>
-          {% else %}
-            <span class="badge badge-success">عضو</span>
-          {% endif %}
+          {% include "workspaces/includes/_role_badge.html" with role=membership.role %}
         </div>
-      </article>
-    {% empty %}
-      <div class="empty-state">
-        <p class="page-subtitle">
-          عضوی برای این Workspace ثبت نشده است.
-        </p>
-      </div>
-    {% endfor %}
-  </section>
+      {% empty %}
+        <p class="page-subtitle">هنوز عضوی ثبت نشده است.</p>
+      {% endfor %}
+    </div>
+  </aside>
 </div>
 {% endblock content %}

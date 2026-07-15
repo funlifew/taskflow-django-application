@@ -1,5 +1,5 @@
 {% if form.non_field_errors %}
-  <div class="form-errors">
+  <div class="form-errors" role="alert">
     {% for error in form.non_field_errors %}
       <p class="error-text">{{ error }}</p>
     {% endfor %}
@@ -8,15 +8,10 @@
 
 <div class="field">
   <div class="label-row">
-    <label for="{{ form.name.id_for_label }}">
-      نام Workspace
-    </label>
-
+    <label for="{{ form.name.id_for_label }}">نام Workspace</label>
     <span class="help">حداقل ۳ کاراکتر</span>
   </div>
-
   {{ form.name }}
-
   {% for error in form.name.errors %}
     <p class="error-text">{{ error }}</p>
   {% endfor %}
@@ -24,15 +19,10 @@
 
 <div class="field">
   <div class="label-row">
-    <label for="{{ form.description.id_for_label }}">
-      توضیحات
-    </label>
-
+    <label for="{{ form.description.id_for_label }}">توضیحات</label>
     <span class="help">اختیاری</span>
   </div>
-
   {{ form.description }}
-
   {% for error in form.description.errors %}
     <p class="error-text">{{ error }}</p>
   {% endfor %}

@@ -1,0 +1,13 @@
+سلام
+
+{{ invited_by.get_full_name|default:invited_by.username }}
+شما را به Workspace زیر دعوت کرده است:
+
+{{ workspace.name }}
+
+نقش شما:
+{{ invitation.get_role_display }}
+
+برای مشاهده دعوت روی لینک زیر کلیک کنید:
+
+{{ invitation_url }}

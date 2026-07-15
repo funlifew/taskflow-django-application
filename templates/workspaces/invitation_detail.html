@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | دعوت Workspace{% endblock title %}
+
+{% block content %}
+<section class="workspace-invitation-page">
+  <div class="workspace-invitation-page__icon">✉</div>
+
+  {% if invitation.status == "pending" and not invitation.is_expired %}
+    <span class="badge badge-warning">دعوت در انتظار پاسخ</span>
+    <h1 class="page-title">دعوت به {{ invitation.workspace.name }}</h1>
+    <p class="page-subtitle">
+      {{ invitation.invited_by.get_full_name|default:invitation.invited_by.username }} تو را با نقش
+      «{{ invitation.get_role_display }}» دعوت کرده است.
+    </p>
+
+    <div class="workspace-invitation-page__info">
+      <div class="info-row"><span>ایمیل دعوت‌شده</span><strong>{{ invitation.email }}</strong></div>
+      <div class="info-row"><span>نقش</span><strong>{{ invitation.get_role_display }}</strong></div>
+      <div class="info-row"><span>مهلت</span><strong>{{ invitation.expires_at|timeuntil }}</strong></div>
+    </div>
+
+    {% if request.user.email|lower == invitation.email|lower %}
+      <div class="form-actions workspace-invitation-page__actions">
+        <form method="post" action="{% url 'workspaces:invitation_accept' invitation.token %}">{% csrf_token %}<button class="btn btn-primary" type="submit">پذیرفتن دعوت</button></form>
+        <form method="post" action="{% url 'workspaces:invitation_decline' invitation.token %}">{% csrf_token %}<button class="btn btn-danger" type="submit">رد دعوت</button></form>
+      </div>
+    {% else %}
+      <div class="form-errors"><p class="error-text">این دعوت برای ایمیل حساب فعلی ارسال نشده است.</p></div>
+    {% endif %}
+  {% elif invitation.status == "accepted" %}
+    <span class="badge badge-success">پذیرفته‌شده</span>
+    <h1 class="page-title">این دعوت قبلاً پذیرفته شده است</h1>
+    <a class="btn btn-primary" href="{% url 'workspaces:detail' invitation.workspace.pk %}">باز کردن Workspace</a>
+  {% elif invitation.status == "declined" %}
+    <span class="badge badge-danger">ردشده</span>
+    <h1 class="page-title">این دعوت رد شده است</h1>
+  {% else %}
+    <span class="badge badge-warning">نامعتبر</span>
+    <h1 class="page-title">این دعوت منقضی یا نامعتبر است</h1>
+  {% endif %}
+</section>
+{% endblock content %}

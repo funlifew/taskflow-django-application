@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<body style="font-family: Tahoma, sans-serif; line-height: 1.8;">
+  <h2>دعوت به TaskFlow</h2>
+
+  <p>
+    {{ invited_by.get_full_name|default:invited_by.username }}
+    شما را به Workspace زیر دعوت کرده است:
+  </p>
+
+  <h3>{{ workspace.name }}</h3>
+
+  <p>
+    نقش پیشنهادی:
+    <strong>{{ invitation.get_role_display }}</strong>
+  </p>
+
+  <p>
+    <a
+      href="{{ invitation_url }}"
+      style="display:inline-block;padding:12px 18px;background:#635bff;color:#fff;text-decoration:none;border-radius:12px;"
+    >
+      مشاهده دعوت
+    </a>
+  </p>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<div class="profile-avatar-sm" aria-hidden="true">
+  {% if user.avatar %}
+    <img src="{{ user.avatar.url }}" alt="">
+  {% else %}
+    <span class="avatar-initials">
+      {{ user.first_name|default:user.username|slice:":1"|upper }}
+    </span>
+  {% endif %}
+</div>

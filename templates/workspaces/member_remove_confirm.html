@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | حذف عضو{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-danger eyebrow">حذف دسترسی</span>
+    <h1 class="page-title">حذف عضو</h1>
+  </div>
+</section>
+
+<section class="form-card danger-zone workspace-member-remove-card">
+  <div class="workspace-member-card__identity">
+    {% include "workspaces/includes/_avatar.html" with user=membership.user %}
+    <div><strong>{{ membership.user.get_full_name|default:membership.user.username }}</strong><span>{{ membership.user.email }}</span></div>
+  </div>
+
+  <p class="page-subtitle">این کاربر دیگر به «{{ membership.workspace.name }}» دسترسی نخواهد داشت.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button class="btn btn-danger" type="submit">حذف از Workspace</button>
+      <a class="btn btn-ghost" href="{% url 'workspaces:members' membership.workspace.pk %}">انصراف</a>
+    </div>
+  </form>
+</section>
+{% endblock content %}

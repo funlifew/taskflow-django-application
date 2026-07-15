@@ -1,50 +1,37 @@
 {% extends "base.html" %}
 
 {% block data_page %}workspaces{% endblock data_page %}
-{% block title %}TaskFlow | ویرایش Workspace{% endblock title %}
+{% block title %}TaskFlow | ویرایش {{ workspace.name }}{% endblock title %}
 
 {% block content %}
 <section class="page-head">
   <div>
-    <span class="badge badge-primary eyebrow">Workspace</span>
-
-    <h1 class="page-title">ویرایش Workspace</h1>
-
-    <p class="page-subtitle">
-      اطلاعات «{{ workspace.name }}» را تغییر بده.
-    </p>
+    <span class="badge badge-primary eyebrow">تنظیمات Workspace</span>
+    <h1 class="page-title">ویرایش {{ workspace.name }}</h1>
+    <p class="page-subtitle">نام و توضیحات فضای کاری را به‌روزرسانی کن.</p>
   </div>
 </section>
 
-<section class="form-card">
-  <h2 style="margin: 0 0 14px">
-    ویرایش اطلاعات
-  </h2>
+<div class="workspace-form-layout">
+  <section class="form-card">
+    <form class="form-grid" method="post" novalidate>
+      {% csrf_token %}
+      {% include "workspaces/includes/_form.html" %}
 
-  <form
-    class="form-grid"
-    method="post"
-    novalidate
-  >
-    {% csrf_token %}
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">ذخیره تغییرات</button>
+        <a class="btn btn-ghost" href="{% url 'workspaces:detail' workspace.pk %}">انصراف</a>
+      </div>
+    </form>
+  </section>
 
-    {% include "workspaces/includes/_form.html" %}
-
-    <div class="form-actions">
-      <button
-        class="btn btn-primary"
-        type="submit"
-      >
-        ذخیره تغییرات
-      </button>
-
-      <a
-        class="btn btn-ghost"
-        href="{% url 'workspaces:detail' workspace.pk %}"
-      >
-        انصراف
-      </a>
+  <aside class="workspace-form-note panel">
+    <span class="badge">اطلاعات فعلی</span>
+    <div class="info-list">
+      <div class="info-row"><span>مالک</span><strong>{{ workspace.owner.username }}</strong></div>
+      <div class="info-row"><span>اعضا</span><strong>{{ workspace.memberships.count }}</strong></div>
+      <div class="info-row"><span>ساخته‌شده</span><strong>{{ workspace.created_at|date:"Y/m/d" }}</strong></div>
     </div>
-  </form>
-</section>
+  </aside>
+</div>
 {% endblock content %}

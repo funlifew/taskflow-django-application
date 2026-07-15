@@ -1,0 +1,9 @@
+{% if role == "owner" %}
+  <span class="badge badge-primary">مالک</span>
+{% elif role == "admin" %}
+  <span class="badge badge-info">مدیر</span>
+{% elif role == "viewer" %}
+  <span class="badge">مشاهده‌گر</span>
+{% else %}
+  <span class="badge badge-success">عضو</span>
+{% endif %}

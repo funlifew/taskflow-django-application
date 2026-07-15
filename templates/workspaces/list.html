@@ -1,120 +1,210 @@
 {% extends "base.html" %}
 
 {% block data_page %}workspaces{% endblock data_page %}
-{% block title %}TaskFlow | ورک‌اسپیس‌ها{% endblock title %}
+{% block title %}TaskFlow | Workspaceها{% endblock title %}
 
 {% block content %}
-<section class="page-head">
-  <div>
-    <span class="badge badge-primary eyebrow">TaskFlow</span>
+<section class="workspace-hero">
+  <div class="workspace-hero__content">
+    <div>
+      <span class="badge badge-primary eyebrow">فضاهای کاری من</span>
+      <h1 class="page-title">Workspaceها</h1>
+      <p class="page-subtitle">
+        پروژه‌های شخصی و تیمی خودت را از یک نقطه مدیریت کن.
+      </p>
+    </div>
 
-    <h1 class="page-title">ورک‌اسپیس‌ها</h1>
-
-    <p class="page-subtitle">
-      فضای کاری پروژه‌ها و تیم‌هایت را مدیریت کن.
-    </p>
+    <a class="btn btn-primary" href="{% url 'workspaces:create' %}">
+      <span aria-hidden="true">＋</span>
+      ساخت Workspace
+    </a>
   </div>
 
-  <div class="actions">
-    <a
-      class="btn btn-primary"
-      href="{% url 'workspaces:create' %}"
-    >
-      + ساخت Workspace
-    </a>
+  <div class="workspace-summary" aria-label="خلاصه Workspaceها">
+    <article class="workspace-summary__item">
+      <span class="workspace-summary__label">در دسترس</span>
+      <strong class="workspace-summary__value">{{ total_workspaces|default:page_obj.paginator.count|default:0 }}</strong>
+    </article>
+
+    <article class="workspace-summary__item">
+      <span class="workspace-summary__label">مالک آن‌ها هستی</span>
+      <strong class="workspace-summary__value">{{ owned_workspaces_count|default:0 }}</strong>
+    </article>
+
+    <article class="workspace-summary__item">
+      <span class="workspace-summary__label">به‌عنوان عضو</span>
+      <strong class="workspace-summary__value">{{ joined_workspaces_count|default:0 }}</strong>
+    </article>
+
+    <article class="workspace-summary__item">
+      <span class="workspace-summary__label">دعوت در انتظار</span>
+      <strong class="workspace-summary__value">{{ pending_invitations_count|default:0 }}</strong>
+    </article>
   </div>
 </section>
 
-{% if workspaces %}
-  <div class="grid-3">
-    {% for workspace in workspaces %}
-      <a
-        class="card motion-card"
-        href="{% url 'workspaces:detail' workspace.pk %}"
-      >
-        <div class="stack">
-          <div class="meta-row">
-            {% if workspace.owner_id == request.user.id %}
-              <span class="badge badge-primary">مالک</span>
-            {% else %}
-              <span class="badge badge-success">عضو</span>
-            {% endif %}
+{% if pending_invitations %}
+<section class="workspace-invitations panel">
+  <div class="spread workspace-section-head">
+    <div>
+      <h2 class="card-title">دعوت‌های در انتظار</h2>
+      <p class="card-text">دعوت‌هایی که برای ایمیل حساب تو ارسال شده‌اند.</p>
+    </div>
+    <span class="badge badge-warning">{{ pending_invitations|length }} دعوت</span>
+  </div>
 
-            {% if workspace.is_archived %}
-              <span class="badge badge-warning">آرشیو شده</span>
-            {% else %}
-              <span class="badge badge-success">فعال</span>
-            {% endif %}
-          </div>
-
-          <h2 class="card-title">
-            {{ workspace.name }}
-          </h2>
-
-          <p class="card-text">
-            {% if workspace.description %}
-              {{ workspace.description|truncatechars:120 }}
-            {% else %}
-              توضیحی برای این Workspace ثبت نشده است.
-            {% endif %}
-          </p>
-        </div>
-
-        <div class="card-footer">
-          <span class="muted">
-            {{ workspace.memberships.count }} عضو
+  <div class="workspace-invitation-strip">
+    {% for invitation in pending_invitations %}
+      <a class="workspace-invitation-card" href="{% url 'workspaces:invitation_detail' invitation.token %}">
+        <div class="workspace-invitation-card__icon">✉</div>
+        <div class="workspace-invitation-card__body">
+          <strong>{{ invitation.workspace.name }}</strong>
+          <span>
+            دعوت از طرف
+            {{ invitation.invited_by.get_full_name|default:invitation.invited_by.username }}
           </span>
-
-          <span>باز کردن ←</span>
         </div>
+        <span class="badge badge-warning">{{ invitation.get_role_display }}</span>
       </a>
     {% endfor %}
   </div>
-
-  {% if is_paginated %}
-    <div class="actions" style="margin-top: 22px">
-      {% if page_obj.has_previous %}
-        <a
-          class="btn"
-          href="?page={{ page_obj.previous_page_number }}"
-        >
-          صفحه قبل
-        </a>
-      {% endif %}
-
-      <span class="badge">
-        صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
-      </span>
-
-      {% if page_obj.has_next %}
-        <a
-          class="btn"
-          href="?page={{ page_obj.next_page_number }}"
-        >
-          صفحه بعد
-        </a>
-      {% endif %}
-    </div>
-  {% endif %}
-
-{% else %}
-  <section class="empty-state">
-    <div class="empty-icon">🧩</div>
-
-    <h2>هنوز Workspace نداری</h2>
-
-    <p class="page-subtitle">
-      اولین فضای کاری خودت را برای مدیریت پروژه‌ها بساز.
-    </p>
-
-    <div class="actions">
-      <a
-        class="btn btn-primary"
-        href="{% url 'workspaces:create' %}"
-      >
-        ساخت اولین Workspace
-      </a>
-    </div>
-  </section>
+</section>
 {% endif %}
+
+<section class="workspace-toolbar panel" aria-label="جست‌وجو و فیلتر Workspaceها">
+  <form class="workspace-toolbar__form" method="get">
+    <div class="workspace-search">
+      <span class="workspace-search__icon" aria-hidden="true">⌕</span>
+      <input
+        class="input workspace-search__input"
+        type="search"
+        name="q"
+        value="{{ request.GET.q }}"
+        placeholder="جست‌وجو در نام، توضیحات یا مالک..."
+        aria-label="جست‌وجوی Workspace"
+      >
+    </div>
+
+    <select class="select workspace-role-filter" name="role" aria-label="فیلتر نقش">
+      <option value="" {% if not request.GET.role %}selected{% endif %}>همه نقش‌ها</option>
+      <option value="owner" {% if request.GET.role == 'owner' %}selected{% endif %}>مالک</option>
+      <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>مدیر</option>
+      <option value="member" {% if request.GET.role == 'member' %}selected{% endif %}>عضو</option>
+      <option value="viewer" {% if request.GET.role == 'viewer' %}selected{% endif %}>مشاهده‌گر</option>
+    </select>
+
+    <button class="btn btn-primary" type="submit">اعمال</button>
+
+    {% if request.GET.q or request.GET.role %}
+      <a class="btn btn-ghost" href="{% url 'workspaces:list' %}">پاک‌کردن</a>
+    {% endif %}
+  </form>
+</section>
+
+<section class="workspace-list-section">
+  <div class="spread workspace-section-head">
+    <div>
+      <h2 class="card-title">Workspaceهای قابل دسترسی</h2>
+      <p class="card-text">Workspaceهایی که مالک یا عضو آن‌ها هستی.</p>
+    </div>
+
+    {% if workspaces %}
+      <span class="badge">{{ page_obj.paginator.count|default:workspaces|length }} مورد</span>
+    {% endif %}
+  </div>
+
+  {% if workspaces %}
+    <div class="workspace-grid">
+      {% for workspace in workspaces %}
+        <article class="workspace-card motion-card">
+          <a class="workspace-card__main" href="{% url 'workspaces:detail' workspace.pk %}">
+            <div class="workspace-card__top">
+              <div class="workspace-card__mark" aria-hidden="true">
+                {{ workspace.name|slice:":1"|upper }}
+              </div>
+
+              <div class="workspace-card__badges">
+                {% if workspace.owner_id == request.user.id %}
+                  {% include "workspaces/includes/_role_badge.html" with role="owner" %}
+                {% elif workspace.current_user_memberships %}
+                  {% include "workspaces/includes/_role_badge.html" with role=workspace.current_user_memberships.0.role %}
+                {% else %}
+                  <span class="badge">عضو</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="workspace-card__content">
+              <h3>{{ workspace.name }}</h3>
+              <p>
+                {% if workspace.description %}
+                  {{ workspace.description|truncatechars:125 }}
+                {% else %}
+                  برای این Workspace هنوز توضیحی ثبت نشده است.
+                {% endif %}
+              </p>
+            </div>
+
+            <div class="workspace-card__meta">
+              <span title="تعداد اعضا">👥 {{ workspace.memberships.count }} عضو</span>
+              <span title="آخرین به‌روزرسانی">◷ {{ workspace.updated_at|timesince }} پیش</span>
+            </div>
+          </a>
+
+          <footer class="workspace-card__footer">
+            <div class="workspace-owner-inline">
+              {% include "workspaces/includes/_avatar.html" with user=workspace.owner %}
+              <div>
+                <span class="muted">مالک</span>
+                <strong>{{ workspace.owner.get_full_name|default:workspace.owner.username }}</strong>
+              </div>
+            </div>
+
+            <div class="inline workspace-card__actions">
+              <a class="btn btn-soft" href="{% url 'workspaces:detail' workspace.pk %}">باز کردن</a>
+
+              {% if workspace.owner_id == request.user.id %}
+                <a class="icon-btn" href="{% url 'workspaces:update' workspace.pk %}" aria-label="ویرایش {{ workspace.name }}">✎</a>
+              {% endif %}
+            </div>
+          </footer>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+      <nav class="workspace-pagination" aria-label="صفحه‌بندی">
+        {% if page_obj.has_previous %}
+          <a class="btn" href="?q={{ request.GET.q|urlencode }}&role={{ request.GET.role|urlencode }}&page={{ page_obj.previous_page_number }}">صفحه قبل</a>
+        {% else %}
+          <span></span>
+        {% endif %}
+
+        <span class="badge">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+          <a class="btn" href="?q={{ request.GET.q|urlencode }}&role={{ request.GET.role|urlencode }}&page={{ page_obj.next_page_number }}">صفحه بعد</a>
+        {% else %}
+          <span></span>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <section class="empty-state workspace-empty-state">
+      <div class="empty-icon">🧩</div>
+
+      {% if request.GET.q or request.GET.role %}
+        <h2>نتیجه‌ای پیدا نشد</h2>
+        <p class="page-subtitle">عبارت جست‌وجو یا فیلتر نقش را تغییر بده.</p>
+        <a class="btn btn-soft" href="{% url 'workspaces:list' %}">نمایش همه</a>
+      {% else %}
+        <h2>هنوز Workspace نداری</h2>
+        <p class="page-subtitle">
+          اولین فضای کاری خودت را بساز و بعد اعضا و بردها را به آن اضافه کن.
+        </p>
+        <a class="btn btn-primary" href="{% url 'workspaces:create' %}">ساخت اولین Workspace</a>
+      {% endif %}
+    </section>
+  {% endif %}
+</section>
 {% endblock content %}

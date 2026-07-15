@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block data_page %}workspaces{% endblock data_page %}
+{% block title %}TaskFlow | تغییر نقش عضو{% endblock title %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="badge badge-primary eyebrow">مدیریت دسترسی</span>
+    <h1 class="page-title">تغییر نقش عضو</h1>
+    <p class="page-subtitle">سطح دسترسی {{ membership.user.get_full_name|default:membership.user.username }} را تغییر بده.</p>
+  </div>
+</section>
+
+<section class="form-card workspace-member-edit-card">
+  <div class="workspace-member-card__identity">
+    {% include "workspaces/includes/_avatar.html" with user=membership.user %}
+    <div><strong>{{ membership.user.get_full_name|default:membership.user.username }}</strong><span>{{ membership.user.email }}</span></div>
+  </div>
+
+  <form class="form-grid" method="post" novalidate>
+    {% csrf_token %}
+    <div class="field">
+      <div class="label-row"><label for="{{ form.role.id_for_label }}">نقش جدید</label></div>
+      {{ form.role }}
+      {% for error in form.role.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">ذخیره نقش</button>
+      <a class="btn btn-ghost" href="{% url 'workspaces:members' membership.workspace.pk %}">انصراف</a>
+    </div>
+  </form>
+</section>
+{% endblock content %}
