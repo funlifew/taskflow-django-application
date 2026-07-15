@@ -1,65 +1,190 @@
 {% extends "base.html" %}
 {% block data_page %}dashboard{% endblock data_page %}
+{% block title %}TaskFlow | داشبورد{% endblock title %}
 
 {% block content %}
-<section class="card dashboard-profile-card motion-card" style="margin-bottom:18px">
-    <div class="dashboard-profile-row">
-        <a class="profile-avatar-lg" href="accounts/profile_detail.html" aria-label="مشاهده پروفایل">
-            {% if request.user.avatar %}
-            <img
-                src="{{ request.user.avatar.url }}"
-                alt="{{ request.user.username }}"
-            >
-            {% else %}
-            <span class="avatar-initials">
-                {{ request.user.first_name|default:request.user.username|slice:":1" }}
-            </span>
-            {% endif %}
+<section class="dashboard-welcome glass-panel animated-border" data-reveal>
+  <div class="dashboard-welcome__identity">
+    <a class="profile-avatar-lg profile-avatar-lg--interactive" href="{% url 'dashboard:profile' %}" aria-label="مشاهده پروفایل">
+      {% if request.user.avatar %}
+        <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
+      {% else %}
+        <span class="avatar-initials">
+          {{ request.user.first_name|default:request.user.username|slice:":1" }}
+        </span>
+      {% endif %}
+      <span class="profile-avatar-lg__status" title="حساب فعال"></span>
+    </a>
+
+    <div class="dashboard-welcome__copy">
+      <span class="badge badge-primary">
+        <svg class="tf-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+        خوش برگشتی
+      </span>
+
+      <h1>
+        {{ request.user.first_name|default:request.user.username }}،
+        آماده‌ای جریان کارت را منظم‌تر کنی؟
+      </h1>
+
+      <p>
+        از اینجا به Workspaceها، اعضا و تنظیمات حسابت دسترسی داری.
+        Board و Task بعد از آماده‌شدن routeهایشان به همین داشبورد متصل می‌شوند.
+      </p>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="{% url 'workspaces:create' %}">
+          <svg class="tf-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+          Workspace جدید
         </a>
-        <div>
-            <span class="badge badge-primary">خوش برگشتی</span>
-            <h1 class="card-title" style="font-size:26px;margin-top:10px">{{ request.user.first_name }}، امروز ۴ تسک مهم داری</h1>
-            <p class="card-text">آواتار اینجا ثابت و تمیز نمایش داده می‌شود و از صفحه پروفایل قابل تغییر است.</p>
-            <div class="actions">
-                <a class="btn btn-primary" href="tasks/create.html">+ تسک جدید</a>
-                <a class="btn" href="accounts/profile_update.html">تغییر آواتار</a>
-            </div>
-        </div>
+
+        <a class="btn btn-soft" href="{% url 'dashboard:profile_update' %}">
+          <svg class="tf-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+          ویرایش پروفایل
+        </a>
+      </div>
     </div>
+  </div>
+
+  <div class="dashboard-welcome__visual" aria-hidden="true" data-dashboard-orbit>
+    <span class="dashboard-orbit dashboard-orbit--one"></span>
+    <span class="dashboard-orbit dashboard-orbit--two"></span>
+    <span class="dashboard-orbit__core">
+      <svg class="tf-icon"><use href="#icon-command"></use></svg>
+    </span>
+    <span class="dashboard-orbit__satellite dashboard-orbit__satellite--one">
+      <svg class="tf-icon"><use href="#icon-workspace"></use></svg>
+    </span>
+    <span class="dashboard-orbit__satellite dashboard-orbit__satellite--two">
+      <svg class="tf-icon"><use href="#icon-users"></use></svg>
+    </span>
+  </div>
 </section>
 
-<section class="page-head">
+<section class="page-head" data-reveal>
+  <div>
+    <span class="badge badge-primary eyebrow">
+      <svg class="tf-icon" aria-hidden="true"><use href="#icon-grid"></use></svg>
+      TaskFlow
+    </span>
+    <h2 class="page-title">داشبورد</h2>
+    <p class="page-subtitle">نمای سریع وضعیت فعلی حساب و Workspaceهای تو.</p>
+  </div>
+
+  <div class="actions">
+    <a class="btn btn-primary" href="{% url 'workspaces:list' %}">
+      <svg class="tf-icon" aria-hidden="true"><use href="#icon-workspace"></use></svg>
+      مشاهده Workspaceها
+    </a>
+  </div>
+</section>
+
+<section class="stat-grid dashboard-stat-grid">
+  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-crown"></use></svg></span>
     <div>
-        <span class="badge badge-primary eyebrow">TaskFlow</span>
-        <h1 class="page-title">داشبورد</h1>
-        <p class="page-subtitle">یک نمای ساده، سریع و موبایل‌فرست از وضعیت پروژه‌هایت.</p>
+      <div class="stat-label">Workspaceهای تحت مالکیت</div>
+      <div class="stat-value">{{ request.user.owned_workspaces.count }}</div>
     </div>
-    <div class="actions"><a class="btn btn-primary" href="tasks/create.html">+ تسک جدید</a><a class="btn" href="workspaces/create.html">+ Workspace</a></div>
+  </article>
+
+  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-users"></use></svg></span>
+    <div>
+      <div class="stat-label">عضویت‌ها</div>
+      <div class="stat-value">{{ request.user.workspace_memberships.count }}</div>
+    </div>
+  </article>
+
+  <article class="stat-card stat-card--icon stat-card--soon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-board"></use></svg></span>
+    <div>
+      <div class="stat-label">بردها</div>
+      <div class="stat-value stat-value--text">به‌زودی</div>
+    </div>
+  </article>
+
+  <article class="stat-card stat-card--icon stat-card--soon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-check-square"></use></svg></span>
+    <div>
+      <div class="stat-label">تسک‌ها</div>
+      <div class="stat-value stat-value--text">به‌زودی</div>
+    </div>
+  </article>
 </section>
 
-<section class="stat-grid">
-    <article class="stat-card motion-card"><div class="stat-label">Workspace</div><div class="stat-value">۳</div></article>
-    <article class="stat-card motion-card"><div class="stat-label">Board</div><div class="stat-value">۷</div></article>
-    <article class="stat-card motion-card"><div class="stat-label">تسک باز</div><div class="stat-value">۲۴</div></article>
-    <article class="stat-card motion-card"><div class="stat-label">دیر شده</div><div class="stat-value">۲</div></article>
-</section>
+<section class="dashboard-grid">
+  <article class="panel dashboard-workspaces" data-reveal>
+    <div class="spread workspace-section-head">
+      <div>
+        <h2 class="card-title">
+          <svg class="tf-icon title-icon" aria-hidden="true"><use href="#icon-workspace"></use></svg>
+          Workspaceهای اخیر
+        </h2>
+        <p class="card-text">فضاهایی که به آن‌ها دسترسی داری.</p>
+      </div>
 
-<section class="stack-lg" style="margin-top:22px">
-    <div class="spread">
-        <h2 style="margin:0">تسک‌های امروز</h2>
-        <a class="btn btn-ghost" href="boards/detail.html">برد اصلی</a>
+      <a class="btn btn-ghost" href="{% url 'workspaces:list' %}">
+        مشاهده همه
+        <svg class="tf-icon" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
+      </a>
     </div>
-    <div class="list">
-        <a class="list-card motion-card" href="tasks/detail.html">
-            <div class="meta-row"><span class="badge badge-danger">High</span><span class="badge badge-warning">امروز</span></div>
-            <strong>رفع مشکل redirect بعد از login</strong>
-            <div class="progress"><span style="width:70%"></span></div>
+
+    <div class="dashboard-workspace-list">
+      {% for workspace in request.user.workspaces.all|slice:":4" %}
+        <a class="dashboard-workspace-item" href="{% url 'workspaces:detail' workspace.pk %}">
+          <span class="dashboard-workspace-item__mark">{{ workspace.name|slice:":1"|upper }}</span>
+          <span class="dashboard-workspace-item__copy">
+            <strong>{{ workspace.name }}</strong>
+            <small>{{ workspace.description|default:"بدون توضیح"|truncatechars:60 }}</small>
+          </span>
+          <svg class="tf-icon" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
         </a>
-        <a class="list-card motion-card" href="tasks/detail.html">
-            <div class="meta-row"><span class="badge badge-primary">Backend</span><span class="badge badge-info">Doing</span></div>
-            <strong>ساخت permission برای Board</strong>
-            <div class="progress"><span style="width:44%"></span></div>
-        </a>
+      {% empty %}
+        <div class="empty-state dashboard-empty-state">
+          <div class="empty-icon">
+            <svg class="tf-icon"><use href="#icon-workspace"></use></svg>
+          </div>
+          <h3>هنوز Workspace نداری</h3>
+          <p class="page-subtitle">اولین فضای کاری خودت را بساز.</p>
+          <a class="btn btn-primary" href="{% url 'workspaces:create' %}">
+            <svg class="tf-icon"><use href="#icon-plus"></use></svg>
+            ساخت Workspace
+          </a>
+        </div>
+      {% endfor %}
     </div>
+  </article>
+
+  <aside class="panel dashboard-roadmap" data-reveal>
+    <div class="dashboard-roadmap__head">
+      <span class="dashboard-roadmap__icon">
+        <svg class="tf-icon"><use href="#icon-orbit"></use></svg>
+      </span>
+      <div>
+        <h2 class="card-title">مرحله‌ی بعدی TaskFlow</h2>
+        <p class="card-text">اتصال Board و Task به هسته‌ی Workspace.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-steps">
+      <div class="roadmap-step roadmap-step--done">
+        <svg class="tf-icon"><use href="#icon-check"></use></svg>
+        <span>Authentication و Profile</span>
+      </div>
+      <div class="roadmap-step roadmap-step--done">
+        <svg class="tf-icon"><use href="#icon-check"></use></svg>
+        <span>Workspace و Membership</span>
+      </div>
+      <div class="roadmap-step roadmap-step--current">
+        <svg class="tf-icon"><use href="#icon-board"></use></svg>
+        <span>Board routes و views</span>
+      </div>
+      <div class="roadmap-step">
+        <svg class="tf-icon"><use href="#icon-check-square"></use></svg>
+        <span>Task workflow</span>
+      </div>
+    </div>
+  </aside>
 </section>
 {% endblock content %}

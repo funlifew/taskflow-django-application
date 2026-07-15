@@ -5,7 +5,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
+  <meta name="color-scheme" content="dark light">
   <title>{% block title %}TaskFlow | Dashboard{% endblock title %}</title>
+
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -15,11 +17,29 @@
 </head>
 <body data-page="{% block data_page %}{% endblock data_page %}">
   {% include 'includes/icon_sprite.html' %}
-  <div class="app-ambient" aria-hidden="true">
-    <span class="app-ambient__orb app-ambient__orb--one"></span>
-    <span class="app-ambient__orb app-ambient__orb--two"></span>
-    <span class="app-ambient__grid"></span>
+
+  <a class="skip-link" href="#main-content">رفتن به محتوای اصلی</a>
+
+  <div class="app-space-scene" aria-hidden="true">
+    <canvas class="app-space-canvas" data-app-space></canvas>
+    <span class="app-nebula app-nebula--violet"></span>
+    <span class="app-nebula app-nebula--cyan"></span>
+    <span class="app-nebula app-nebula--pink"></span>
+    <span class="app-space-grid"></span>
+
+    <span class="app-orbit app-orbit--one">
+      <i class="app-orbit__planet"></i>
+    </span>
+    <span class="app-orbit app-orbit--two">
+      <i class="app-orbit__planet"></i>
+    </span>
+
+    <span class="app-wire-cube app-wire-cube--one">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </span>
   </div>
+
+  <div class="pointer-glow" data-pointer-glow aria-hidden="true"></div>
 
   {% include 'includes/messages.html' %}
 
@@ -28,7 +48,7 @@
     {% include 'includes/mobile_drawer.html' %}
     {% include 'includes/header.html' %}
 
-    <main class="page-content" id="main-content">
+    <main class="page-content" id="main-content" data-reveal-scope>
       {% block content %}{% endblock content %}
     </main>
 
@@ -36,6 +56,7 @@
   </div>
 
   <script src="{% static 'js/messages.js' %}"></script>
+  <script src="{% static 'js/space-scene.js' %}"></script>
   <script src="{% static 'js/app.js' %}"></script>
   {% block extra_js %}{% endblock extra_js %}
 </body>

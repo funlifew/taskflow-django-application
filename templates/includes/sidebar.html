@@ -1,16 +1,23 @@
 <aside class="sidebar glass-panel" aria-label="منوی اصلی">
   <div class="sidebar__head">
     <a class="brand" href="{% url 'dashboard:dashboard' %}" aria-label="TaskFlow">
-      <span class="brand-mark" aria-hidden="true"><svg class="tf-icon"><use href="#icon-logo"></use></svg></span>
-      <span class="brand-copy"><strong>TaskFlow</strong><small>Workspace OS</small></span>
+      <span class="brand-mark" aria-hidden="true">
+        <svg class="tf-icon"><use href="#icon-logo"></use></svg>
+      </span>
+      <span class="brand-copy">
+        <strong>TaskFlow</strong>
+        <small>Workspace OS</small>
+      </span>
     </a>
 
     <button class="icon-btn" type="button" data-theme-toggle aria-label="تغییر تم">
-      <svg class="tf-icon" aria-hidden="true"><use data-theme-use href="#icon-moon"></use></svg>
+      <svg class="tf-icon" aria-hidden="true">
+        <use data-theme-use href="#icon-moon"></use>
+      </svg>
     </button>
   </div>
 
-  <nav class="nav-list">
+  <nav class="nav-list" aria-label="بخش‌های TaskFlow">
     <a class="nav-link" data-nav="dashboard" href="{% url 'dashboard:dashboard' %}">
       <svg class="tf-icon" aria-hidden="true"><use href="#icon-home"></use></svg>
       <span>داشبورد</span>
@@ -21,15 +28,17 @@
       <span>ورک‌اسپیس‌ها</span>
     </a>
 
-    <a class="nav-link" data-nav="boards" href="#">
+    <span class="nav-link nav-link--disabled" data-nav="boards" aria-disabled="true" title="این بخش هنوز route فعال ندارد">
       <svg class="tf-icon" aria-hidden="true"><use href="#icon-board"></use></svg>
       <span>بردها</span>
-    </a>
+      <small class="nav-soon">به‌زودی</small>
+    </span>
 
-    <a class="nav-link" data-nav="tasks" href="#">
+    <span class="nav-link nav-link--disabled" data-nav="tasks" aria-disabled="true" title="این بخش هنوز route فعال ندارد">
       <svg class="tf-icon" aria-hidden="true"><use href="#icon-check-square"></use></svg>
       <span>تسک‌ها</span>
-    </a>
+      <small class="nav-soon">به‌زودی</small>
+    </span>
 
     <a class="nav-link" data-nav="profile" href="{% url 'dashboard:profile' %}">
       <svg class="tf-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
@@ -38,7 +47,7 @@
   </nav>
 
   <div class="sidebar__footer">
-    <div class="sidebar-user">
+    <a class="sidebar-user" href="{% url 'dashboard:profile' %}" aria-label="مشاهده پروفایل">
       <span class="profile-avatar-sm">
         {% if request.user.avatar %}
           <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
@@ -50,7 +59,8 @@
         <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
         <small>@{{ request.user.username }}</small>
       </span>
-    </div>
+      <svg class="tf-icon sidebar-user__arrow" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg>
+    </a>
 
     <form class="nav-logout-form" method="post" action="{% url 'accounts:logout' %}">
       {% csrf_token %}

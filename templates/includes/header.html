@@ -4,16 +4,44 @@
       <button class="icon-btn menu-btn" type="button" data-drawer-open aria-label="باز کردن منو">
         <svg class="tf-icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
       </button>
-      <div>
-        <strong>{% block page_heading %}داشبورد{% endblock page_heading %}</strong>
-        <div class="muted topbar__subtitle">نمای یکپارچه‌ی پروژه‌ها و کارها</div>
+
+      <div class="topbar__copy">
+        <strong>
+          {% if request.resolver_match.namespace == 'workspaces' %}
+            Workspaceها
+          {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
+            پروفایل
+          {% elif request.resolver_match.url_name == 'change_password' %}
+            امنیت حساب
+          {% else %}
+            داشبورد
+          {% endif %}
+        </strong>
+        <div class="muted topbar__subtitle">
+          {% if request.resolver_match.namespace == 'workspaces' %}
+            مدیریت فضاهای کاری، اعضا و دسترسی‌ها
+          {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
+            تنظیم اطلاعات و ظاهر حساب کاربری
+          {% elif request.resolver_match.url_name == 'change_password' %}
+            مدیریت رمز عبور و امنیت ورود
+          {% else %}
+            نمای یکپارچه‌ی پروژه‌ها و کارها
+          {% endif %}
+        </div>
       </div>
     </div>
 
     <div class="topbar__actions">
+      <a class="icon-btn topbar__workspace-shortcut" href="{% url 'workspaces:create' %}" aria-label="ساخت Workspace">
+        <svg class="tf-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+      </a>
+
       <button class="icon-btn" type="button" data-theme-toggle aria-label="تغییر تم">
-        <svg class="tf-icon" aria-hidden="true"><use data-theme-use href="#icon-moon"></use></svg>
+        <svg class="tf-icon" aria-hidden="true">
+          <use data-theme-use href="#icon-moon"></use>
+        </svg>
       </button>
+
       <a class="profile-avatar-sm" href="{% url 'dashboard:profile' %}" aria-label="پروفایل">
         {% if request.user.avatar %}
           <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">

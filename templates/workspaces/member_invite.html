@@ -1,52 +1,7 @@
 {% extends "base.html" %}
-
 {% block data_page %}workspaces{% endblock data_page %}
 {% block title %}TaskFlow | دعوت عضو{% endblock title %}
-
 {% block content %}
-<section class="page-head">
-  <div>
-    <span class="badge badge-primary eyebrow">دعوت به Workspace</span>
-    <h1 class="page-title">دعوت عضو جدید</h1>
-    <p class="page-subtitle">یک دعوت امن برای پیوستن به «{{ workspace.name }}» ارسال کن.</p>
-  </div>
-</section>
-
-<div class="workspace-form-layout">
-  <section class="form-card">
-    <form class="form-grid" method="post" novalidate>
-      {% csrf_token %}
-
-      {% if form.non_field_errors %}
-        <div class="form-errors">{% for error in form.non_field_errors %}<p class="error-text">{{ error }}</p>{% endfor %}</div>
-      {% endif %}
-
-      <div class="field">
-        <div class="label-row"><label for="{{ form.email.id_for_label }}">ایمیل کاربر</label><span class="help">ایمیل حساب TaskFlow</span></div>
-        {{ form.email }}
-        {% for error in form.email.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
-      </div>
-
-      <div class="field">
-        <div class="label-row"><label for="{{ form.role.id_for_label }}">نقش اولیه</label></div>
-        {{ form.role }}
-        {% for error in form.role.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
-      </div>
-
-      <div class="form-actions">
-        <button class="btn btn-primary" type="submit">ارسال دعوت</button>
-        <a class="btn btn-ghost" href="{% url 'workspaces:members' workspace.pk %}">انصراف</a>
-      </div>
-    </form>
-  </section>
-
-  <aside class="panel workspace-role-guide">
-    <h2 class="card-title">راهنمای نقش‌ها</h2>
-    <div class="info-list">
-      <div class="info-row"><span>Admin</span><strong>مدیریت اعضا و محتوا</strong></div>
-      <div class="info-row"><span>Member</span><strong>ساخت و انجام کارها</strong></div>
-      <div class="info-row"><span>Viewer</span><strong>فقط مشاهده</strong></div>
-    </div>
-  </aside>
-</div>
+<section class="page-head page-head--animated" data-reveal><div><span class="badge badge-primary eyebrow"><svg class="tf-icon"><use href="#icon-user-plus"></use></svg> دعوت به Workspace</span><h1 class="page-title">دعوت عضو جدید</h1><p class="page-subtitle">یک دعوت امن برای پیوستن به «{{ workspace.name }}» ارسال کن.</p></div></section>
+<div class="workspace-form-layout"><section class="form-card animated-border" data-reveal data-tilt-surface><form class="form-grid" method="post" novalidate>{% csrf_token %}{% if form.non_field_errors %}<div class="form-errors">{% for error in form.non_field_errors %}<p class="error-text">{{ error }}</p>{% endfor %}</div>{% endif %}<div class="field"><div class="label-row"><label for="{{ form.email.id_for_label }}">ایمیل کاربر</label><span class="help">ایمیل حساب TaskFlow</span></div><div class="input-with-icon"><svg class="tf-icon"><use href="#icon-mail"></use></svg>{{ form.email }}</div>{% for error in form.email.errors %}<p class="error-text">{{ error }}</p>{% endfor %}</div><div class="field"><div class="label-row"><label for="{{ form.role.id_for_label }}">نقش اولیه</label></div><div class="input-with-icon"><svg class="tf-icon"><use href="#icon-shield-check"></use></svg>{{ form.role }}</div>{% for error in form.role.errors %}<p class="error-text">{{ error }}</p>{% endfor %}</div><div class="form-actions"><button class="btn btn-primary" type="submit"><svg class="tf-icon"><use href="#icon-send"></use></svg><span>ارسال دعوت</span></button><a class="btn btn-ghost" href="{% url 'workspaces:members' workspace.pk %}"><svg class="tf-icon"><use href="#icon-x"></use></svg><span>انصراف</span></a></div></form></section><aside class="panel workspace-role-guide" data-reveal><div class="page-head__icon"><svg class="tf-icon"><use href="#icon-id-card"></use></svg></div><h2 class="card-title">راهنمای نقش‌ها</h2><div class="info-list"><div class="info-row"><span>Admin</span><strong>مدیریت اعضا و محتوا</strong></div><div class="info-row"><span>Member</span><strong>ساخت و انجام کارها</strong></div><div class="info-row"><span>Viewer</span><strong>فقط مشاهده</strong></div></div></aside></div>
 {% endblock content %}

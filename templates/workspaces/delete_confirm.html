@@ -1,32 +1,11 @@
 {% extends "base.html" %}
-
 {% block data_page %}workspaces{% endblock data_page %}
 {% block title %}TaskFlow | حذف {{ workspace.name }}{% endblock title %}
-
 {% block content %}
-<section class="page-head">
-  <div>
-    <span class="badge badge-danger eyebrow">منطقه خطر</span>
-    <h1 class="page-title">حذف Workspace</h1>
-    <p class="page-subtitle">این عملیات قابل بازگشت نیست.</p>
-  </div>
-</section>
-
-<section class="form-card danger-zone workspace-delete-card">
-  <div class="workspace-delete-card__icon">!</div>
-  <div>
-    <h2 class="card-title">«{{ workspace.name }}» حذف شود؟</h2>
-    <p class="card-text">
-      عضویت‌ها، دعوت‌ها و در آینده بردها و تسک‌های وابسته نیز حذف خواهند شد.
-    </p>
-  </div>
-
-  <form method="post">
-    {% csrf_token %}
-    <div class="form-actions">
-      <button class="btn btn-danger" type="submit">بله، حذف Workspace</button>
-      <a class="btn btn-ghost" href="{% url 'workspaces:detail' workspace.pk %}">انصراف</a>
-    </div>
-  </form>
+<section class="page-head" data-reveal><div><span class="badge badge-danger eyebrow"><svg class="tf-icon"><use href="#icon-alert"></use></svg> منطقه خطر</span><h1 class="page-title">حذف Workspace</h1><p class="page-subtitle">این عملیات قابل بازگشت نیست.</p></div></section>
+<section class="form-card danger-zone workspace-delete-card animated-border" data-reveal data-tilt-surface>
+  <div class="workspace-delete-card__icon"><svg class="tf-icon"><use href="#icon-trash"></use></svg></div>
+  <div><h2 class="card-title">«{{ workspace.name }}» حذف شود؟</h2><p class="card-text">عضویت‌ها، دعوت‌ها و داده‌های وابسته نیز حذف خواهند شد.</p></div>
+  <form method="post">{% csrf_token %}<div class="form-actions"><button class="btn btn-danger" type="submit"><svg class="tf-icon"><use href="#icon-trash"></use></svg><span>بله، حذف Workspace</span></button><a class="btn btn-ghost" href="{% url 'workspaces:detail' workspace.pk %}"><svg class="tf-icon"><use href="#icon-x"></use></svg><span>انصراف</span></a></div></form>
 </section>
 {% endblock content %}

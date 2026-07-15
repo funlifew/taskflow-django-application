@@ -1,44 +1,90 @@
 {% extends "base.html" %}
-
-{% block title %}TaskFlow | Profile{% endblock title %}
+{% block title %}TaskFlow | پروفایل{% endblock title %}
 {% block data_page %}profile{% endblock data_page %}
 
 {% block content %}
-<section class="card profile-hero motion-card" style="margin-bottom:18px">
-  <a class="profile-avatar-lg" href="{% url "dashboard:profile_update" %}" title="ویرایش آواتار">
-    <span class="avatar-initials" style="font-size:44px"><img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}" /></span>
-  </a>
-  <div>
-    <span class="badge badge-primary">پروفایل کاربر</span>
-    <h1 class="page-title" style="margin-top:8px">{{ request.user.get_full_name }}</h1>
-    {% if request.user.bio %}
-      <p class="page-subtitle">
-        {{ request.user.bio }}
-      </p>
+<section class="profile-hero glass-panel animated-border" data-reveal>
+  <a class="profile-avatar-lg profile-avatar-lg--interactive" href="{% url 'dashboard:profile_update' %}" title="ویرایش آواتار">
+    {% if request.user.avatar %}
+      <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
     {% else %}
-      <p class="page-subtitle muted">
-        کاربر بیوگرافی ندارد.
-      </p>
+      <span class="avatar-initials">
+        {{ request.user.first_name|default:request.user.username|slice:":1" }}
+      </span>
     {% endif %}
+    <span class="profile-avatar-lg__edit">
+      <svg class="tf-icon"><use href="#icon-edit"></use></svg>
+    </span>
+  </a>
+
+  <div class="profile-hero__copy">
+    <span class="badge badge-primary">
+      <svg class="tf-icon"><use href="#icon-id-card"></use></svg>
+      پروفایل کاربر
+    </span>
+    <h1 class="page-title">{{ request.user.get_full_name|default:request.user.username }}</h1>
+
+    {% if request.user.bio %}
+      <p class="page-subtitle">{{ request.user.bio }}</p>
+    {% else %}
+      <p class="page-subtitle muted">هنوز بیوگرافی ثبت نکرده‌ای.</p>
+    {% endif %}
+
     <div class="actions">
-      <a class="btn btn-primary" href="{% url "dashboard:profile_update" %}">ویرایش پروفایل و آواتار</a>
-      <a class="btn" href="{% url "accounts:change_password" %}">تغییر رمز</a>
+      <a class="btn btn-primary" href="{% url 'dashboard:profile_update' %}">
+        <svg class="tf-icon"><use href="#icon-edit"></use></svg>
+        ویرایش پروفایل
+      </a>
+      <a class="btn btn-soft" href="{% url 'accounts:change_password' %}">
+        <svg class="tf-icon"><use href="#icon-key"></use></svg>
+        تغییر رمز
+      </a>
     </div>
   </div>
 </section>
 
-<section class="detail-layout">
-  <div class="panel stack">
-    <div class="spread"><span class="badge badge-primary">کاربر</span><span class="badge badge-success">فعال</span></div>
-    <div class="info-row"><span class="muted">نام کاربری</span><strong>{{ request.user.username }}</strong></div>
-    <div class="info-row"><span class="muted">ایمیل</span><strong>{{ request.user.email }}</strong></div>
-    <div class="info-row"><span class="muted">تاریخ عضویت</span><strong>{{ request.user.date_joined.year }}</strong></div>
+<section class="detail-layout profile-detail-layout">
+  <div class="panel stack" data-reveal>
+    <div class="spread">
+      <h2 class="card-title">
+        <svg class="tf-icon title-icon"><use href="#icon-user"></use></svg>
+        اطلاعات حساب
+      </h2>
+      <span class="badge badge-success">
+        <svg class="tf-icon"><use href="#icon-check"></use></svg>
+        فعال
+      </span>
+    </div>
+
+    <div class="info-row">
+      <span class="muted"><svg class="tf-icon"><use href="#icon-user"></use></svg> نام کاربری</span>
+      <strong>{{ request.user.username }}</strong>
+    </div>
+    <div class="info-row">
+      <span class="muted"><svg class="tf-icon"><use href="#icon-mail"></use></svg> ایمیل</span>
+      <strong>{{ request.user.email }}</strong>
+    </div>
+    <div class="info-row">
+      <span class="muted"><svg class="tf-icon"><use href="#icon-calendar"></use></svg> تاریخ عضویت</span>
+      <strong>{{ request.user.date_joined|date:"Y/m/d" }}</strong>
+    </div>
   </div>
-  <aside class="panel stack">
-    <h2 style="margin:0">آمار</h2>
+
+  <aside class="panel stack" data-reveal>
+    <h2 class="card-title">
+      <svg class="tf-icon title-icon"><use href="#icon-chart"></use></svg>
+      خلاصه فعالیت
+    </h2>
+
     <div class="stat-grid">
-      <article class="stat-card"><div class="stat-label">تسک</div><div class="stat-value">۲۴</div></article>
-      <article class="stat-card"><div class="stat-label">برد</div><div class="stat-value">۷</div></article>
+      <article class="stat-card">
+        <div class="stat-label">Workspace مالکیت‌شده</div>
+        <div class="stat-value">{{ request.user.owned_workspaces.count }}</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">عضویت‌ها</div>
+        <div class="stat-value">{{ request.user.workspace_memberships.count }}</div>
+      </article>
     </div>
   </aside>
 </section>

@@ -1,7 +1,28 @@
-<nav class="bottom-nav">
-    <a data-nav="dashboard" href="dashboard.html" aria-label="داشبورد">🏠</a>
-    <a data-nav="workspaces" href="workspaces/list.html" aria-label="ورک‌اسپیس">🧩</a>
-    <a data-nav="boards" href="boards/list.html" aria-label="بردها">📌</a>
-    <a data-nav="tasks" href="tasks/detail.html" aria-label="تسک‌ها">✅</a>
-    <a data-nav="profile" href="accounts/profile_detail.html" aria-label="پروفایل">👤</a>
+<nav class="mobile-bottom-nav glass-panel" aria-label="ناوبری سریع موبایل">
+  <a class="mobile-bottom-nav__item" data-nav="dashboard" href="{% url 'dashboard:dashboard' %}">
+    <svg class="tf-icon" aria-hidden="true"><use href="#icon-home"></use></svg>
+    <span>خانه</span>
+  </a>
+
+  <a class="mobile-bottom-nav__item" data-nav="workspaces" href="{% url 'workspaces:list' %}">
+    <svg class="tf-icon" aria-hidden="true"><use href="#icon-workspace"></use></svg>
+    <span>فضاها</span>
+  </a>
+
+  <a class="mobile-bottom-nav__item mobile-bottom-nav__item--create" href="{% url 'workspaces:create' %}" aria-label="ساخت Workspace">
+    <span class="mobile-bottom-nav__create-icon">
+      <svg class="tf-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+    </span>
+    <span>ساخت</span>
+  </a>
+
+  <a class="mobile-bottom-nav__item" data-nav="profile" href="{% url 'dashboard:profile' %}">
+    <svg class="tf-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+    <span>پروفایل</span>
+  </a>
+
+  <button class="mobile-bottom-nav__item" type="button" data-drawer-open aria-label="باز کردن منوی بیشتر">
+    <svg class="tf-icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+    <span>بیشتر</span>
+  </button>
 </nav>

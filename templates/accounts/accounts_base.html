@@ -4,9 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#080b18">
+  <meta name="theme-color" content="#070916">
   <meta name="color-scheme" content="dark light">
   <title>{% block title %}TaskFlow{% endblock title %}</title>
+
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css">
   <link rel="stylesheet" href="{% static 'css/messages.css' %}">
@@ -15,59 +16,120 @@
 <body class="auth-page" data-page="auth" data-auth-view="{% block auth_view %}default{% endblock auth_view %}">
   {% include 'includes/icon_sprite.html' %}
 
+  <a class="skip-link" href="#main-content">رفتن به فرم</a>
+
   <div class="auth-scene" aria-hidden="true">
     <canvas class="auth-space-canvas" data-auth-space></canvas>
-    <div class="auth-aurora auth-aurora--one"></div>
-    <div class="auth-aurora auth-aurora--two"></div>
+
+    <div class="auth-nebula auth-nebula--one"></div>
+    <div class="auth-nebula auth-nebula--two"></div>
+    <div class="auth-nebula auth-nebula--three"></div>
+
+    <div class="auth-orbit-system" data-depth="0.7">
+      <span class="auth-orbit-ring auth-orbit-ring--one"></span>
+      <span class="auth-orbit-ring auth-orbit-ring--two"></span>
+      <span class="auth-orbit-ring auth-orbit-ring--three"></span>
+      <span class="auth-planet">
+        <i class="auth-planet__shine"></i>
+      </span>
+      <span class="auth-moon auth-moon--one"></span>
+      <span class="auth-moon auth-moon--two"></span>
+    </div>
+
+    <div class="auth-polyhedron auth-polyhedron--one" data-depth="1.15">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+
+    <div class="auth-polyhedron auth-polyhedron--two" data-depth="0.85">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+
     <div class="auth-grid-plane"></div>
+    <div class="auth-scanline"></div>
     <div class="auth-noise"></div>
   </div>
+
+  <div class="auth-cursor-light" data-auth-cursor-light aria-hidden="true"></div>
 
   {% include 'includes/messages.html' %}
 
   <header class="auth-topbar">
     <a class="auth-brand" href="{% url 'landing' %}" aria-label="بازگشت به صفحه اصلی TaskFlow">
-      <span class="auth-brand__mark" aria-hidden="true"><svg class="tf-icon"><use href="#icon-logo"></use></svg></span>
-      <span><strong>TaskFlow</strong><small>Workspace OS</small></span>
+      <span class="auth-brand__mark" aria-hidden="true">
+        <svg class="tf-icon"><use href="#icon-logo"></use></svg>
+      </span>
+      <span>
+        <strong>TaskFlow</strong>
+        <small>Workspace OS</small>
+      </span>
     </a>
+
     <button class="auth-theme-toggle" type="button" data-theme-toggle aria-label="تغییر تم">
-      <svg class="tf-icon" aria-hidden="true"><use data-theme-use href="#icon-sun"></use></svg>
+      <svg class="tf-icon" aria-hidden="true">
+        <use data-theme-use href="#icon-sun"></use>
+      </svg>
     </button>
   </header>
 
   <main class="auth-shell" id="main-content">
     <section class="auth-visual" aria-label="معرفی TaskFlow">
-      <div class="auth-visual__badge">
+      <div class="auth-visual__badge" data-reveal-auth>
         <svg class="tf-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
         <span>تمرکز بیشتر، آشفتگی کمتر</span>
       </div>
-      <div class="auth-visual__copy">
-        <h1>کارهایت را از دل<br><span>یک فضای زنده</span> مدیریت کن.</h1>
-        <p>پروژه، تیم، برد و تسک‌ها در یک تجربه‌ی سریع، شفاف و کاملاً واکنش‌گرا.</p>
+
+      <div class="auth-visual__copy" data-reveal-auth>
+        <h1>
+          کارهایت را از دل<br>
+          <span>یک فضای زنده</span>
+          مدیریت کن.
+        </h1>
+        <p>
+          پروژه، تیم، برد و تسک‌ها در یک تجربه‌ی سریع، شفاف،
+          سه‌بعدی و کاملاً واکنش‌گرا.
+        </p>
       </div>
+
       <div class="auth-feature-cloud" aria-hidden="true">
         <div class="auth-feature-card auth-feature-card--one" data-depth="0.9">
-          <svg class="tf-icon"><use href="#icon-zap"></use></svg><span>سریع و روان</span>
+          <svg class="tf-icon"><use href="#icon-zap"></use></svg>
+          <span>سریع و روان</span>
         </div>
         <div class="auth-feature-card auth-feature-card--two" data-depth="1.25">
-          <svg class="tf-icon"><use href="#icon-layers"></use></svg><span>همه‌چیز یکجا</span>
+          <svg class="tf-icon"><use href="#icon-layers"></use></svg>
+          <span>همه‌چیز یکجا</span>
         </div>
         <div class="auth-feature-card auth-feature-card--three" data-depth="0.7">
-          <svg class="tf-icon"><use href="#icon-shield-check"></use></svg><span>امن و قابل اعتماد</span>
+          <svg class="tf-icon"><use href="#icon-shield-check"></use></svg>
+          <span>امن و قابل اعتماد</span>
+        </div>
+        <div class="auth-feature-card auth-feature-card--four" data-depth="1.45">
+          <svg class="tf-icon"><use href="#icon-orbit"></use></svg>
+          <span>رابط زنده و سه‌بعدی</span>
         </div>
       </div>
-      <div class="auth-visual__stats">
-        <span><strong>Mobile-first</strong><small>طراحی‌شده برای هر صفحه</small></span>
-        <span><strong>Zero clutter</strong><small>تمرکز روی کار مهم</small></span>
+
+      <div class="auth-visual__stats" data-reveal-auth>
+        <span>
+          <svg class="tf-icon"><use href="#icon-smartphone"></use></svg>
+          <strong>Mobile-first</strong>
+          <small>طراحی‌شده برای هر صفحه</small>
+        </span>
+        <span>
+          <svg class="tf-icon"><use href="#icon-focus"></use></svg>
+          <strong>Zero clutter</strong>
+          <small>تمرکز روی کار مهم</small>
+        </span>
       </div>
     </section>
 
     <section class="auth-card-zone">
       <div class="auth-card-halo" aria-hidden="true"></div>
-      <article class="auth-card" data-tilt-card>
+      <article class="auth-card" data-tilt-card data-reveal-auth>
         <div class="auth-card__shine" aria-hidden="true"></div>
         {% block content %}{% endblock content %}
       </article>
+
       <p class="auth-security-note">
         <svg class="tf-icon" aria-hidden="true"><use href="#icon-shield-check"></use></svg>
         <span>ارتباط امن و محافظت‌شده با استانداردهای Django</span>
@@ -76,6 +138,7 @@
   </main>
 
   <script src="{% static 'js/messages.js' %}"></script>
+  <script src="{% static 'js/space-scene.js' %}"></script>
   <script src="{% static 'js/auth.js' %}"></script>
 </body>
 </html>

@@ -1,30 +1,7 @@
 {% extends "base.html" %}
-
 {% block data_page %}workspaces{% endblock data_page %}
 {% block title %}TaskFlow | حذف عضو{% endblock title %}
-
 {% block content %}
-<section class="page-head">
-  <div>
-    <span class="badge badge-danger eyebrow">حذف دسترسی</span>
-    <h1 class="page-title">حذف عضو</h1>
-  </div>
-</section>
-
-<section class="form-card danger-zone workspace-member-remove-card">
-  <div class="workspace-member-card__identity">
-    {% include "workspaces/includes/_avatar.html" with user=membership.user %}
-    <div><strong>{{ membership.user.get_full_name|default:membership.user.username }}</strong><span>{{ membership.user.email }}</span></div>
-  </div>
-
-  <p class="page-subtitle">این کاربر دیگر به «{{ membership.workspace.name }}» دسترسی نخواهد داشت.</p>
-
-  <form method="post">
-    {% csrf_token %}
-    <div class="form-actions">
-      <button class="btn btn-danger" type="submit">حذف از Workspace</button>
-      <a class="btn btn-ghost" href="{% url 'workspaces:members' membership.workspace.pk %}">انصراف</a>
-    </div>
-  </form>
-</section>
+<section class="page-head" data-reveal><div><span class="badge badge-danger eyebrow"><svg class="tf-icon"><use href="#icon-user-minus"></use></svg> حذف دسترسی</span><h1 class="page-title">حذف عضو</h1></div></section>
+<section class="form-card danger-zone workspace-member-remove-card animated-border" data-reveal data-tilt-surface><div class="workspace-member-card__identity">{% include "workspaces/includes/_avatar.html" with user=membership.user %}<div><strong>{{ membership.user.get_full_name|default:membership.user.username }}</strong><span>{{ membership.user.email }}</span></div></div><p class="page-subtitle">این کاربر دیگر به «{{ membership.workspace.name }}» دسترسی نخواهد داشت.</p><form method="post">{% csrf_token %}<div class="form-actions"><button class="btn btn-danger" type="submit"><svg class="tf-icon"><use href="#icon-user-minus"></use></svg><span>حذف از Workspace</span></button><a class="btn btn-ghost" href="{% url 'workspaces:members' membership.workspace.pk %}"><svg class="tf-icon"><use href="#icon-x"></use></svg><span>انصراف</span></a></div></form></section>
 {% endblock content %}

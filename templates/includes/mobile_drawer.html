@@ -1,43 +1,78 @@
 <div class="mobile-drawer" data-drawer aria-hidden="true">
   <button class="drawer-backdrop" type="button" data-drawer-close aria-label="بستن منو"></button>
 
-  <aside class="drawer-panel glass-panel" aria-label="منوی موبایل">
+  <aside class="drawer-panel glass-panel" aria-label="منوی موبایل" role="dialog" aria-modal="true">
     <div class="drawer-panel__head">
       <a class="brand" href="{% url 'dashboard:dashboard' %}">
-        <span class="brand-mark" aria-hidden="true"><svg class="tf-icon"><use href="#icon-logo"></use></svg></span>
-        <span class="brand-copy"><strong>TaskFlow</strong><small>Workspace OS</small></span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg class="tf-icon"><use href="#icon-logo"></use></svg>
+        </span>
+        <span class="brand-copy">
+          <strong>TaskFlow</strong>
+          <small>Workspace OS</small>
+        </span>
       </a>
+
       <button class="icon-btn" type="button" data-drawer-close aria-label="بستن منو">
         <svg class="tf-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
       </button>
     </div>
 
-    <nav class="nav-list">
+    <a class="drawer-user" href="{% url 'dashboard:profile' %}">
+      <span class="profile-avatar-sm">
+        {% if request.user.avatar %}
+          <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
+        {% else %}
+          <span class="avatar-initials">{{ request.user.first_name|default:request.user.username|slice:':1' }}</span>
+        {% endif %}
+      </span>
+      <span>
+        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+        <small>{{ request.user.email }}</small>
+      </span>
+      <svg class="tf-icon" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
+    </a>
+
+    <nav class="nav-list" aria-label="بخش‌های موبایل">
       <a class="nav-link" data-nav="dashboard" href="{% url 'dashboard:dashboard' %}">
-        <svg class="tf-icon"><use href="#icon-home"></use></svg><span>داشبورد</span>
+        <svg class="tf-icon"><use href="#icon-home"></use></svg>
+        <span>داشبورد</span>
       </a>
+
       <a class="nav-link" data-nav="workspaces" href="{% url 'workspaces:list' %}">
-        <svg class="tf-icon"><use href="#icon-workspace"></use></svg><span>ورک‌اسپیس‌ها</span>
+        <svg class="tf-icon"><use href="#icon-workspace"></use></svg>
+        <span>ورک‌اسپیس‌ها</span>
       </a>
-      <a class="nav-link" data-nav="boards" href="#">
-        <svg class="tf-icon"><use href="#icon-board"></use></svg><span>بردها</span>
-      </a>
-      <a class="nav-link" data-nav="tasks" href="#">
-        <svg class="tf-icon"><use href="#icon-check-square"></use></svg><span>تسک‌ها</span>
-      </a>
+
+      <span class="nav-link nav-link--disabled" data-nav="boards" aria-disabled="true">
+        <svg class="tf-icon"><use href="#icon-board"></use></svg>
+        <span>بردها</span>
+        <small class="nav-soon">به‌زودی</small>
+      </span>
+
+      <span class="nav-link nav-link--disabled" data-nav="tasks" aria-disabled="true">
+        <svg class="tf-icon"><use href="#icon-check-square"></use></svg>
+        <span>تسک‌ها</span>
+        <small class="nav-soon">به‌زودی</small>
+      </span>
+
       <a class="nav-link" data-nav="profile" href="{% url 'dashboard:profile' %}">
-        <svg class="tf-icon"><use href="#icon-user"></use></svg><span>پروفایل</span>
+        <svg class="tf-icon"><use href="#icon-user"></use></svg>
+        <span>پروفایل</span>
       </a>
     </nav>
 
     <div class="drawer-panel__footer">
       <button class="nav-link" type="button" data-theme-toggle>
-        <svg class="tf-icon"><use data-theme-use href="#icon-moon"></use></svg><span>تغییر تم</span>
+        <svg class="tf-icon"><use data-theme-use href="#icon-moon"></use></svg>
+        <span>تغییر تم</span>
       </button>
+
       <form method="post" action="{% url 'accounts:logout' %}">
         {% csrf_token %}
         <button class="nav-link nav-logout" type="submit">
-          <svg class="tf-icon"><use href="#icon-logout"></use></svg><span>خروج از حساب</span>
+          <svg class="tf-icon"><use href="#icon-logout"></use></svg>
+          <span>خروج از حساب</span>
         </button>
       </form>
     </div>

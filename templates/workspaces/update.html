@@ -1,37 +1,10 @@
 {% extends "base.html" %}
-
 {% block data_page %}workspaces{% endblock data_page %}
 {% block title %}TaskFlow | ویرایش {{ workspace.name }}{% endblock title %}
-
 {% block content %}
-<section class="page-head">
-  <div>
-    <span class="badge badge-primary eyebrow">تنظیمات Workspace</span>
-    <h1 class="page-title">ویرایش {{ workspace.name }}</h1>
-    <p class="page-subtitle">نام و توضیحات فضای کاری را به‌روزرسانی کن.</p>
-  </div>
-</section>
-
+<section class="page-head page-head--animated" data-reveal><div><span class="badge badge-primary eyebrow"><svg class="tf-icon"><use href="#icon-settings"></use></svg> تنظیمات Workspace</span><h1 class="page-title">ویرایش {{ workspace.name }}</h1><p class="page-subtitle">نام و توضیحات فضای کاری را به‌روزرسانی کن.</p></div></section>
 <div class="workspace-form-layout">
-  <section class="form-card">
-    <form class="form-grid" method="post" novalidate>
-      {% csrf_token %}
-      {% include "workspaces/includes/_form.html" %}
-
-      <div class="form-actions">
-        <button class="btn btn-primary" type="submit">ذخیره تغییرات</button>
-        <a class="btn btn-ghost" href="{% url 'workspaces:detail' workspace.pk %}">انصراف</a>
-      </div>
-    </form>
-  </section>
-
-  <aside class="workspace-form-note panel">
-    <span class="badge">اطلاعات فعلی</span>
-    <div class="info-list">
-      <div class="info-row"><span>مالک</span><strong>{{ workspace.owner.username }}</strong></div>
-      <div class="info-row"><span>اعضا</span><strong>{{ workspace.memberships.count }}</strong></div>
-      <div class="info-row"><span>ساخته‌شده</span><strong>{{ workspace.created_at|date:"Y/m/d" }}</strong></div>
-    </div>
-  </aside>
+  <section class="form-card animated-border" data-tilt-surface data-reveal><form class="form-grid" method="post" novalidate>{% csrf_token %}{% include "workspaces/includes/_form.html" %}<div class="form-actions" data-reveal><button class="btn btn-primary" type="submit"><svg class="tf-icon"><use href="#icon-save"></use></svg><span>ذخیره تغییرات</span></button><a class="btn btn-ghost" href="{% url 'workspaces:detail' workspace.pk %}"><svg class="tf-icon"><use href="#icon-arrow-right"></use></svg><span>انصراف</span></a></div></form></section>
+  <aside class="workspace-form-note panel" data-reveal><div class="page-head__icon"><svg class="tf-icon"><use href="#icon-info"></use></svg></div><span class="badge">اطلاعات فعلی</span><div class="info-list"><div class="info-row"><span>مالک</span><strong>{{ workspace.owner.username }}</strong></div><div class="info-row"><span>اعضا</span><strong>{{ workspace.memberships.count }}</strong></div><div class="info-row"><span>ساخته‌شده</span><strong>{{ workspace.created_at|date:"Y/m/d" }}</strong></div></div></aside>
 </div>
 {% endblock content %}

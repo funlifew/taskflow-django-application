@@ -1,29 +1,29 @@
 {% if form.non_field_errors %}
-  <div class="form-errors" role="alert">
-    {% for error in form.non_field_errors %}
-      <p class="error-text">{{ error }}</p>
-    {% endfor %}
+  <div class="form-errors" role="alert" data-reveal>
+    {% for error in form.non_field_errors %}<p class="error-text">{{ error }}</p>{% endfor %}
   </div>
 {% endif %}
 
-<div class="field">
+<div class="field" data-reveal>
   <div class="label-row">
     <label for="{{ form.name.id_for_label }}">نام Workspace</label>
     <span class="help">حداقل ۳ کاراکتر</span>
   </div>
-  {{ form.name }}
-  {% for error in form.name.errors %}
-    <p class="error-text">{{ error }}</p>
-  {% endfor %}
+  <div class="input-with-icon">
+    <svg class="tf-icon" aria-hidden="true"><use href="#icon-workspace"></use></svg>
+    {{ form.name }}
+  </div>
+  {% for error in form.name.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
 </div>
 
-<div class="field">
+<div class="field" data-reveal>
   <div class="label-row">
     <label for="{{ form.description.id_for_label }}">توضیحات</label>
     <span class="help">اختیاری</span>
   </div>
-  {{ form.description }}
-  {% for error in form.description.errors %}
-    <p class="error-text">{{ error }}</p>
-  {% endfor %}
+  <div class="input-with-icon input-with-icon--textarea">
+    <svg class="tf-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+    {{ form.description }}
+  </div>
+  {% for error in form.description.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
 </div>

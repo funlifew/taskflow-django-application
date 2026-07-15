@@ -1,39 +1,23 @@
 {% extends "base.html" %}
-
 {% block data_page %}workspaces{% endblock data_page %}
 {% block title %}TaskFlow | ساخت Workspace{% endblock title %}
-
 {% block content %}
-<section class="page-head">
-  <div>
-    <span class="badge badge-primary eyebrow">Workspace جدید</span>
-    <h1 class="page-title">یک فضای کاری تازه بساز</h1>
-    <p class="page-subtitle">برای یک پروژه، تیم یا هدف شخصی Workspace جدا داشته باش.</p>
-  </div>
+<section class="page-head page-head--animated" data-reveal>
+  <div><span class="badge badge-primary eyebrow"><svg class="tf-icon"><use href="#icon-sparkles"></use></svg> Workspace جدید</span><h1 class="page-title">یک فضای کاری تازه بساز</h1><p class="page-subtitle">برای یک پروژه، تیم یا هدف شخصی Workspace جدا داشته باش.</p></div>
 </section>
-
 <div class="workspace-form-layout">
-  <section class="form-card">
-    <form class="form-grid" method="post" novalidate>
-      {% csrf_token %}
-      {% include "workspaces/includes/_form.html" %}
-
-      <div class="form-actions">
-        <button class="btn btn-primary" type="submit">ساخت Workspace</button>
-        <a class="btn btn-ghost" href="{% url 'workspaces:list' %}">انصراف</a>
+  <section class="form-card animated-border" data-tilt-surface data-reveal>
+    <form class="form-grid" method="post" novalidate>{% csrf_token %}{% include "workspaces/includes/_form.html" %}
+      <div class="form-actions" data-reveal>
+        <button class="btn btn-primary" type="submit"><svg class="tf-icon"><use href="#icon-plus"></use></svg><span>ساخت Workspace</span></button>
+        <a class="btn btn-ghost" href="{% url 'workspaces:list' %}"><svg class="tf-icon"><use href="#icon-arrow-right"></use></svg><span>انصراف</span></a>
       </div>
     </form>
   </section>
-
-  <aside class="workspace-form-note panel">
-    <span class="badge badge-info">بعد از ساخت</span>
-    <h2 class="card-title">مرحله بعد چه می‌شود؟</h2>
-    <p class="card-text">تو به‌صورت خودکار مالک Workspace می‌شوی و می‌توانی اعضا را دعوت کنی.</p>
-    <div class="info-list">
-      <div class="info-row"><span>نقش تو</span><strong>Owner</strong></div>
-      <div class="info-row"><span>دسترسی اولیه</span><strong>خصوصی</strong></div>
-      <div class="info-row"><span>قابل ویرایش</span><strong>بله</strong></div>
-    </div>
+  <aside class="workspace-form-note panel" data-reveal>
+    <div class="page-head__icon"><svg class="tf-icon"><use href="#icon-orbit"></use></svg></div>
+    <span class="badge badge-info">بعد از ساخت</span><h2 class="card-title">مرحله بعد چه می‌شود؟</h2><p class="card-text">تو به‌صورت خودکار مالک Workspace می‌شوی و می‌توانی اعضا را دعوت کنی.</p>
+    <div class="info-list"><div class="info-row"><span>نقش تو</span><strong>Owner</strong></div><div class="info-row"><span>دسترسی اولیه</span><strong>خصوصی</strong></div><div class="info-row"><span>قابل ویرایش</span><strong>بله</strong></div></div>
   </aside>
 </div>
 {% endblock content %}

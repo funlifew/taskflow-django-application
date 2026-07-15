@@ -4,92 +4,114 @@
 {% block title %}TaskFlow | {{ workspace.name }}{% endblock title %}
 
 {% block content %}
-<section class="workspace-detail-hero">
+<section class="workspace-detail-hero animated-border" data-reveal>
   <div class="workspace-detail-hero__mark" aria-hidden="true">{{ workspace.name|slice:":1"|upper }}</div>
 
   <div class="workspace-detail-hero__body">
     <div class="meta-row">
       {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
-      {% if workspace.is_archived %}<span class="badge badge-warning">آرشیوشده</span>{% else %}<span class="badge badge-success">فعال</span>{% endif %}
+      {% if workspace.is_archived %}
+        <span class="badge badge-warning"><svg class="tf-icon"><use href="#icon-archive"></use></svg> آرشیوشده</span>
+      {% else %}
+        <span class="badge badge-success"><svg class="tf-icon"><use href="#icon-check"></use></svg> فعال</span>
+      {% endif %}
     </div>
 
     <h1 class="page-title">{{ workspace.name }}</h1>
     <p class="page-subtitle">
-      {% if workspace.description %}{{ workspace.description }}{% else %}توضیحی برای این Workspace ثبت نشده است.{% endif %}
+      {% if workspace.description %}
+        {{ workspace.description }}
+      {% else %}
+        توضیحی برای این Workspace ثبت نشده است.
+      {% endif %}
     </p>
   </div>
 
   <div class="actions workspace-detail-hero__actions">
     {% if can_manage_members %}
-      <a class="btn btn-primary" href="{% url 'workspaces:member_invite' workspace.pk %}">دعوت عضو</a>
-      <a class="btn btn-soft" href="{% url 'workspaces:members' workspace.pk %}">مدیریت اعضا</a>
+      <a class="btn btn-primary" href="{% url 'workspaces:member_invite' workspace.pk %}">
+        <svg class="tf-icon"><use href="#icon-user-plus"></use></svg>
+        دعوت عضو
+      </a>
+      <a class="btn btn-soft" href="{% url 'workspaces:members' workspace.pk %}">
+        <svg class="tf-icon"><use href="#icon-users"></use></svg>
+        مدیریت اعضا
+      </a>
     {% endif %}
+
     {% if can_edit_workspace %}
-      <a class="btn" href="{% url 'workspaces:update' workspace.pk %}">ویرایش</a>
+      <a class="btn" href="{% url 'workspaces:update' workspace.pk %}">
+        <svg class="tf-icon"><use href="#icon-edit"></use></svg>
+        ویرایش
+      </a>
     {% endif %}
+
     {% if can_delete_workspace %}
-      <a class="btn btn-danger" href="{% url 'workspaces:delete' workspace.pk %}">حذف</a>
+      <a class="btn btn-danger" href="{% url 'workspaces:delete' workspace.pk %}">
+        <svg class="tf-icon"><use href="#icon-trash"></use></svg>
+        حذف
+      </a>
     {% endif %}
   </div>
 </section>
 
 <section class="workspace-detail-stats">
-  <article class="stat-card">
-    <div class="stat-label">اعضا</div>
-    <div class="stat-value">{{ workspace.memberships.count }}</div>
+  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-users"></use></svg></span>
+    <div><div class="stat-label">اعضا</div><div class="stat-value">{{ members_count|default:workspace.memberships.count }}</div></div>
   </article>
-  <article class="stat-card">
-    <div class="stat-label">دعوت‌های در انتظار</div>
-    <div class="stat-value">{{ pending_invitations_count|default:0 }}</div>
+
+  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-inbox"></use></svg></span>
+    <div><div class="stat-label">دعوت‌های در انتظار</div><div class="stat-value">{{ pending_invitations_count|default:0 }}</div></div>
   </article>
-  <article class="stat-card">
-    <div class="stat-label">بردها</div>
-    <div class="stat-value">{{ boards_count|default:0 }}</div>
+
+  <article class="stat-card stat-card--icon stat-card--soon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-board"></use></svg></span>
+    <div><div class="stat-label">بردها</div><div class="stat-value stat-value--text">به‌زودی</div></div>
   </article>
-  <article class="stat-card">
-    <div class="stat-label">آخرین تغییر</div>
-    <div class="stat-value workspace-stat-date">{{ workspace.updated_at|date:"Y/m/d" }}</div>
+
+  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-clock"></use></svg></span>
+    <div><div class="stat-label">آخرین تغییر</div><div class="stat-value workspace-stat-date">{{ workspace.updated_at|date:"Y/m/d" }}</div></div>
   </article>
 </section>
 
 <div class="workspace-detail-grid">
-  <section class="panel">
+  <section class="panel" data-reveal>
     <div class="spread workspace-section-head">
       <div>
-        <h2 class="card-title">بردهای Workspace</h2>
-        <p class="card-text">پروژه‌ها و جریان‌های کاری این Workspace.</p>
+        <h2 class="card-title">
+          <svg class="tf-icon title-icon"><use href="#icon-board"></use></svg>
+          بردهای Workspace
+        </h2>
+        <p class="card-text">این بخش پس از ثبت URLهای app برد فعال می‌شود.</p>
       </div>
-      {% if can_create_board and boards_url %}
-        <a class="btn btn-primary" href="{{ boards_url }}">ساخت Board</a>
-      {% endif %}
+      <span class="badge badge-info">به‌زودی</span>
     </div>
 
-    {% if boards %}
-      <div class="grid-2 workspace-board-preview-grid">
-        {% for board in boards %}
-          <a class="card" href="{% url 'boards:detail' board.pk %}">
-            <span class="badge badge-primary">Board</span>
-            <h3 class="card-title">{{ board.name }}</h3>
-            <p class="card-text">{{ board.description|default:"بدون توضیح"|truncatechars:90 }}</p>
-          </a>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state workspace-compact-empty">
-        <div class="empty-icon">📌</div>
-        <h3>هنوز بردی ساخته نشده</h3>
-        <p class="page-subtitle">بعد از شروع بخش Board، بردهای این Workspace اینجا نمایش داده می‌شوند.</p>
-      </div>
-    {% endif %}
+    <div class="empty-state workspace-compact-empty">
+      <div class="empty-icon"><svg class="tf-icon"><use href="#icon-board"></use></svg></div>
+      <h3>Board هنوز route فعال ندارد</h3>
+      <p class="page-subtitle">
+        عمداً هیچ لینک استاتیک یا namespace ثبت‌نشده‌ای اینجا قرار نگرفته تا NoReverseMatch رخ ندهد.
+      </p>
+    </div>
   </section>
 
-  <aside class="panel workspace-members-preview">
+  <aside class="panel workspace-members-preview" data-reveal>
     <div class="spread workspace-section-head">
       <div>
-        <h2 class="card-title">اعضا</h2>
+        <h2 class="card-title">
+          <svg class="tf-icon title-icon"><use href="#icon-users"></use></svg>
+          اعضا
+        </h2>
         <p class="card-text">افرادی که به این فضا دسترسی دارند.</p>
       </div>
-      <a class="btn btn-ghost" href="{% url 'workspaces:members' workspace.pk %}">همه اعضا</a>
+      <a class="btn btn-ghost" href="{% url 'workspaces:members' workspace.pk %}">
+        همه اعضا
+        <svg class="tf-icon"><use href="#icon-chevron-left"></use></svg>
+      </a>
     </div>
 
     <div class="list">
