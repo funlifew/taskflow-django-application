@@ -29,4 +29,41 @@ urlpatterns = [
         views.WorkspaceDeleteView.as_view(),
         name='delete',
     ),
+    
+    
+    path(
+        "<int:pk>/members/",
+        views.WorkspaceMemberListView.as_view(),
+        name='members',
+    ),
+    path(
+        '<int:pk>/members/invite/',
+        views.WorkspaceInvitationCreateView.as_view(),
+        name='member_invite',
+    ),
+    path(
+        '<int:pk>/members/<int:membership_pk>/update/',
+        views.WorkspaceMembershipUpdateView.as_view(),
+        name='member_update',
+    ),
+    path(
+        '<int:pk>/members/<int:membership_pk>/remove/',
+        views.WorkspaceMembershipDeleteView.as_view(),
+        name='member_remove',
+    ),
+    path(
+        'invitations/<uuid:token>/',
+        views.WorkspaceInvitationDetailView.as_view(),
+        name='invitation_detail',
+    ),
+    path(
+        'invitations/<uuid:token>/accept/',
+        views.WorkspaceInvitationAcceptView.as_view(),
+        name='invitation_accept',
+    ),
+    path(
+        'invitations/<uuid:token>/decline/',
+        views.WorkspaceInvitationDeclineView.as_view(),
+        name="invitation_decline",
+    ),
 ]
