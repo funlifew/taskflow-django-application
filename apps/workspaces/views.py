@@ -14,6 +14,7 @@ from django.views.generic import (
     UpdateView,
     FormView,
     View,
+    TemplateView,
 )
 
 from .forms import (
@@ -26,7 +27,8 @@ from .models import Workspace, WorkspaceMembership, WorkspaceInvitation
 from apps.core.mixins import (
     AccessibleWorkspaceMixin,
     OwnerWorkspaceMixin,
-    WorkspaceAdminRequiredMixin
+    WorkspaceAdminRequiredMixin,
+    WorkspacePermissionMixin,
 )
 
 from .services import (
@@ -118,7 +120,7 @@ class WorkspaceDeleteView(OwnerWorkspaceMixin, DeleteView):
         )
         return super().form_valid(form)
 
-class WorkspaceInvitationCreate(
+class WorkspaceInvitationCreateView(
     WorkspaceAdminRequiredMixin,
     FormView
 ):
@@ -226,4 +228,139 @@ class WorkspaceInvitationAcceptView(
         return redirect(
             'workspace:detail',
             pk=invitation.workspace_id,
+        )
+
+class WorkspaceInvitationDeclineView(
+    LoginRequiredMixin,
+    View
+):
+    def post(self, request, token):
+        invitation = get_object_or_404(
+            WorkspaceInvitation,
+            token=token,
+            status=WorkspaceInvitation.Status.PENDING,
+        )
+        
+        if (
+            invitation.email.lower()
+            != request.user.email.lower()
+        ):
+            raise PermissionError
+        
+        invitation.status = (
+            WorkspaceInvitation.Status.DECLINED
+        )
+        invitation.save(update_fields=['status'])
+        
+        messages.info(
+            request,
+            'دعوت Workspace رد شد.',
+        )
+        
+        return redirect('dashboard:dashboard')
+
+class WorkspaceMemberListView(
+    WorkspacePermissionMixin,
+    TemplateView
+):
+    template_name = 'workspaces/members.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        workspace = self.get_workspace()
+        
+        context['workspace'] = workspace
+        context['memberships'] = (
+            workspace.memberships
+            .select_related('user')
+            .order_by('role', 'created_at')
+        )
+        context['pending_invitations'] = (
+            workspace.invitations
+            .filter(
+                status=WorkspaceInvitation.Status.PENDING
+            )
+            .select_related('invited_by')
+        )
+        
+        return context
+
+class WorkspaceMembershipUpdateView(
+    WorkspaceAdminRequiredMixin,
+    UpdateView
+):
+    model = WorkspaceMembership
+    form_class = WorkspaceMembershipUpdateForm
+    template_name = 'workspaces/member_update.html'
+    context_object_name = 'membership'
+    pk_url_kwarg = 'membership_pk'
+    
+    def get_queryset(self):
+        return WorkspaceMembership.objects.filter(
+            workspace=self.get_workspace()
+        ).exclude(
+            role=WorkspaceMembership.Role.OWNER,
+        )
+    
+    def form_valid(self, form):
+        messages.success(
+            self.request,
+            'نقش عضو با موفقیت تغییر کرد.'
+        )
+        
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse(
+            'workspaces:members',
+            kwargs={
+                'pk': self.get_workspace().pk,
+            },
+        )
+
+class WorkspaceMembershipDeleteView(
+    WorkspaceAdminRequiredMixin,
+    DeleteView
+):
+    model = WorkspaceMembership
+    template_name = 'workspaces/member_remove_confirm.html'
+    context_object_name = 'membership'
+    pk_url_kwarg = 'membership_pk'
+    
+    def get_queryset(self):
+        workspace = self.get_workspace()
+        
+        queryset = WorkspaceMembership.objects.filter(
+            workspace=workspace
+        ).exclude(
+            role=WorkspaceMembership.Role.OWNER,
+        )
+        
+        requester_membership = self.get_membership()
+        
+        if (
+            requester_membership
+            and requester_membership.role
+            == WorkspaceMembership.Role.ADMIN
+        ):
+            queryset = queryset.exclude(
+                role=WorkspaceMembership.Role.ADMIN,
+            )
+        
+        return queryset
+    
+    def form_valid(self, form):
+        messages.success(
+            self.request,
+            'عضو از Workspace حذف شد.',
+        )
+        
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return redirect(
+            'workspaces:members',
+            kwargs={
+                'pk': self.get_workspace().pk,
+            },
         )
