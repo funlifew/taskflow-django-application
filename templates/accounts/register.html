@@ -1,66 +1,58 @@
-{% extends "accounts/accounts_base.html" %}
-
-{% block title %}TaskFlow - ثبت نام{% endblock title %}
-
-{% block data_page %}auth{% endblock data_page %}
-
+{% extends 'accounts/accounts_base.html' %}
+{% block title %}ساخت حساب TaskFlow{% endblock title %}
+{% block auth_view %}register{% endblock auth_view %}
 {% block content %}
-<a class="brand" href="{% url "landing" %}"><span class="brand-mark">T</span><span>TaskFlow</span></a>
-    <h1>ساخت حساب</h1>
-    <p>اولین Workspace خودت را بعد از ثبت‌نام بساز.</p>
-    <form class="form-grid register-form" method="POST" novalidate>
-        {% csrf_token %}
+  <div class="auth-card__header">
+    <span class="auth-card__icon"><svg class="tf-icon"><use href="#icon-user-plus"></use></svg></span>
+    <div><span class="auth-kicker">شروع یک مسیر مرتب</span><h2>ساخت حساب</h2><p>چند ثانیه تا ساخت اولین Workspace فاصله داری.</p></div>
+  </div>
 
-        {% if form.non_field_errors %}
-            <div class='form-errors'>
-                {% for error in form.non_field_errors %}
-                    <p class="error-text">{{ error }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
+  <form class="auth-form" method="post" novalidate data-auth-form>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="auth-form-alert" role="alert"><svg class="tf-icon"><use href="#icon-alert"></use></svg><div>{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div></div>{% endif %}
 
-    <div class="grid-2">
-        <div class="field">
-            <div class="label-row"><label for="{{ form.first_name.id_for_label }}">نام:</label></div>
-            {{ form.first_name }}
-            {% for error in form.first_name.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="field">
-            <div class="label-row"><label for="{{ form.last_name.id_for_label }}">نام خانوادگی:</label></div>
-            {{ form.last_name }}
-            {% for error in form.last_name.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
-        </div>
+    <div class="auth-grid-2">
+      <div class="auth-field {% if form.first_name.errors %}has-error{% endif %}">
+        <label for="{{ form.first_name.id_for_label }}">نام</label>
+        <div class="auth-input-wrap"><svg class="tf-icon auth-input-icon"><use href="#icon-user"></use></svg><input class="auth-input" type="text" name="{{ form.first_name.html_name }}" id="{{ form.first_name.id_for_label }}" value="{{ form.first_name.value|default_if_none:'' }}" placeholder="نام" autocomplete="given-name" required></div>
+        {% for error in form.first_name.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
+      </div>
+      <div class="auth-field {% if form.last_name.errors %}has-error{% endif %}">
+        <label for="{{ form.last_name.id_for_label }}">نام خانوادگی</label>
+        <div class="auth-input-wrap"><svg class="tf-icon auth-input-icon"><use href="#icon-user"></use></svg><input class="auth-input" type="text" name="{{ form.last_name.html_name }}" id="{{ form.last_name.id_for_label }}" value="{{ form.last_name.value|default_if_none:'' }}" placeholder="نام خانوادگی" autocomplete="family-name" required></div>
+        {% for error in form.last_name.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
+      </div>
     </div>
 
-    <div class="field">
-        <div class="label-row"><label for="{{ form.username.id_for_label }}">نام کاربری:</label></div>
-        {{ form.username }}
-        {% for error in form.username.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    <div class="auth-field {% if form.username.errors %}has-error{% endif %}">
+      <label for="{{ form.username.id_for_label }}">نام کاربری</label>
+      <div class="auth-input-wrap"><svg class="tf-icon auth-input-icon"><use href="#icon-command"></use></svg><input class="auth-input" type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default_if_none:'' }}" placeholder="مثلاً rodya" autocomplete="username" required></div>
+      {% for error in form.username.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
     </div>
 
-    <div class="field">
-        <div class="label-row"><label for="{{ form.email.id_for_label }}">ایمیل:</label></div>
-        {{ form.email }}
-        {% for error in form.email.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    <div class="auth-field {% if form.email.errors %}has-error{% endif %}">
+      <label for="{{ form.email.id_for_label }}">ایمیل</label>
+      <div class="auth-input-wrap"><svg class="tf-icon auth-input-icon"><use href="#icon-mail"></use></svg><input class="auth-input" type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default_if_none:'' }}" placeholder="name@example.com" autocomplete="email" inputmode="email" required></div>
+      {% for error in form.email.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
     </div>
 
-    <div class="grid-2">
-        <div class="field">
-            <div class="label-row"><label for="{{ form.password1.id_for_label }}">رمز عبور:</label></div>
-            {{ form.password1 }}
-            {% for error in form.password1.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="field">
-            <div class="label-row"><label for="{{ form.password2.id_for_label }}">تکرار رمز عبور:</label></div>
-            {{ form.password2 }}
-            {% for error in form.password2.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
-        </div>
+    <div class="auth-grid-2">
+      <div class="auth-field {% if form.password1.errors %}has-error{% endif %}">
+        <label for="{{ form.password1.id_for_label }}">رمز عبور</label>
+        <div class="auth-input-wrap"><svg class="tf-icon auth-input-icon"><use href="#icon-lock"></use></svg><input class="auth-input" type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}" placeholder="رمز عبور قوی" autocomplete="new-password" required><button class="auth-password-toggle" type="button" data-password-toggle aria-controls="{{ form.password1.id_for_label }}" aria-label="نمایش رمز عبور"><svg class="tf-icon"><use href="#icon-eye"></use></svg></button></div>
+        {% for error in form.password1.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
+      </div>
+      <div class="auth-field {% if form.password2.errors %}has-error{% endif %}">
+        <label for="{{ form.password2.id_for_label }}">تکرار رمز</label>
+        <div class="auth-input-wrap"><svg class="tf-icon auth-input-icon"><use href="#icon-lock"></use></svg><input class="auth-input" type="password" name="{{ form.password2.html_name }}" id="{{ form.password2.id_for_label }}" placeholder="تکرار رمز" autocomplete="new-password" required><button class="auth-password-toggle" type="button" data-password-toggle aria-controls="{{ form.password2.id_for_label }}" aria-label="نمایش رمز عبور"><svg class="tf-icon"><use href="#icon-eye"></use></svg></button></div>
+        {% for error in form.password2.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
+      </div>
     </div>
 
-        <button class="btn btn-primary btn-block" type="submit">ثبت‌نام</button>
-    </form>
-    <div class="divider"></div>
-    <div class="spread"><span class="muted">قبلاً حساب داری؟</span><a class="btn btn-soft" href="{% url "accounts:login" %}">ورود</a></div>
+    {% if form.password1.help_text %}<div class="auth-password-help"><svg class="tf-icon"><use href="#icon-shield-check"></use></svg><div>{{ form.password1.help_text|safe }}</div></div>{% endif %}
+
+    <button class="auth-submit" type="submit" data-submit-button><span>ساخت حساب</span><svg class="tf-icon"><use href="#icon-arrow-left"></use></svg><span class="auth-submit__spinner" aria-hidden="true"></span></button>
+  </form>
+
+  <p class="auth-switch">قبلاً حساب ساختی؟ <a href="{% url 'accounts:login' %}">وارد شو</a></p>
 {% endblock content %}

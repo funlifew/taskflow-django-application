@@ -1,41 +1,48 @@
-{% extends "accounts/accounts_base.html" %}
-
-{% block title %}TaskFlow - ورود{% endblock title %}
-
-{% block data_page %}auth{% endblock data_page %}
-
+{% extends 'accounts/accounts_base.html' %}
+{% block title %}ورود به TaskFlow{% endblock title %}
+{% block auth_view %}login{% endblock auth_view %}
 {% block content %}
-<a class="brand" href="{% url "landing" %}"><span class="brand-mark">T</span><span>TaskFlow</span></a>
-    <h1>ورود به حساب</h1>
-    <p>به پنل مدیریت پروژه‌هایت برگرد.</p>
-    <form class="form-grid register-form" method="POST" novalidate>
-        {% csrf_token %}
+  <div class="auth-card__header">
+    <span class="auth-card__icon"><svg class="tf-icon"><use href="#icon-login"></use></svg></span>
+    <div><span class="auth-kicker">خوش برگشتی</span><h2>ورود به حساب</h2><p>ادامه‌ی پروژه‌هایت فقط یک ورود فاصله دارد.</p></div>
+  </div>
 
-        {% if form.non_field_errors %}
-            <div class='form-errors'>
-                {% for error in form.non_field_errors %}
-                    <p class="error-text">{{ error }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
+  <form class="auth-form" method="post" novalidate data-auth-form>
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
-    <div class="field">
-        <div class="label-row" for="{{ form.username.id_for_label }}"><label>نام کاربری:</label></div>
-        {{ form.username }}
-        {% for error in form.username.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    {% if form.non_field_errors %}
+      <div class="auth-form-alert" role="alert">
+        <svg class="tf-icon"><use href="#icon-alert"></use></svg>
+        <div>{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+      </div>
+    {% endif %}
+
+    <div class="auth-field {% if form.username.errors %}has-error{% endif %}">
+      <label for="{{ form.username.id_for_label }}">نام کاربری</label>
+      <div class="auth-input-wrap">
+        <svg class="tf-icon auth-input-icon"><use href="#icon-user"></use></svg>
+        <input class="auth-input" type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default_if_none:'' }}" placeholder="نام کاربری" autocomplete="username" autofocus required>
+      </div>
+      {% for error in form.username.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
     </div>
 
-    <div class="field">
-        <div class="label-row" for="{{ form.password.id_for_label }}"><label>رمز عبور:</label></div>
-        {{ form.password }}
-        {% for error in form.password.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    <div class="auth-field {% if form.password.errors %}has-error{% endif %}">
+      <div class="auth-label-row"><label for="{{ form.password.id_for_label }}">رمز عبور</label><a href="{% url 'accounts:password_reset' %}">فراموش کردی؟</a></div>
+      <div class="auth-input-wrap">
+        <svg class="tf-icon auth-input-icon"><use href="#icon-lock"></use></svg>
+        <input class="auth-input" type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}" placeholder="رمز عبور" autocomplete="current-password" required>
+        <button class="auth-password-toggle" type="button" data-password-toggle aria-controls="{{ form.password.id_for_label }}" aria-label="نمایش رمز عبور"><svg class="tf-icon"><use href="#icon-eye"></use></svg></button>
+      </div>
+      {% for error in form.password.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
     </div>
 
-    <button class="btn btn-primary btn-block" type="submit">ورود</button>
-    </form>
-    <div class="divider"></div>
-    <a class="help" href="{% url "accounts:password_reset" %}">رمز عبور را فراموش کردی؟</a>
-    </form>
-    <div class="divider"></div>
-    <div class="spread"><span class="muted">حساب نداری؟</span><a class="btn btn-soft" href="{% url "accounts:register" %}">ثبت‌نام</a></div>
+    <button class="auth-submit" type="submit" data-submit-button>
+      <span>ورود به TaskFlow</span><svg class="tf-icon"><use href="#icon-arrow-left"></use></svg>
+      <span class="auth-submit__spinner" aria-hidden="true"></span>
+    </button>
+  </form>
+
+  <div class="auth-divider"><span>یا</span></div>
+  <p class="auth-switch">هنوز حساب نداری؟ <a href="{% url 'accounts:register' %}">ساخت حساب جدید</a></p>
 {% endblock content %}

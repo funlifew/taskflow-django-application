@@ -1,34 +1,42 @@
 {% load static %}
 <!doctype html>
 <html lang="fa" dir="rtl" data-theme="light">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-        <title>{% block title %}TaskFlow | Dashboard{% endblock title %}</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css">
-        <link rel="stylesheet" href="{% static 'css/app.css' %}">
-    </head>
-    <body data-page="{% block data_page %}{% endblock data_page %}">
-        <div class="app-shell page">
-            {% include "includes/sidebar.html" %}
-            {% include "includes/mobile_drawer.html" %}
-            {% include "includes/header.html" %}
-            <main class="page-content">
-                {% if messages %}
-                    <div class="messages">
-                        {% for message in messages %}
-                            <div class="message message-{{ message.tags }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                {% block content %}
-                {% endblock content %}
-            </main>
-            {% include "includes/footer.html" %}
-        </div>
-        <div class="toast-wrap"></div>
-        <script src="{% static 'js/app.js' %}"></script>
-    </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <title>{% block title %}TaskFlow | Dashboard{% endblock title %}</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/glass-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+  {% block extra_css %}{% endblock extra_css %}
+</head>
+<body data-page="{% block data_page %}{% endblock data_page %}">
+  {% include 'includes/icon_sprite.html' %}
+  <div class="app-ambient" aria-hidden="true">
+    <span class="app-ambient__orb app-ambient__orb--one"></span>
+    <span class="app-ambient__orb app-ambient__orb--two"></span>
+    <span class="app-ambient__grid"></span>
+  </div>
+
+  {% include 'includes/messages.html' %}
+
+  <div class="app-shell page" data-app-shell>
+    {% include 'includes/sidebar.html' %}
+    {% include 'includes/mobile_drawer.html' %}
+    {% include 'includes/header.html' %}
+
+    <main class="page-content" id="main-content">
+      {% block content %}{% endblock content %}
+    </main>
+
+    {% include 'includes/footer.html' %}
+  </div>
+
+  <script src="{% static 'js/messages.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block extra_js %}{% endblock extra_js %}
+</body>
 </html>

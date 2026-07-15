@@ -1,12 +1,14 @@
-{% extends "accounts/accounts_base.html" %}
-
-{% block title %}خطای فعالسازی{% endblock title %}
-
-{% block data_page %}error{% endblock data_page %}
-
+{% extends 'accounts/accounts_base.html' %}
+{% block title %}لینک معتبر نیست{% endblock title %}
+{% block auth_view %}status{% endblock auth_view %}
 {% block content %}
-    <span class="badge badge-danger">خطا</span>
-    <p>متاسفانه نتوانستیم حساب کاربری شمارا تایید بکنیم، احتمالا لینک یا اشتباه است و یا منقضی شده است.</p>
-
-    <a class="btn btn-primary btn-block" href="{% url "accounts:resend_verification" %}">درخواست ارسال مجدد</a>
+  <div class="auth-status auth-status--danger">
+    <div class="auth-status__rings" aria-hidden="true"><span></span><span></span><span></span></div>
+    <span class="auth-status__icon"><svg class="tf-icon"><use href="#icon-alert"></use></svg></span>
+    <span class="auth-kicker">TaskFlow Security</span>
+    <h2>لینک معتبر نیست</h2>
+    <p>این لینک اشتباه، منقضی یا قبلاً استفاده شده است. یک لینک تازه درخواست کن.</p>
+    <a class="auth-submit auth-submit--link" href="{% url 'accounts:resend_verification' %}"><span>درخواست لینک تازه</span><svg class="tf-icon"><use href="#icon-arrow-left"></use></svg></a>
+    <a class="auth-status__secondary" href="{% url 'landing' %}">بازگشت به صفحه اصلی</a>
+  </div>
 {% endblock content %}

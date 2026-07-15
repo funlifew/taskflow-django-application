@@ -1,0 +1,35 @@
+{% if messages %}
+  <div class="flash-stack" data-flash-stack aria-live="polite" aria-relevant="additions removals">
+    {% for message in messages %}
+      <article
+        class="flash-message flash-message--{{ message.tags|default:'info' }}"
+        data-flash
+        data-timeout="{% if 'error' in message.tags %}10000{% elif 'warning' in message.tags %}8500{% else %}6500{% endif %}"
+        role="{% if 'error' in message.tags %}alert{% else %}status{% endif %}"
+      >
+        <div class="flash-message__glow" aria-hidden="true"></div>
+        <span class="flash-message__icon" aria-hidden="true">
+          <svg class="tf-icon">
+            {% if 'success' in message.tags %}
+              <use href="#icon-check"></use>
+            {% elif 'error' in message.tags or 'warning' in message.tags %}
+              <use href="#icon-alert"></use>
+            {% else %}
+              <use href="#icon-info"></use>
+            {% endif %}
+          </svg>
+        </span>
+        <div class="flash-message__body">
+          <strong>
+            {% if 'success' in message.tags %}عملیات موفق{% elif 'error' in message.tags %}خطا{% elif 'warning' in message.tags %}توجه{% else %}TaskFlow{% endif %}
+          </strong>
+          <p>{{ message }}</p>
+        </div>
+        <button class="flash-message__close" type="button" data-flash-close aria-label="بستن پیام">
+          <svg class="tf-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+        </button>
+        <span class="flash-message__progress" data-flash-progress aria-hidden="true"></span>
+      </article>
+    {% endfor %}
+  </div>
+{% endif %}

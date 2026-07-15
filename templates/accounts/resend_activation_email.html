@@ -1,29 +1,21 @@
-{% extends "accounts/accounts_base.html" %}
-
-{% block title %}TaskFlow - درخواست ارسال مجدد لینک فعالسازی{% endblock title %}
-
-{% block data_page %}auth{% endblock data_page %}
-
+{% extends 'accounts/accounts_base.html' %}
+{% block title %}ارسال مجدد لینک فعال‌سازی{% endblock title %}
+{% block auth_view %}resend{% endblock auth_view %}
 {% block content %}
-    <a class="brand" href="{% url "landing" %}"><span class="brand-mark">T</span><span>TaskFlow</span></a>
-    <h1>درخواست ارسال مجدد لینک فعالسازی</h1>
-    <form class="form-grid register-form" method="POST" novalidate>
-        {% csrf_token %}
-        {% if form.non_field_errors %}
-            <div class='form-errors'>
-                {% for error in form.non_field_errors %}
-                    <p class="error-text">{{ error }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-    <div class="field">
-        <div class="label-row" for="{{ form.email.id_for_label }}"><label>ایمیل:</label></div>
-        {{ form.email }}
-        {% for error in form.email.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+  <div class="auth-card__header">
+    <span class="auth-card__icon"><svg class="tf-icon"><use href="#icon-refresh"></use></svg></span>
+    <div><span class="auth-kicker">ایمیل نرسیده؟</span><h2>ارسال مجدد لینک</h2><p>ایمیل حساب را وارد کن تا لینک فعال‌سازی دوباره ارسال شود.</p></div>
+  </div>
+  <form class="auth-form" method="post" novalidate data-auth-form>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="auth-form-alert" role="alert"><svg class="tf-icon"><use href="#icon-alert"></use></svg><div>{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div></div>{% endif %}
+    <div class="auth-field {% if form.email.errors %}has-error{% endif %}">
+      <label for="{{ form.email.id_for_label }}">ایمیل حساب</label>
+      <div class="auth-input-wrap"><svg class="tf-icon auth-input-icon"><use href="#icon-mail"></use></svg><input class="auth-input" type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default_if_none:'' }}" placeholder="name@example.com" autocomplete="email" inputmode="email" autofocus required></div>
+      {% for error in form.email.errors %}<p class="auth-field-error"><svg class="tf-icon"><use href="#icon-alert"></use></svg>{{ error }}</p>{% endfor %}
     </div>
-
-    <button class="btn btn-primary btn-block" type="submit">ارسال</button>
-
+    <div class="auth-inline-note"><svg class="tf-icon"><use href="#icon-clock"></use></svg><p>برای جلوگیری از ارسال‌های تکراری، ممکن است لازم باشد کمی صبر کنی.</p></div>
+    <button class="auth-submit" type="submit" data-submit-button><span>ارسال لینک جدید</span><svg class="tf-icon"><use href="#icon-send"></use></svg><span class="auth-submit__spinner" aria-hidden="true"></span></button>
+  </form>
+  <p class="auth-switch"><a href="{% url 'accounts:login' %}"><svg class="tf-icon"><use href="#icon-arrow-right"></use></svg> بازگشت به ورود</a></p>
 {% endblock content %}
-
