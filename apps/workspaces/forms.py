@@ -83,7 +83,7 @@ class WorkspaceInviteForm(forms.ModelForm):
                 'کاربر از قبل عضو Workspace است.'
             )
         
-        if WorkspaceMembership.objects.filter(
+        if WorkspaceInvitation.objects.filter(
             workspace=self.workspace,
             email__iexact=email,
             status=WorkspaceInvitation.Status.PENDING,
