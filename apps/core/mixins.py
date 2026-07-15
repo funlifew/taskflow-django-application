@@ -54,4 +54,35 @@ class WorkspacePermissionMixin(LoginRequiredMixin):
         ).first()
     
     
-    def dispatch(self, request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        workspace = self.get_workspace()
+        membership = self.get_membership()
+        
+        if workspace.owner_id == request.user.id:
+            return super().dispatch(request, *args, **kwargs)
+        
+        if membership is None:
+            raise PermissionDenied(
+                'شما به این Workspace دسترسی ندارید.'
+            )
+        
+        if (
+            self.allowed_roles
+            and membership.role not in self.allowed_roles
+        ):
+            raise PermissionDenied(
+                'شما اجازه انجام این عملیات را ندارید.'
+            )
+        
+        return super().dispatch(request, *args, **kwargs)
+
+class WorkspaceAdminRequiredMixin(WorkspacePermissionMixin):
+    allowed_roles = [
+        WorkspaceMembership.Role.OWNER,
+        WorkspaceMembership.Role.ADMIN,
+    ]
+
+class WorkspaceOwnerRequiredMixin(WorkspacePermissionMixin):
+    allowed_roles = [
+        WorkspaceMembership.Role.OWNER,
+    ]
