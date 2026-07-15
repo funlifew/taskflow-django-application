@@ -15,7 +15,7 @@ def send_workspace_invitation_email(
     invitation
 ) -> None:
     invitation_path = reverse(
-        'workspace:invitation_detail',
+        'workspaces:invitation_detail',
         kwargs={
             'token': invitation.token,
         },
