@@ -487,7 +487,6 @@ class WorkspaceInvitationDeclineView(
         invitation = get_object_or_404(
             WorkspaceInvitation,
             token=token,
-            status=WorkspaceInvitation.Status.PENDING,
         )
 
         try:
