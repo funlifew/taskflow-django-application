@@ -1,22 +1,43 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Q
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
     ListView,
     UpdateView,
+    FormView,
+    View,
 )
 
-from .forms import WorkspaceForm
-from .models import Workspace, WorkspaceMembership
+from .forms import (
+    WorkspaceForm,
+    WorkspaceMembershipUpdateForm,
+    WorkspaceInviteForm,
+)
+from .models import Workspace, WorkspaceMembership, WorkspaceInvitation
 
-from apps.core.mixins import AccessibleWorkspaceMixin, OwnerWorkspaceMixin
+from apps.core.mixins import (
+    AccessibleWorkspaceMixin,
+    OwnerWorkspaceMixin,
+    WorkspaceAdminRequiredMixin
+)
 
+from .services import (
+    accept_workspace_invitation,
+    send_workspace_invitation_email,
+)
+
+from datetime import timedelta
+
+
+User = get_user_model()
 # Create your views here.
 
 class WorkspaceListView(AccessibleWorkspaceMixin, ListView):
@@ -96,3 +117,113 @@ class WorkspaceDeleteView(OwnerWorkspaceMixin, DeleteView):
             "Workspace با موفقیت حذف شد.",
         )
         return super().form_valid(form)
+
+class WorkspaceInvitationCreate(
+    WorkspaceAdminRequiredMixin,
+    FormView
+):
+    template_name = 'workspaces/member_invite.html'
+    form_class = WorkspaceInviteForm
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['workspace'] = self.get_workspace()
+        kwargs['request_user'] = self.request.user
+        return kwargs
+    
+    def form_valid(self, form):
+        workspace = self.get_workspace()
+        
+        with transaction.atomic():
+            invitation = form.save(commit=False)
+            invitation.workspace = workspace
+            invitation.invited_by = self.request.user
+            invitation.expires_at = (
+                timezone.now() + timedelta(days=3)
+            )
+            invitation.save()
+            
+            transaction.on_commit(
+                lambda: send_workspace_invitation_email(
+                    self.request,
+                    invitation,
+                )
+            )
+        
+        messages.success(
+            self.request,
+            'دعوتنامه با موفقیت ارسال شد.',
+        )
+        
+        return redirect(
+            'workspaces:members',
+            pk=workspace.pk,
+        )
+
+class WorkspaceInvitationDetailView(
+    LoginRequiredMixin,
+    DetailView
+):
+    model = WorkspaceInvitation
+    template_name = (
+        'workspaces/invitation_detail.html'
+    )
+    context_object_name = 'invitation'
+    slug_field = 'token'
+    slug_url_kwarg = 'token'
+
+    def get_queryset(self):
+        return (
+            WorkspaceInvitation.objects.select_related(
+                'workspace',
+                'invited_by',
+            )
+        )
+
+class WorkspaceInvitationAcceptView(
+    LoginRequiredMixin,
+    View
+):
+    def post(self, request, token):
+        invitation = get_object_or_404(
+            WorkspaceInvitation.objects.select_related(
+                'workspace',
+            ),
+            token=token,
+        )
+        
+        try:
+            accept_workspace_invitation(
+                invitation=invitation,
+                user=request.user,
+            )
+        except PermissionError as error:
+            messages.error(
+                request,
+                str(error),
+            )
+            
+            return redirect(
+                'workspace:invitation_detail',
+                token=token,
+            )
+        
+        except ValueError as error:
+            messages.warning(
+                request,
+                str(error),
+            )
+            
+            return redirect(
+                'workspace:invitation_detail',
+                token=token,
+            )
+        
+        messages.success(
+            request,
+            'دعوت را پذیرفتی و به Workspace اضافه شدی.'
+        )
+        return redirect(
+            'workspace:detail',
+            pk=invitation.workspace_id,
+        )
