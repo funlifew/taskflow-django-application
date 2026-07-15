@@ -130,7 +130,7 @@ class WorkspaceMembershipUpdateForm(forms.ModelForm):
         requester_role=None,
         **kwargs,
     ):
-        super().__ini__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         
         self.requester_role = requester_role
         
