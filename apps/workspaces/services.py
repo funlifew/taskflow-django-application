@@ -56,19 +56,57 @@ def send_workspace_invitation_email(
     
     email.send()
 
+def expire_stale_workspace_invitations(
+    *,
+    workspace=None,
+    email=None
+) -> int:
+    invitations = WorkspaceInvitation.objects.filter(
+        status=WorkspaceInvitation.Status.PENDING,
+        expires_at__lte=timezone.now(),
+    )
+    
+    if workspace is not None:
+        invitations = invitations.filter(
+            workspace=workspace,
+        )
+    
+    if email:
+        invitations = invitations.filter(
+            email__iexact=email.strip(),
+        )
+        
+    return invitations.update(
+        status=WorkspaceInvitation.Status.EXPIRED
+    )
+
 @transaction.atomic
 def accept_workspace_invitation(
     *,
     invitation,
     user
 ):
+    invitation = (
+        WorkspaceInvitation.objects
+        .select_for_update()
+        .select_related('workspace')
+        .get(pk=invitation.pk)
+    )
+    
     if invitation.status != WorkspaceInvitation.Status.PENDING:
-        raise ValueError("این دعوت دیگر معتبر نیست.")
+        raise ValueError(
+            'Workspace مربوط به این دعوت آرشیو شده است.'
+        )
     
     if invitation.expires_at <= timezone.now():
         invitation.status = WorkspaceInvitation.Status.EXPIRED
-        invitation.save(update_fields=['status'])
-        raise ValueError('این دعوت منقضی شده است.')
+        invitation.save(
+            update_fields=['status'],
+        )
+        
+        raise ValueError(
+            'این دعوت منقضی شده است.'
+        )
     
     if invitation.email.lower() != user.email.lower():
         raise PermissionError(
@@ -88,5 +126,49 @@ def accept_workspace_invitation(
     invitation.status = (
         WorkspaceInvitation.Status.ACCEPTED
     )
-    invitation.save(update_fields=['status'])
+    invitation.save(
+        update_fields=['status'],
+    )
+    
+    
     return membership, created
+
+@transaction.atomic
+def decline_workspace_invitation(
+    *,
+    invitation,
+    user
+):
+    invitation = (
+        WorkspaceInvitation.objects
+        .select_for_update()
+        .select_related('workspace')
+        .get(pk=invitation.pk)
+    )
+    
+    if invitation.status != WorkspaceInvitation.Status.PENDING:
+        raise ValueError(
+            'این دعوت دیگر معتبر نیست.'
+        )
+    
+    if invitation.email.lower() != user.email.lower():
+        raise PermissionError(
+            'این دعوت برای ایمیل حساب شما ارسال نشده است.'
+        )
+    
+    if invitation.expires_at <= timezone.now():
+        invitation.status = WorkspaceInvitation.Status.EXPIRED
+        invitation.save(
+            update_fields=['status'],
+        )
+        
+        raise ValueError('این دعوت منقضی شده است.')
+    
+    invitation.status = (
+        WorkspaceInvitation.Status.DECLINED
+    )
+    invitation.save(
+        update_fields=['status'],
+    )
+    
+    return invitation
