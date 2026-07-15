@@ -38,7 +38,9 @@ from .models import (
 )
 from .services import (
     accept_workspace_invitation,
+    decline_workspace_invitation,
     send_workspace_invitation_email,
+    expire_stale_workspace_invitations,
 )
 
 
@@ -335,8 +337,12 @@ class WorkspaceInvitationCreateView(
     form_class = WorkspaceInviteForm
 
     def get_form_kwargs(self):
+        workspace = self.get_workspace()
+        expire_stale_workspace_invitations(
+            workspace=workspace
+        )
+        
         kwargs = super().get_form_kwargs()
-
         kwargs["workspace"] = self.get_workspace()
         kwargs["request_user"] = self.request.user
 
@@ -484,25 +490,27 @@ class WorkspaceInvitationDeclineView(
             status=WorkspaceInvitation.Status.PENDING,
         )
 
-        if (
-            invitation.email.lower()
-            != request.user.email.lower()
-        ):
-            raise PermissionDenied(
-                "این دعوت برای حساب شما نیست."
+        try:
+            decline_workspace_invitation(
+                invitation=invitation,
+                user=request.user
+            )
+            
+        except PermissionError as error:
+            messages.error(
+                request,
+                str(error),
             )
 
-        if invitation.expires_at <= timezone.now():
-            invitation.status = (
-                WorkspaceInvitation.Status.EXPIRED
+            return redirect(
+                "workspaces:invitation_detail",
+                token=token,
             )
-            invitation.save(
-                update_fields=["status"],
-            )
-
+        
+        except ValueError as error:
             messages.warning(
                 request,
-                "این دعوت منقضی شده است.",
+                str(error),
             )
 
             return redirect(
@@ -510,20 +518,14 @@ class WorkspaceInvitationDeclineView(
                 token=token,
             )
 
-        invitation.status = (
-            WorkspaceInvitation.Status.DECLINED
-        )
-        invitation.save(
-            update_fields=["status"],
-        )
-
         messages.info(
             request,
-            "دعوت Workspace رد شد.",
+            'دعوت Workspace رد شد.',
         )
-
-        return redirect("dashboard:dashboard")
-
+        
+        return redirect(
+            'dashboard:dashboard',
+        )
 
 class WorkspaceMemberListView(
     WorkspacePermissionMixin,
@@ -614,6 +616,23 @@ class WorkspaceMembershipUpdateView(
     context_object_name = "membership"
     pk_url_kwarg = "membership_pk"
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        
+        workspace = self.get_workspace()
+        requester_membership = self.get_membership()
+        
+        if workspace.owner_id == self.request.user.id:
+            requester_role = WorkspaceMembership.Role.OWNER
+        else:
+            requester_role = requester_membership.role
+        
+        
+        kwargs['requester_role'] = requester_role
+        
+        
+        return kwargs
+    
     def get_queryset(self):
         queryset = (
             WorkspaceMembership.objects
