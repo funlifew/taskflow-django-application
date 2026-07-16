@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include('apps.accounts.urls', namespace='accounts')),
     path('dashboard/', include('apps.dashboard.urls', namespace='dashboard')),
+    path('workspaces/<int:workspace_pk>/boards/', include('apps.boards.urls', namespace='boards')),
     path('workspaces/', include('apps.workspaces.urls', namespace='workspaces')),
     path("", TemplateView.as_view(template_name="landing.html"), name="landing"),
 ]
