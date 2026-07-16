@@ -15,7 +15,7 @@
         <div class="inline">
             <button class="icon-btn" data-theme-toggle><span data-theme-icon>🌙</span></button>
             {% if request.user.is_authenticated %}
-                <a class="btn btn-ghost hide-sm" href="accounts/login.html">داشبورد</a>
+                <a class="btn btn-ghost hide-sm" href="{% url "dashboard:dashboard" %}">داشبورد</a>
             {% else %}
                 <a class="btn btn-ghost hide-sm" href="{% url "accounts:login" %}">ورود</a>
             {% endif %}
@@ -29,7 +29,7 @@
             <p>پروژه ای برای Manage کردن Task ها مناسب شرکت ها و تیم های حرفه ای</p>
             <div class="actions">
                 {% if request.user.is_authenticated %}
-                    <a class="btn btn-primary" href="dashboard.html">ورود به داشبورد</a>
+                    <a class="btn btn-primary" href="{% url 'dashboard:dashboard' %}">ورود به داشبورد</a>
                 {% else %}
                     <a class="btn btn-primary" href="{% url "accounts:register" %}">ثبت نام</a>
                     <a class="btn" href="{% url "accounts:login" %}">ورود</a>
