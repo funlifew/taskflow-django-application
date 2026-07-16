@@ -32,49 +32,77 @@ class OwnerWorkspaceMixin(LoginRequiredMixin):
         )
 
 class WorkspacePermissionMixin(LoginRequiredMixin):
-    workspace_url_kwarg = 'pk'
+    workspace_url_kwarg = "pk"
     allowed_roles = []
-    
+
     def get_workspace(self):
-        if not hasattr(self, '_workspace'):
+        if not hasattr(self, "_workspace"):
             self._workspace = get_object_or_404(
-                Workspace.objects.select_related('owner'),
-                pk = self.kwargs[self.workspace_url_kwarg],
+                Workspace.objects.select_related(
+                    "owner"
+                ),
+                pk=self.kwargs[
+                    self.workspace_url_kwarg
+                ],
                 is_archived=False,
             )
-        
+
         return self._workspace
-    
+
     def get_membership(self):
         workspace = self.get_workspace()
-        
-        return WorkspaceMembership.objects.filter(
-            workspace=workspace,
-            user=self.request.user,
-        ).first()
-    
-    
-    def dispatch(self, request, *args, **kwargs):
+
+        return (
+            WorkspaceMembership.objects
+            .filter(
+                workspace=workspace,
+                user=self.request.user,
+            )
+            .first()
+        )
+
+    def dispatch(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        if not request.user.is_authenticated:
+            return super().dispatch(
+                request,
+                *args,
+                **kwargs,
+            )
+
         workspace = self.get_workspace()
         membership = self.get_membership()
-        
+
         if workspace.owner_id == request.user.id:
-            return super().dispatch(request, *args, **kwargs)
-        
+            return super().dispatch(
+                request,
+                *args,
+                **kwargs,
+            )
+
         if membership is None:
             raise PermissionDenied(
-                'شما به این Workspace دسترسی ندارید.'
+                "شما به این Workspace دسترسی ندارید."
             )
-        
+
         if (
             self.allowed_roles
-            and membership.role not in self.allowed_roles
+            and membership.role
+            not in self.allowed_roles
         ):
             raise PermissionDenied(
-                'شما اجازه انجام این عملیات را ندارید.'
+                "شما اجازه انجام این عملیات را ندارید."
             )
-        
-        return super().dispatch(request, *args, **kwargs)
+
+        return super().dispatch(
+            request,
+            *args,
+            **kwargs,
+        )
 
 class WorkspaceAdminRequiredMixin(WorkspacePermissionMixin):
     allowed_roles = [
