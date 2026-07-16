@@ -212,6 +212,26 @@ class WorkspaceDetailView(
         is_owner = (
             workspace.owner_id == user.id
         )
+        
+        can_create_board = current_user_role in {
+            WorkspaceMembership.Role.OWNER,
+            WorkspaceMembership.Role.ADMIN,
+            WorkspaceMembership.Role.MEMBER,
+        }
+        
+        active_boards = (
+            workspace.boards
+            .filter(
+                is_archived=False,
+            )
+            .select_related(
+                'created_by',
+            )
+            .order_by(
+                '-updated_at',
+                '-pk',
+            )
+        )
 
         context.update(
             {
@@ -222,6 +242,10 @@ class WorkspaceDetailView(
                 # UpdateView و DeleteView فعلاً فقط Owner هستند.
                 "can_edit_workspace": is_owner,
                 "can_delete_workspace": is_owner,
+                
+                'can_create_board': can_create_board,
+                'active_boards_count': active_boards.count(),
+                'recent_boards': active_boards[:4],
 
                 "members_count": (
                     workspace.memberships.count()
