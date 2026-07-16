@@ -66,10 +66,27 @@
     <div><div class="stat-label">دعوت‌های در انتظار</div><div class="stat-value">{{ pending_invitations_count|default:0 }}</div></div>
   </article>
 
-  <article class="stat-card stat-card--icon stat-card--soon" data-reveal data-tilt>
-    <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-board"></use></svg></span>
-    <div><div class="stat-label">بردها</div><div class="stat-value stat-value--text">به‌زودی</div></div>
-  </article>
+  <article
+  class="stat-card stat-card--icon"
+  data-reveal
+  data-tilt
+>
+  <span class="stat-card__icon">
+    <svg class="tf-icon">
+      <use href="#icon-board"></use>
+    </svg>
+  </span>
+
+  <div>
+    <div class="stat-label">
+      بردها
+    </div>
+
+    <div class="stat-value">
+      {{ active_boards_count|default:0 }}
+    </div>
+  </div>
+</article>
 
   <article class="stat-card stat-card--icon" data-reveal data-tilt>
     <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-clock"></use></svg></span>
@@ -79,25 +96,106 @@
 
 <div class="workspace-detail-grid">
   <section class="panel" data-reveal>
-    <div class="spread workspace-section-head">
-      <div>
-        <h2 class="card-title">
-          <svg class="tf-icon title-icon"><use href="#icon-board"></use></svg>
-          بردهای Workspace
-        </h2>
-        <p class="card-text">این بخش پس از ثبت URLهای app برد فعال می‌شود.</p>
-      </div>
-      <span class="badge badge-info">به‌زودی</span>
-    </div>
+  <div class="spread workspace-section-head">
+    <div>
+      <h2 class="card-title">
+        <svg class="tf-icon title-icon">
+          <use href="#icon-board"></use>
+        </svg>
 
-    <div class="empty-state workspace-compact-empty">
-      <div class="empty-icon"><svg class="tf-icon"><use href="#icon-board"></use></svg></div>
-      <h3>Board هنوز route فعال ندارد</h3>
-      <p class="page-subtitle">
-        عمداً هیچ لینک استاتیک یا namespace ثبت‌نشده‌ای اینجا قرار نگرفته تا NoReverseMatch رخ ندهد.
+        بردهای Workspace
+      </h2>
+
+      <p class="card-text">
+        Boardهای فعال این فضای کاری.
       </p>
     </div>
-  </section>
+
+    <div class="actions">
+      <a
+        class="btn btn-ghost"
+        href="{% url 'boards:list' workspace.pk %}"
+      >
+        مشاهده همه
+
+        <svg class="tf-icon">
+          <use href="#icon-chevron-left"></use>
+        </svg>
+      </a>
+
+      {% if can_create_board %}
+        <a
+          class="btn btn-primary"
+          href="{% url 'boards:create' workspace.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-plus"></use>
+          </svg>
+
+          ساخت Board
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if recent_boards %}
+    <div class="list">
+      {% for board in recent_boards %}
+        <div class="workspace-member-row">
+          <div class="inline">
+            <div
+              class="workspace-card__mark"
+              aria-hidden="true"
+            >
+              {{ board.title|slice:":1"|upper }}
+            </div>
+
+            <div class="workspace-member-row__identity">
+              <strong>
+                {{ board.title }}
+              </strong>
+
+              <span>
+                {{ board.updated_at|timesince }}
+                پیش به‌روزرسانی شد
+              </span>
+            </div>
+          </div>
+
+          <span class="badge badge-success">
+            فعال
+          </span>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state workspace-compact-empty">
+      <div class="empty-icon">
+        <svg class="tf-icon">
+          <use href="#icon-board"></use>
+        </svg>
+      </div>
+
+      <h3>
+        هنوز Boardی ساخته نشده
+      </h3>
+
+      {% if can_create_board %}
+        <a
+          class="btn btn-primary"
+          href="{% url 'boards:create' workspace.pk %}"
+        >
+          ساخت اولین Board
+        </a>
+      {% else %}
+        <p class="page-subtitle">
+          برای ساخت Board به نقش Member
+          یا بالاتر نیاز داری.
+        </p>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
 
   <aside class="panel workspace-members-preview" data-reveal>
     <div class="spread workspace-section-head">

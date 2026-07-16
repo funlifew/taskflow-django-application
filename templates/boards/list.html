@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | Boardهای {{ workspace.name }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="workspace-hero animated-border"
+  data-reveal
+>
+  <div class="workspace-hero__content">
+    <div>
+      <span class="badge badge-primary eyebrow">
+        <svg class="tf-icon">
+          <use href="#icon-board"></use>
+        </svg>
+
+        Boardهای Workspace
+      </span>
+
+      <h1 class="page-title">
+        {{ workspace.name }}
+      </h1>
+
+      <p class="page-subtitle">
+        Boardهای فعال این Workspace را
+        از اینجا مدیریت کن.
+      </p>
+    </div>
+
+    <div class="actions">
+      {% if can_create_board %}
+        <a
+          class="btn btn-primary"
+          href="{% url 'boards:create' workspace.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-plus"></use>
+          </svg>
+
+          ساخت Board
+        </a>
+      {% endif %}
+
+      <a
+        class="btn btn-ghost"
+        href="{% url 'workspaces:detail' workspace.pk %}"
+      >
+        <svg class="tf-icon">
+          <use href="#icon-arrow-right"></use>
+        </svg>
+
+        بازگشت به Workspace
+      </a>
+    </div>
+  </div>
+
+  <div class="workspace-summary">
+    <article
+      class="workspace-summary__item"
+      data-tilt
+    >
+      <span class="workspace-summary__icon">
+        <svg class="tf-icon">
+          <use href="#icon-board"></use>
+        </svg>
+      </span>
+
+      <span class="workspace-summary__label">
+        Boardهای فعال
+      </span>
+
+      <strong class="workspace-summary__value">
+        {{ page_obj.paginator.count|default:boards|length }}
+      </strong>
+    </article>
+
+    <article
+      class="workspace-summary__item"
+      data-tilt
+    >
+      <span class="workspace-summary__icon">
+        <svg class="tf-icon">
+          <use href="#icon-users"></use>
+        </svg>
+      </span>
+
+      <span class="workspace-summary__label">
+        نقش تو
+      </span>
+
+      <strong class="workspace-summary__value">
+        {{ current_user_role }}
+      </strong>
+    </article>
+  </div>
+</section>
+
+<section class="workspace-list-section">
+  <div
+    class="spread workspace-section-head"
+    data-reveal
+  >
+    <div>
+      <h2 class="card-title">
+        <svg class="tf-icon title-icon">
+          <use href="#icon-grid"></use>
+        </svg>
+
+        Boardهای فعال
+      </h2>
+
+      <p class="card-text">
+        Boardهای آرشیوشده در این صفحه
+        نمایش داده نمی‌شوند.
+      </p>
+    </div>
+
+    {% if boards %}
+      <span class="badge">
+        {{ page_obj.paginator.count|default:boards|length }}
+        مورد
+      </span>
+    {% endif %}
+  </div>
+
+  {% if boards %}
+    <div class="workspace-grid">
+      {% for board in boards %}
+        <article
+          class="workspace-card"
+          data-reveal
+          data-tilt
+        >
+          <div class="workspace-card__main">
+            <div class="workspace-card__top">
+              <div
+                class="workspace-card__mark"
+                aria-hidden="true"
+              >
+                {{ board.title|slice:":1"|upper }}
+              </div>
+
+              <div class="workspace-card__badges">
+                <span class="badge badge-success">
+                  فعال
+                </span>
+              </div>
+            </div>
+
+            <div class="workspace-card__content">
+              <h3>
+                {{ board.title }}
+              </h3>
+
+              <p>
+                {% if board.description %}
+                  {{ board.description|truncatechars:125 }}
+                {% else %}
+                  برای این Board هنوز توضیحی
+                  ثبت نشده است.
+                {% endif %}
+              </p>
+            </div>
+
+            <div class="workspace-card__meta">
+              <span>
+                <svg class="tf-icon">
+                  <use href="#icon-clock"></use>
+                </svg>
+
+                {{ board.updated_at|timesince }}
+                پیش
+              </span>
+
+              <span>
+                <svg class="tf-icon">
+                  <use href="#icon-board"></use>
+                </svg>
+
+                بدون ستون
+              </span>
+            </div>
+          </div>
+
+          <footer class="workspace-card__footer">
+            <div class="workspace-owner-inline">
+              {% if board.created_by %}
+                {% include "workspaces/includes/_avatar.html" with user=board.created_by %}
+
+                <div>
+                  <span class="muted">
+                    ساخته‌شده توسط
+                  </span>
+
+                  <strong>
+                    {{ board.created_by.get_full_name|default:board.created_by.username }}
+                  </strong>
+                </div>
+              {% else %}
+                <div>
+                  <span class="muted">
+                    سازنده
+                  </span>
+
+                  <strong>
+                    حساب حذف‌شده
+                  </strong>
+                </div>
+              {% endif %}
+            </div>
+
+            <span class="badge badge-info">
+              جزئیات در مرحله بعد
+            </span>
+          </footer>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+      <nav
+        class="workspace-pagination"
+        aria-label="صفحه‌بندی"
+        data-reveal
+      >
+        {% if page_obj.has_previous %}
+          <a
+            class="btn"
+            href="?page={{ page_obj.previous_page_number }}"
+          >
+            <svg class="tf-icon">
+              <use href="#icon-chevron-right"></use>
+            </svg>
+
+            صفحه قبل
+          </a>
+        {% else %}
+          <span></span>
+        {% endif %}
+
+        <span class="badge">
+          صفحه {{ page_obj.number }}
+          از {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a
+            class="btn"
+            href="?page={{ page_obj.next_page_number }}"
+          >
+            صفحه بعد
+
+            <svg class="tf-icon">
+              <use href="#icon-chevron-left"></use>
+            </svg>
+          </a>
+        {% else %}
+          <span></span>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <section
+      class="empty-state workspace-empty-state"
+      data-reveal
+    >
+      <div class="empty-icon">
+        <svg class="tf-icon">
+          <use href="#icon-board"></use>
+        </svg>
+      </div>
+
+      <h2>
+        هنوز Boardی ساخته نشده
+      </h2>
+
+      <p class="page-subtitle">
+        Board اولین سطح سازمان‌دهی کارها
+        داخل Workspace است.
+      </p>
+
+      {% if can_create_board %}
+        <a
+          class="btn btn-primary"
+          href="{% url 'boards:create' workspace.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-plus"></use>
+          </svg>
+
+          ساخت اولین Board
+        </a>
+      {% else %}
+        <span class="badge badge-info">
+          نقش Viewer اجازه ساخت Board ندارد
+        </span>
+      {% endif %}
+    </section>
+  {% endif %}
+</section>
+{% endblock content %}

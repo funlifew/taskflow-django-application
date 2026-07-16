@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | ساخت Board
+{% endblock title %}
+
+{% block content %}
+<section
+  class="page-head page-head--animated"
+  data-reveal
+>
+  <div>
+    <span class="badge badge-primary eyebrow">
+      <svg class="tf-icon">
+        <use href="#icon-board"></use>
+      </svg>
+
+      Board جدید
+    </span>
+
+    <h1 class="page-title">
+      یک Board تازه بساز
+    </h1>
+
+    <p class="page-subtitle">
+      Board جدید داخل Workspace
+      «{{ workspace.name }}»
+      ساخته می‌شود.
+    </p>
+  </div>
+</section>
+
+<div class="workspace-form-layout">
+  <section
+    class="form-card animated-border"
+    data-tilt-surface
+    data-reveal
+  >
+    <form
+      class="form-grid"
+      method="post"
+      novalidate
+    >
+      {% csrf_token %}
+
+      {% include "boards/includes/_form.html" %}
+
+      <div
+        class="form-actions"
+        data-reveal
+      >
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-plus"></use>
+          </svg>
+
+          <span>
+            ساخت Board
+          </span>
+        </button>
+
+        <a
+          class="btn btn-ghost"
+          href="{% url 'boards:list' workspace.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-arrow-right"></use>
+          </svg>
+
+          <span>
+            انصراف
+          </span>
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <aside
+    class="workspace-form-note panel"
+    data-reveal
+  >
+    <div class="page-head__icon">
+      <svg class="tf-icon">
+        <use href="#icon-board"></use>
+      </svg>
+    </div>
+
+    <span class="badge badge-info">
+      داخل Workspace
+    </span>
+
+    <h2 class="card-title">
+      {{ workspace.name }}
+    </h2>
+
+    <p class="card-text">
+      این Board فقط برای اعضای همین Workspace
+      قابل مشاهده خواهد بود.
+    </p>
+
+    <div class="info-list">
+      <div class="info-row">
+        <span>سازنده</span>
+
+        <strong>
+          {{ request.user.username }}
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>وضعیت اولیه</span>
+
+        <strong>
+          فعال
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>ستون‌ها</span>
+
+        <strong>
+          در مرحله بعد
+        </strong>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock content %}
