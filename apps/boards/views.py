@@ -1,16 +1,20 @@
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.urls import reverse
 
 from apps.workspaces.models import WorkspaceMembership
 
 from django.views.generic import (
     ListView,
-    CreateView
+    CreateView,
+    DetailView,
+    UpdateView,
 )
 
 from .models import Board
 from .forms import BoardForm
 from .mixins import (
+    BoardObjectMixin,
     BoardReadRequiredMixin,
     BoardWriteRequiredMixin,
 )
@@ -42,23 +46,6 @@ class BoardListView(
                 '-pk',
             )
         )
-    
-
-    def get_current_user_role(self):
-        workspace = self.get_workspace()
-        
-        if (
-            workspace.owner_id
-            == self.request.user.id
-        ):
-            return WorkspaceMembership.Role.OWNER
-
-        membership = self.get_membership()
-        
-        if membership is None:
-            return None
-        
-        return membership.role
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(
@@ -122,4 +109,81 @@ class BoardCreateView(
         return redirect(
             'boards:list',
             workspace_pk=workspace.pk,
+        )
+
+class BoardDetailView(
+    BoardObjectMixin,
+    BoardReadRequiredMixin,
+    DetailView,
+):
+    model = Board
+    template_name = 'boards/detail.html'
+    context_object_name = 'board'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        current_user_role = self.get_current_user_role()
+        
+        can_edit_board = current_user_role in {
+            WorkspaceMembership.Role.OWNER,
+            WorkspaceMembership.Role.ADMIN,
+            WorkspaceMembership.Role.MEMBER,
+        }
+        
+        can_delete_board = current_user_role in {
+            WorkspaceMembership.Role.OWNER,
+            WorkspaceMembership.Role.ADMIN,
+        }
+        
+        context.update({
+            'workspace': self.get_workspace(),
+            'current_user_role': current_user_role,
+            'can_edit_board': can_edit_board,
+            'can_delete_board': can_delete_board,
+            'can_archive_board': can_edit_board,
+        })
+        
+        return context
+
+class BoardUpdateView(
+    BoardObjectMixin,
+    BoardWriteRequiredMixin,
+    UpdateView,
+):
+    model = Board
+    form_class = BoardForm
+    template_name = 'boards/update.html'
+    context_object_name = 'board'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        context.update({
+            'workspace': self.get_workspace(),
+            'current_user_role': self.get_current_user_role(),
+        })
+        
+        return context
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        
+        messages.success(
+            self.request,
+            (
+                'Board «{self.object.title}» '
+                'با موفقیت ویرایش شد.'
+            ),
+        )
+        
+        return response
+    
+    def get_success_url(self):
+        return reverse(
+            'boards:detail',
+            kwargs={
+                'workspace_pk': self.object.workspace_id,
+                'board_pk': self.object.pk,
+            },
         )

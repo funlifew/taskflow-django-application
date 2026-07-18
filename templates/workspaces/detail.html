@@ -141,7 +141,10 @@
   {% if recent_boards %}
     <div class="list">
       {% for board in recent_boards %}
-        <div class="workspace-member-row">
+        <a
+          class="workspace-member-row"
+          href="{% url 'boards:detail' workspace.pk board.pk %}"
+        >
           <div class="inline">
             <div
               class="workspace-card__mark"
@@ -165,7 +168,7 @@
           <span class="badge badge-success">
             فعال
           </span>
-        </div>
+        </a>
       {% endfor %}
     </div>
   {% else %}
