@@ -137,7 +137,10 @@
           data-reveal
           data-tilt
         >
-          <div class="workspace-card__main">
+          <a
+            class="workspace-card__main"
+            href="{% url 'boards:detail' workspace.pk board.pk %}"
+          >
             <div class="workspace-card__top">
               <div
                 class="workspace-card__mark"
@@ -186,7 +189,7 @@
                 بدون ستون
               </span>
             </div>
-          </div>
+          </a>
 
           <footer class="workspace-card__footer">
             <div class="workspace-owner-inline">
@@ -215,9 +218,16 @@
               {% endif %}
             </div>
 
-            <span class="badge badge-info">
-              جزئیات در مرحله بعد
-            </span>
+            <a
+              class="btn btn-soft"
+              href="{% url 'boards:detail' workspace.pk board.pk %}"
+            >
+              باز کردن
+
+              <svg class="tf-icon">
+                <use href="#icon-chevron-left"></use>
+              </svg>
+            </a>
           </footer>
         </article>
       {% endfor %}

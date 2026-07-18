@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | ویرایش {{ board.title }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="page-head page-head--animated"
+  data-reveal
+>
+  <div>
+    <span class="badge badge-primary eyebrow">
+      <svg class="tf-icon">
+        <use href="#icon-edit"></use>
+      </svg>
+
+      ویرایش Board
+    </span>
+
+    <h1 class="page-title">
+      ویرایش {{ board.title }}
+    </h1>
+
+    <p class="page-subtitle">
+      عنوان و توضیحات Board را تغییر بده.
+      Workspace و سازنده قابل تغییر نیستند.
+    </p>
+  </div>
+</section>
+
+<div class="workspace-form-layout">
+  <section
+    class="form-card animated-border"
+    data-tilt-surface
+    data-reveal
+  >
+    <form
+      class="form-grid"
+      method="post"
+      novalidate
+    >
+      {% csrf_token %}
+
+      {% include "boards/includes/_form.html" %}
+
+      <div
+        class="form-actions"
+        data-reveal
+      >
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-check"></use>
+          </svg>
+
+          <span>
+            ذخیره تغییرات
+          </span>
+        </button>
+
+        <a
+          class="btn btn-ghost"
+          href="{% url 'boards:detail' workspace.pk board.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-arrow-right"></use>
+          </svg>
+
+          <span>
+            انصراف
+          </span>
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <aside
+    class="workspace-form-note panel"
+    data-reveal
+  >
+    <div class="page-head__icon">
+      <svg class="tf-icon">
+        <use href="#icon-board"></use>
+      </svg>
+    </div>
+
+    <span class="badge badge-info">
+      {{ workspace.name }}
+    </span>
+
+    <h2 class="card-title">
+      {{ board.title }}
+    </h2>
+
+    <p class="card-text">
+      ویرایش Board باعث تغییر Workspace،
+      سازنده یا وضعیت آرشیو آن نمی‌شود.
+    </p>
+
+    <div class="info-list">
+      <div class="info-row">
+        <span>Workspace</span>
+
+        <strong>
+          {{ workspace.name }}
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>سازنده</span>
+
+        <strong>
+          {% if board.created_by %}
+            {{ board.created_by.username }}
+          {% else %}
+            حساب حذف‌شده
+          {% endif %}
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>وضعیت</span>
+
+        <strong>
+          فعال
+        </strong>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock content %}

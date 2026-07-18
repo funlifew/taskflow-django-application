@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | {{ board.title }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="workspace-detail-hero animated-border"
+  data-reveal
+>
+  <div
+    class="workspace-detail-hero__mark"
+    aria-hidden="true"
+  >
+    {{ board.title|slice:":1"|upper }}
+  </div>
+
+  <div class="workspace-detail-hero__body">
+    <div class="meta-row">
+      {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
+
+      <span class="badge badge-success">
+        <svg class="tf-icon">
+          <use href="#icon-check"></use>
+        </svg>
+
+        فعال
+      </span>
+
+      <span class="badge badge-info">
+        <svg class="tf-icon">
+          <use href="#icon-workspace"></use>
+        </svg>
+
+        {{ workspace.name }}
+      </span>
+    </div>
+
+    <h1 class="page-title">
+      {{ board.title }}
+    </h1>
+
+    <p class="page-subtitle">
+      {% if board.description %}
+        {{ board.description }}
+      {% else %}
+        برای این Board هنوز توضیحی ثبت نشده است.
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="actions workspace-detail-hero__actions">
+    {% if can_edit_board %}
+      <a
+        class="btn btn-primary"
+        href="{% url 'boards:update' workspace.pk board.pk %}"
+      >
+        <svg class="tf-icon">
+          <use href="#icon-edit"></use>
+        </svg>
+
+        ویرایش Board
+      </a>
+    {% endif %}
+
+    <a
+      class="btn btn-ghost"
+      href="{% url 'boards:list' workspace.pk %}"
+    >
+      <svg class="tf-icon">
+        <use href="#icon-arrow-right"></use>
+      </svg>
+
+      همه Boardها
+    </a>
+  </div>
+</section>
+
+<section class="workspace-detail-stats">
+  <article
+    class="stat-card stat-card--icon"
+    data-reveal
+    data-tilt
+  >
+    <span class="stat-card__icon">
+      <svg class="tf-icon">
+        <use href="#icon-columns"></use>
+      </svg>
+    </span>
+
+    <div>
+      <div class="stat-label">
+        ستون‌ها
+      </div>
+
+      <div class="stat-value stat-value--text">
+        مرحله بعد
+      </div>
+    </div>
+  </article>
+
+  <article
+    class="stat-card stat-card--icon"
+    data-reveal
+    data-tilt
+  >
+    <span class="stat-card__icon">
+      <svg class="tf-icon">
+        <use href="#icon-user"></use>
+      </svg>
+    </span>
+
+    <div>
+      <div class="stat-label">
+        سازنده
+      </div>
+
+      <div class="stat-value stat-value--text">
+        {% if board.created_by %}
+          {{ board.created_by.get_full_name|default:board.created_by.username }}
+        {% else %}
+          حساب حذف‌شده
+        {% endif %}
+      </div>
+    </div>
+  </article>
+
+  <article
+    class="stat-card stat-card--icon"
+    data-reveal
+    data-tilt
+  >
+    <span class="stat-card__icon">
+      <svg class="tf-icon">
+        <use href="#icon-calendar"></use>
+      </svg>
+    </span>
+
+    <div>
+      <div class="stat-label">
+        تاریخ ساخت
+      </div>
+
+      <div class="stat-value workspace-stat-date">
+        {{ board.created_at|date:"Y/m/d" }}
+      </div>
+    </div>
+  </article>
+
+  <article
+    class="stat-card stat-card--icon"
+    data-reveal
+    data-tilt
+  >
+    <span class="stat-card__icon">
+      <svg class="tf-icon">
+        <use href="#icon-clock"></use>
+      </svg>
+    </span>
+
+    <div>
+      <div class="stat-label">
+        آخرین تغییر
+      </div>
+
+      <div class="stat-value workspace-stat-date">
+        {{ board.updated_at|date:"Y/m/d" }}
+      </div>
+    </div>
+  </article>
+</section>
+
+<section
+  class="panel"
+  data-reveal
+>
+  <div class="spread workspace-section-head">
+    <div>
+      <h2 class="card-title">
+        <svg class="tf-icon title-icon">
+          <use href="#icon-columns"></use>
+        </svg>
+
+        ستون‌های Board
+      </h2>
+
+      <p class="card-text">
+        ستون‌ها جریان انجام کارها را در این
+        Board مشخص می‌کنند.
+      </p>
+    </div>
+
+    {% if can_edit_board %}
+      <span class="badge badge-info">
+        ساخت ستون در مرحله بعد
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="empty-state workspace-compact-empty">
+    <div class="empty-icon">
+      <svg class="tf-icon">
+        <use href="#icon-columns"></use>
+      </svg>
+    </div>
+
+    <h3>
+      هنوز ستونی وجود ندارد
+    </h3>
+
+    <p class="page-subtitle">
+      در مرحله بعد ستون‌هایی مانند
+      «برای انجام»، «در حال انجام» و
+      «انجام‌شده» را اضافه می‌کنیم.
+    </p>
+
+    {% if can_edit_board %}
+      <span class="badge badge-primary">
+        آماده برای Column Foundation
+      </span>
+    {% else %}
+      <span class="badge badge-info">
+        نقش Viewer فقط اجازه مشاهده دارد
+      </span>
+    {% endif %}
+  </div>
+</section>
+
+<section
+  class="panel"
+  data-reveal
+>
+  <div class="spread workspace-section-head">
+    <div>
+      <h2 class="card-title">
+        <svg class="tf-icon title-icon">
+          <use href="#icon-info"></use>
+        </svg>
+
+        اطلاعات Board
+      </h2>
+
+      <p class="card-text">
+        اطلاعات ثبت‌شده درباره این Board.
+      </p>
+    </div>
+  </div>
+
+  <div class="info-list">
+    <div class="info-row">
+      <span>Workspace</span>
+
+      <strong>
+        {{ workspace.name }}
+      </strong>
+    </div>
+
+    <div class="info-row">
+      <span>وضعیت</span>
+
+      <strong>
+        فعال
+      </strong>
+    </div>
+
+    <div class="info-row">
+      <span>نقش فعلی تو</span>
+
+      <strong>
+        {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
+      </strong>
+    </div>
+
+    <div class="info-row">
+      <span>آخرین به‌روزرسانی</span>
+
+      <strong>
+        {{ board.updated_at|timesince }}
+        پیش
+      </strong>
+    </div>
+  </div>
+</section>
+{% endblock content %}
