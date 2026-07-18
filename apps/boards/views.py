@@ -107,7 +107,7 @@ class BoardCreateView(
         self.object = form.save(commit=False)
         self.object.workspace = workspace
         self.object.created_by = self.request.user
-        self.is_archived = False
+        self.object.is_archived = False
         
         self.object.save()
         
