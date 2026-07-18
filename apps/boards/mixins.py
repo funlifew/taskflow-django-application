@@ -10,6 +10,22 @@ class WorkspaceBoardPermissionMixin(
     WorkspacePermissionMixin
 ):
     workspace_url_kwarg = 'workspace_pk'
+    
+    def get_current_user_role(self):
+        workspace = self.get_workspace()
+        
+        if (
+            workspace.owner_id
+            == self.request.user
+        ):
+            return WorkspaceMembership.Role.OWNER
+        
+        membership = self.get_membership()
+        
+        if membership is None:
+            return None
+        
+        return membership.role
 
 class BoardReadRequiredMixin(
     WorkspaceBoardPermissionMixin

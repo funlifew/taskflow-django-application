@@ -16,4 +16,14 @@ urlpatterns = [
         views.BoardCreateView.as_view(),
         name="create",
     ),
+    path(
+        '<int:board_pk>/',
+        views.BoardDetailView.as_view(),
+        name='detail',
+    ),
+    path(
+        '<int:board_pk>/update/',
+        views.BoardUpdateView.as_view(),
+        name="update",
+    ),
 ]
