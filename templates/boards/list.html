@@ -76,7 +76,7 @@
       </span>
 
       <strong class="workspace-summary__value">
-        {{ page_obj.paginator.count|default:boards|length }}
+        {{ page_obj.paginator.count }}
       </strong>
     </article>
 
@@ -95,7 +95,7 @@
       </span>
 
       <strong class="workspace-summary__value">
-        {{ current_user_role }}
+        {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
       </strong>
     </article>
   </div>
@@ -123,7 +123,7 @@
 
     {% if boards %}
       <span class="badge">
-        {{ page_obj.paginator.count|default:boards|length }}
+        {{ page_obj.paginator.count }}
         مورد
       </span>
     {% endif %}
