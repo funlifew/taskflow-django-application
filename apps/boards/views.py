@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.db.models import Prefetch
 
 from django.views.generic import (
     ListView,
@@ -22,6 +23,8 @@ from .mixins import (
     BoardDeleteRequiredMixin,
     ArchiveBoardObjectMixin,
 )
+
+from apps.columns.models import Column
 
 # Create your views here.
 
@@ -126,6 +129,29 @@ class BoardDetailView(
     template_name = 'boards/detail.html'
     context_object_name = 'board'
     
+    def get_board_queryset(self):
+        return (
+            super()
+            .get_board_queryset()
+            .prefetch_related(
+                Prefetch(
+                    'columns',
+                    queryset=(
+                        Column.objects
+                        .active()
+                        .select_related(
+                            'created_by',
+                        )
+                        .order_by(
+                            'position',
+                            'pk',
+                        )
+                    ),
+                    to_attr='active_columns',
+                )
+            )
+        )
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
@@ -134,12 +160,17 @@ class BoardDetailView(
         can_edit_board = current_user_role in BOARD_WRITE_ROLES
         can_delete_board = current_user_role in BOARD_DELETE_ROLES
         
+        columns = self.object.active_columns
+        
         context.update({
             'workspace': self.get_workspace(),
             'current_user_role': current_user_role,
             'can_edit_board': can_edit_board,
             'can_delete_board': can_delete_board,
             'can_archive_board': can_edit_board,
+            'can_create_column': can_edit_board,
+            'columns': columns,
+            'columns_count': len(columns),
         })
         
         return context

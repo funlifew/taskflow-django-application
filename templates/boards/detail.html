@@ -118,8 +118,8 @@
         ستون‌ها
       </div>
 
-      <div class="stat-value stat-value--text">
-        مرحله بعد
+      <div class="stat-value">
+        {{ columns_count }}
       </div>
     </div>
   </article>
@@ -215,40 +215,142 @@
       </p>
     </div>
 
-    {% if can_edit_board %}
-      <span class="badge badge-info">
-        ساخت ستون در مرحله بعد
-      </span>
-    {% endif %}
-  </div>
+    {% if can_create_column %}
+      <a
+        class="btn btn-primary"
+        href="{% url 'columns:create' workspace.pk board.pk %}"
+      >
+        <svg class="tf-icon">
+          <use href="#icon-plus"></use>
+        </svg>
 
-  <div class="empty-state workspace-compact-empty">
-    <div class="empty-icon">
-      <svg class="tf-icon">
-        <use href="#icon-columns"></use>
-      </svg>
-    </div>
-
-    <h3>
-      هنوز ستونی وجود ندارد
-    </h3>
-
-    <p class="page-subtitle">
-      در مرحله بعد ستون‌هایی مانند
-      «برای انجام»، «در حال انجام» و
-      «انجام‌شده» را اضافه می‌کنیم.
-    </p>
-
-    {% if can_edit_board %}
-      <span class="badge badge-primary">
-        آماده برای Column Foundation
-      </span>
+        ساخت ستون
+      </a>
     {% else %}
       <span class="badge badge-info">
-        نقش Viewer فقط اجازه مشاهده دارد
+        فقط قابل مشاهده
       </span>
     {% endif %}
   </div>
+
+  {% if columns %}
+    <div class="workspace-grid">
+      {% for column in columns %}
+        <article
+          class="workspace-card"
+          data-reveal
+          data-tilt
+        >
+          <div class="workspace-card__main">
+            <div class="workspace-card__top">
+              <div
+                class="workspace-card__mark"
+                aria-hidden="true"
+              >
+                {{ forloop.counter }}
+              </div>
+
+              <div class="workspace-card__badges">
+                <span class="badge badge-success">
+                  فعال
+                </span>
+
+                <span class="badge badge-info">
+                  جایگاه
+                  {{ column.position|add:"1" }}
+                </span>
+              </div>
+            </div>
+
+            <div class="workspace-card__content">
+              <h3>
+                {{ column.title }}
+              </h3>
+
+              <p>
+                Taskهای این ستون در مرحله بعد
+                به این بخش اضافه می‌شوند.
+              </p>
+            </div>
+
+            <div class="workspace-card__meta">
+              <span>
+                <svg class="tf-icon">
+                  <use href="#icon-user"></use>
+                </svg>
+
+                {% if column.created_by %}
+                  {{ column.created_by.username }}
+                {% else %}
+                  حساب حذف‌شده
+                {% endif %}
+              </span>
+
+              <span>
+                <svg class="tf-icon">
+                  <use href="#icon-clock"></use>
+                </svg>
+
+                {{ column.created_at|timesince }}
+                پیش
+              </span>
+            </div>
+          </div>
+
+          <footer class="workspace-card__footer">
+            <span class="badge">
+              ۰ Task
+            </span>
+
+            {% if can_create_column %}
+              <span class="badge badge-primary">
+                مدیریت در مرحله بعد
+              </span>
+            {% else %}
+              <span class="badge badge-info">
+                مشاهده
+              </span>
+            {% endif %}
+          </footer>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state workspace-compact-empty">
+      <div class="empty-icon">
+        <svg class="tf-icon">
+          <use href="#icon-columns"></use>
+        </svg>
+      </div>
+
+      <h3>
+        هنوز ستونی وجود ندارد
+      </h3>
+
+      <p class="page-subtitle">
+        ستون‌هایی مانند «برای انجام»،
+        «در حال انجام» و «انجام‌شده»
+        جریان کار Board را تشکیل می‌دهند.
+      </p>
+
+      {% if can_create_column %}
+        <a
+          class="btn btn-primary"
+          href="{% url 'columns:create' workspace.pk board.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-plus"></use>
+          </svg>
+
+          ساخت اولین ستون
+        </a>
+      {% else %}
+        <span class="badge badge-info">
+          نقش Viewer فقط اجازه مشاهده دارد
+        </span>
+      {% endif %}
+    </div>
+  {% endif %}
 </section>
 
 <section
