@@ -5,7 +5,7 @@
 {% endblock data_page %}
 
 {% block title %}
-  TaskFlow | Boardهای {{ workspace.name }}
+  TaskFlow | آرشیو Boardهای {{ workspace.name }}
 {% endblock title %}
 
 {% block content %}
@@ -15,65 +15,35 @@
 >
   <div class="workspace-hero__content">
     <div>
-      <span class="badge badge-primary eyebrow">
+      <span class="badge badge-warning eyebrow">
         <svg class="tf-icon">
-          <use href="#icon-board"></use>
+          <use href="#icon-archive"></use>
         </svg>
 
-        Boardهای Workspace
+        آرشیو Boardها
       </span>
 
       <h1 class="page-title">
-        {{ workspace.name }}
+        Boardهای آرشیوشده
       </h1>
 
       <p class="page-subtitle">
-        Boardهای فعال این Workspace را
-        از اینجا مدیریت کن.
+        Boardهای آرشیوشده Workspace
+        «{{ workspace.name }}»
+        در این بخش قرار دارند.
       </p>
     </div>
 
-    <div class="actions">
-      {% if can_create_board %}
-        <a
-          class="btn btn-primary"
-          href="{% url 'boards:create' workspace.pk %}"
-        >
-          <svg class="tf-icon">
-            <use href="#icon-plus"></use>
-          </svg>
+    <a
+      class="btn btn-ghost"
+      href="{% url 'boards:list' workspace.pk %}"
+    >
+      <svg class="tf-icon">
+        <use href="#icon-arrow-right"></use>
+      </svg>
 
-          ساخت Board
-        </a>
-      {% endif %}
-
-      <a
-        class="btn btn-ghost"
-        href="{% url 'workspaces:detail' workspace.pk %}"
-      >
-        <svg class="tf-icon">
-          <use href="#icon-arrow-right"></use>
-        </svg>
-
-        بازگشت به Workspace
-      </a> 
-
-        <a
-          class="btn btn-ghost"
-          href="{% url 'boards:archived_list' workspace.pk %}"
-        >
-          <svg class="tf-icon">
-            <use href="#icon-archive"></use>
-          </svg>
-          آرشیو
-
-          {% if archived_boards_count %}
-            <span class="badge">
-              {{ archived_boards_count }}
-            </span>
-          {% endif %}
-        </a>
-    </div>
+      Boardهای فعال
+    </a>
   </div>
 
   <div class="workspace-summary">
@@ -83,12 +53,12 @@
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
-          <use href="#icon-board"></use>
+          <use href="#icon-archive"></use>
         </svg>
       </span>
 
       <span class="workspace-summary__label">
-        Boardهای فعال
+        آرشیوشده
       </span>
 
       <strong class="workspace-summary__value">
@@ -125,24 +95,16 @@
     <div>
       <h2 class="card-title">
         <svg class="tf-icon title-icon">
-          <use href="#icon-grid"></use>
+          <use href="#icon-archive"></use>
         </svg>
 
-        Boardهای فعال
+        Boardهای آرشیوشده
       </h2>
 
       <p class="card-text">
-        Boardهای آرشیوشده در این صفحه
-        نمایش داده نمی‌شوند.
+        Board را بازیابی یا برای همیشه حذف کن.
       </p>
     </div>
-
-    {% if boards %}
-      <span class="badge">
-        {{ page_obj.paginator.count }}
-        مورد
-      </span>
-    {% endif %}
   </div>
 
   {% if boards %}
@@ -153,10 +115,7 @@
           data-reveal
           data-tilt
         >
-          <a
-            class="workspace-card__main"
-            href="{% url 'boards:detail' workspace.pk board.pk %}"
-          >
+          <div class="workspace-card__main">
             <div class="workspace-card__top">
               <div
                 class="workspace-card__mark"
@@ -166,8 +125,8 @@
               </div>
 
               <div class="workspace-card__badges">
-                <span class="badge badge-success">
-                  فعال
+                <span class="badge badge-warning">
+                  آرشیوشده
                 </span>
               </div>
             </div>
@@ -181,8 +140,7 @@
                 {% if board.description %}
                   {{ board.description|truncatechars:125 }}
                 {% else %}
-                  برای این Board هنوز توضیحی
-                  ثبت نشده است.
+                  توضیحی برای این Board ثبت نشده است.
                 {% endif %}
               </p>
             </div>
@@ -199,51 +157,59 @@
 
               <span>
                 <svg class="tf-icon">
-                  <use href="#icon-board"></use>
+                  <use href="#icon-user"></use>
                 </svg>
 
-                بدون ستون
+                {% if board.created_by %}
+                  {{ board.created_by.username }}
+                {% else %}
+                  حساب حذف‌شده
+                {% endif %}
               </span>
             </div>
-          </a>
+          </div>
 
           <footer class="workspace-card__footer">
-            <div class="workspace-owner-inline">
-              {% if board.created_by %}
-                {% include "workspaces/includes/_avatar.html" with user=board.created_by %}
+            <div class="actions">
+              {% if can_restore_boards %}
+                <form
+                  method="post"
+                  action="{% url 'boards:restore' workspace.pk board.pk %}"
+                >
+                  {% csrf_token %}
 
-                <div>
-                  <span class="muted">
-                    ساخته‌شده توسط
-                  </span>
+                  <button
+                    class="btn btn-primary"
+                    type="submit"
+                  >
+                    <svg class="tf-icon">
+                      <use href="#icon-refresh"></use>
+                    </svg>
 
-                  <strong>
-                    {{ board.created_by.get_full_name|default:board.created_by.username }}
-                  </strong>
-                </div>
-              {% else %}
-                <div>
-                  <span class="muted">
-                    سازنده
-                  </span>
+                    بازیابی
+                  </button>
+                </form>
+              {% endif %}
 
-                  <strong>
-                    حساب حذف‌شده
-                  </strong>
-                </div>
+              {% if can_delete_boards %}
+                <a
+                  class="btn btn-danger"
+                  href="{% url 'boards:delete' workspace.pk board.pk %}"
+                >
+                  <svg class="tf-icon">
+                    <use href="#icon-trash"></use>
+                  </svg>
+
+                  حذف دائمی
+                </a>
               {% endif %}
             </div>
 
-            <a
-              class="btn btn-soft"
-              href="{% url 'boards:detail' workspace.pk board.pk %}"
-            >
-              باز کردن
-
-              <svg class="tf-icon">
-                <use href="#icon-chevron-left"></use>
-              </svg>
-            </a>
+            {% if not can_restore_boards %}
+              <span class="badge badge-info">
+                فقط قابل مشاهده
+              </span>
+            {% endif %}
           </footer>
         </article>
       {% endfor %}
@@ -260,10 +226,6 @@
             class="btn"
             href="?page={{ page_obj.previous_page_number }}"
           >
-            <svg class="tf-icon">
-              <use href="#icon-chevron-right"></use>
-            </svg>
-
             صفحه قبل
           </a>
         {% else %}
@@ -281,10 +243,6 @@
             href="?page={{ page_obj.next_page_number }}"
           >
             صفحه بعد
-
-            <svg class="tf-icon">
-              <use href="#icon-chevron-left"></use>
-            </svg>
           </a>
         {% else %}
           <span></span>
@@ -298,35 +256,24 @@
     >
       <div class="empty-icon">
         <svg class="tf-icon">
-          <use href="#icon-board"></use>
+          <use href="#icon-archive"></use>
         </svg>
       </div>
 
       <h2>
-        هنوز Boardی ساخته نشده
+        آرشیو خالی است
       </h2>
 
       <p class="page-subtitle">
-        Board اولین سطح سازمان‌دهی کارها
-        داخل Workspace است.
+        هنوز هیچ Boardی آرشیو نشده است.
       </p>
 
-      {% if can_create_board %}
-        <a
-          class="btn btn-primary"
-          href="{% url 'boards:create' workspace.pk %}"
-        >
-          <svg class="tf-icon">
-            <use href="#icon-plus"></use>
-          </svg>
-
-          ساخت اولین Board
-        </a>
-      {% else %}
-        <span class="badge badge-info">
-          نقش Viewer اجازه ساخت Board ندارد
-        </span>
-      {% endif %}
+      <a
+        class="btn btn-primary"
+        href="{% url 'boards:list' workspace.pk %}"
+      >
+        بازگشت به Boardهای فعال
+      </a>
     </section>
   {% endif %}
 </section>
