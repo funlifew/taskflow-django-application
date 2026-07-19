@@ -6,6 +6,18 @@ from apps.workspaces.models import WorkspaceMembership
 from .models import Board
 
 
+BOARD_WRITE_ROLES = (
+    WorkspaceMembership.Role.OWNER,
+    WorkspaceMembership.Role.ADMIN,
+    WorkspaceMembership.Role.MEMBER,
+)
+
+BOARD_DELETE_ROLES = (
+    WorkspaceMembership.Role.OWNER,
+    WorkspaceMembership.Role.ADMIN,
+)
+
+
 class WorkspaceBoardPermissionMixin(
     WorkspacePermissionMixin
 ):
@@ -16,7 +28,7 @@ class WorkspaceBoardPermissionMixin(
         
         if (
             workspace.owner_id
-            == self.request.user
+            == self.request.user.id
         ):
             return WorkspaceMembership.Role.OWNER
         
@@ -35,19 +47,12 @@ class BoardReadRequiredMixin(
 class BoardWriteRequiredMixin(
     WorkspaceBoardPermissionMixin
 ):
-    allowed_roles = [
-        WorkspaceMembership.Role.OWNER,
-        WorkspaceMembership.Role.ADMIN,
-        WorkspaceMembership.Role.MEMBER,
-    ]
+    allowed_roles = BOARD_WRITE_ROLES
 
 class BoardDeleteRequiredMixin(
     WorkspaceBoardPermissionMixin
 ):
-    allowed_roles = [
-        WorkspaceMembership.Role.OWNER,
-        WorkspaceMembership.Role.ADMIN,
-    ]
+    allowed_roles = BOARD_DELETE_ROLES
 
 
 class BoardObjectMixin:
@@ -86,3 +91,17 @@ class BoardObjectMixin:
             )
         
         return self._board
+
+
+class ArchiveBoardObjectMixin(
+    BoardObjectMixin
+):
+    include_archived_boards = True
+    
+    def get_board_queryset(self):
+        return (
+            super().get_board_queryset()
+            .filter(
+                is_archived=True,
+            )
+        )

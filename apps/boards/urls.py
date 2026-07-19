@@ -26,4 +26,24 @@ urlpatterns = [
         views.BoardUpdateView.as_view(),
         name="update",
     ),
+    path(
+            "archived/",
+            views.ArchivedBoardListView.as_view(),
+            name="archived_list",
+    ),
+    path(
+        '<int:board_pk>/archive/',
+        views.BoardArchiveView.as_view(),
+        name='archive',
+    ),
+    path(
+        '<int:board_pk>/restore/',
+        views.BoardRestoreView.as_view(),
+        name="restore",
+    ),
+    path(
+        "<int:board_pk>/delete/",
+        views.BoardDeleteView.as_view(),
+        name='delete',
+    ),
 ]
