@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | حذف {{ board.title }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="page-head page-head--animated"
+  data-reveal
+>
+  <div>
+    <span class="badge badge-danger eyebrow">
+      <svg class="tf-icon">
+        <use href="#icon-trash"></use>
+      </svg>
+
+      حذف دائمی
+    </span>
+
+    <h1 class="page-title">
+      حذف Board
+    </h1>
+
+    <p class="page-subtitle">
+      این عملیات قابل بازگشت نیست.
+    </p>
+  </div>
+</section>
+
+<div class="workspace-form-layout">
+  <section
+    class="form-card animated-border"
+    data-reveal
+  >
+    <div class="form-grid">
+      <div class="form-errors">
+        <h2 class="card-title">
+          آیا از حذف «{{ board.title }}»
+          مطمئن هستی؟
+        </h2>
+
+        <p class="card-text">
+          این Board برای همیشه حذف خواهد شد.
+          در آینده تمام ستون‌ها و Taskهای داخل
+          آن نیز همراه Board حذف می‌شوند.
+        </p>
+      </div>
+
+      <form
+        method="post"
+        class="form-actions"
+      >
+        {% csrf_token %}
+
+        <button
+          class="btn btn-danger"
+          type="submit"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-trash"></use>
+          </svg>
+
+          بله، برای همیشه حذف شود
+        </button>
+
+        <a
+          class="btn btn-ghost"
+          href="{% url 'boards:archived_list' workspace.pk %}"
+        >
+          انصراف
+        </a>
+      </form>
+    </div>
+  </section>
+
+  <aside
+    class="workspace-form-note panel"
+    data-reveal
+  >
+    <div class="page-head__icon">
+      <svg class="tf-icon">
+        <use href="#icon-warning"></use>
+      </svg>
+    </div>
+
+    <span class="badge badge-warning">
+      هشدار
+    </span>
+
+    <h2 class="card-title">
+      غیرقابل بازگشت
+    </h2>
+
+    <div class="info-list">
+      <div class="info-row">
+        <span>Board</span>
+        <strong>{{ board.title }}</strong>
+      </div>
+
+      <div class="info-row">
+        <span>Workspace</span>
+        <strong>{{ workspace.name }}</strong>
+      </div>
+
+      <div class="info-row">
+        <span>وضعیت</span>
+        <strong>آرشیوشده</strong>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock content %}

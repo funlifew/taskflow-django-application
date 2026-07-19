@@ -67,6 +67,26 @@
         ویرایش Board
       </a>
     {% endif %}
+    
+    {% if can_archive_board %}
+      <form
+        method="post"
+        action="{% url 'boards:archive' workspace.pk board.pk %}"
+      >
+        {% csrf_token %}
+
+        <button
+          class="btn btn-soft"
+          type="submit"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-archive"></use>
+          </svg>
+
+          آرشیو Board
+        </button>
+      </form>
+    {% endif %}
 
     <a
       class="btn btn-ghost"
