@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.accounts',
     'apps.workspaces',
-    'apps.boards',
+    'apps.boards',''
+    'apps.columns',
     'apps.dashboard',
     'apps.notifications',
     'apps.tasks',
