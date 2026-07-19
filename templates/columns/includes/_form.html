@@ -1,0 +1,42 @@
+{% if form.non_field_errors %}
+  <div
+    class="form-errors"
+    role="alert"
+    data-reveal
+  >
+    {% for error in form.non_field_errors %}
+      <p class="error-text">
+        {{ error }}
+      </p>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="field" data-reveal>
+  <div class="label-row">
+    <label for="{{ form.title.id_for_label }}">
+      عنوان ستون
+    </label>
+
+    <span class="help">
+      حداقل ۲ کاراکتر
+    </span>
+  </div>
+
+  <div class="input-with-icon">
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+    >
+      <use href="#icon-columns"></use>
+    </svg>
+
+    {{ form.title }}
+  </div>
+
+  {% for error in form.title.errors %}
+    <p class="error-text">
+      {{ error }}
+    </p>
+  {% endfor %}
+</div>

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | ساخت ستون
+{% endblock title %}
+
+{% block content %}
+<section
+  class="page-head page-head--animated"
+  data-reveal
+>
+  <div>
+    <span class="badge badge-primary eyebrow">
+      <svg class="tf-icon">
+        <use href="#icon-columns"></use>
+      </svg>
+
+      ستون جدید
+    </span>
+
+    <h1 class="page-title">
+      یک ستون تازه بساز
+    </h1>
+
+    <p class="page-subtitle">
+      ستون جدید داخل Board
+      «{{ board.title }}»
+      ساخته می‌شود.
+    </p>
+  </div>
+</section>
+
+<div class="workspace-form-layout">
+  <section
+    class="form-card animated-border"
+    data-tilt-surface
+    data-reveal
+  >
+    <form
+      class="form-grid"
+      method="post"
+      novalidate
+    >
+      {% csrf_token %}
+
+      {% include "columns/includes/_form.html" %}
+
+      <div
+        class="form-actions"
+        data-reveal
+      >
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-plus"></use>
+          </svg>
+
+          <span>
+            ساخت ستون
+          </span>
+        </button>
+
+        <a
+          class="btn btn-ghost"
+          href="{% url 'boards:detail' workspace.pk board.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-arrow-right"></use>
+          </svg>
+
+          <span>
+            انصراف
+          </span>
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <aside
+    class="workspace-form-note panel"
+    data-reveal
+  >
+    <div class="page-head__icon">
+      <svg class="tf-icon">
+        <use href="#icon-columns"></use>
+      </svg>
+    </div>
+
+    <span class="badge badge-info">
+      داخل Board
+    </span>
+
+    <h2 class="card-title">
+      {{ board.title }}
+    </h2>
+
+    <p class="card-text">
+      ستون جدید در انتهای ستون‌های فعال
+      این Board قرار می‌گیرد.
+    </p>
+
+    <div class="info-list">
+      <div class="info-row">
+        <span>Workspace</span>
+
+        <strong>
+          {{ workspace.name }}
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>سازنده</span>
+
+        <strong>
+          {{ request.user.username }}
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>موقعیت اولیه</span>
+
+        <strong>
+          {{ next_position|add:"1" }}
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>وضعیت اولیه</span>
+
+        <strong>
+          فعال
+        </strong>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock content %}
