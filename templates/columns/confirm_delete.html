@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | حذف {{ column.title }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="form-card animated-border"
+  data-reveal
+>
+  <span class="badge badge-danger eyebrow">
+    حذف دائمی
+  </span>
+
+  <h1 class="page-title">
+    ستون «{{ column.title }}» حذف شود؟
+  </h1>
+
+  <p class="page-subtitle">
+    این عملیات قابل بازگشت نیست.
+    در مراحل بعدی، Taskهای متعلق به این
+    ستون نیز تحت تأثیر قرار خواهند گرفت.
+  </p>
+
+  <form
+    method="post"
+    class="form-actions"
+  >
+    {% csrf_token %}
+
+    <button
+      class="btn btn-danger"
+      type="submit"
+    >
+      <svg class="tf-icon">
+        <use href="#icon-trash"></use>
+      </svg>
+
+      حذف دائمی
+    </button>
+
+    <a
+      class="btn btn-ghost"
+      href="{% url 'columns:archived_list' workspace.pk board.pk %}"
+    >
+      انصراف
+    </a>
+  </form>
+</section>
+{% endblock content %}

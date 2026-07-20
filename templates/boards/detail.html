@@ -200,20 +200,38 @@
   data-reveal
 >
   <div class="spread workspace-section-head">
-    <div>
-      <h2 class="card-title">
-        <svg class="tf-icon title-icon">
-          <use href="#icon-columns"></use>
-        </svg>
+  <div>
+    <h2 class="card-title">
+      <svg class="tf-icon title-icon">
+        <use href="#icon-columns"></use>
+      </svg>
 
-        ستون‌های Board
-      </h2>
+      ستون‌های Board
+    </h2>
 
-      <p class="card-text">
-        ستون‌ها جریان انجام کارها را در این
-        Board مشخص می‌کنند.
-      </p>
-    </div>
+    <p class="card-text">
+      ستون‌ها جریان انجام کارها را در این
+      Board مشخص می‌کنند.
+    </p>
+  </div>
+
+  <div class="actions">
+    <a
+      class="btn btn-ghost"
+      href="{% url 'columns:archived_list' workspace.pk board.pk %}"
+    >
+      <svg class="tf-icon">
+        <use href="#icon-archive"></use>
+      </svg>
+
+      آرشیو ستون‌ها
+
+      {% if archived_columns_count %}
+        <span class="badge">
+          {{ archived_columns_count }}
+        </span>
+      {% endif %}
+    </a>
 
     {% if can_create_column %}
       <a
@@ -232,6 +250,7 @@
       </span>
     {% endif %}
   </div>
+</div>
 
   {% if columns %}
     <div class="workspace-grid">
@@ -297,21 +316,52 @@
             </div>
           </div>
 
-          <footer class="workspace-card__footer">
-            <span class="badge">
-              ۰ Task
-            </span>
+<footer class="workspace-card__footer">
+  <span class="badge">
+    ۰ Task
+  </span>
 
-            {% if can_create_column %}
-              <span class="badge badge-primary">
-                مدیریت در مرحله بعد
-              </span>
-            {% else %}
-              <span class="badge badge-info">
-                مشاهده
-              </span>
-            {% endif %}
-          </footer>
+  {% if can_update_columns or can_archive_columns %}
+    <div class="actions">
+      {% if can_update_columns %}
+        <a
+          class="btn btn-ghost"
+          href="{% url 'columns:update' workspace.pk board.pk column.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-edit"></use>
+          </svg>
+
+          ویرایش
+        </a>
+      {% endif %}
+
+      {% if can_archive_columns %}
+        <form
+          method="post"
+          action="{% url 'columns:archive' workspace.pk board.pk column.pk %}"
+        >
+          {% csrf_token %}
+
+          <button
+            class="btn btn-soft"
+            type="submit"
+          >
+            <svg class="tf-icon">
+              <use href="#icon-archive"></use>
+            </svg>
+
+            آرشیو
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  {% else %}
+    <span class="badge badge-info">
+      مشاهده
+    </span>
+  {% endif %}
+</footer>
         </article>
       {% endfor %}
     </div>

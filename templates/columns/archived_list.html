@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | آرشیو ستون‌های {{ board.title }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="workspace-hero animated-border"
+  data-reveal
+>
+  <div class="workspace-hero__content">
+    <div>
+      <span class="badge badge-warning eyebrow">
+        <svg class="tf-icon">
+          <use href="#icon-archive"></use>
+        </svg>
+
+        آرشیو ستون‌ها
+      </span>
+
+      <h1 class="page-title">
+        ستون‌های آرشیوشده
+      </h1>
+
+      <p class="page-subtitle">
+        ستون‌های آرشیوشده Board
+        «{{ board.title }}»
+        در این بخش قرار دارند.
+      </p>
+    </div>
+
+    <a
+      class="btn btn-ghost"
+      href="{% url 'boards:detail' workspace.pk board.pk %}"
+    >
+      <svg class="tf-icon">
+        <use href="#icon-arrow-right"></use>
+      </svg>
+
+      بازگشت به Board
+    </a>
+  </div>
+</section>
+
+<section class="workspace-list-section">
+  <div class="spread workspace-section-head">
+    <div>
+      <h2 class="card-title">
+        ستون‌های آرشیوشده
+      </h2>
+
+      <p class="card-text">
+        ستون‌ها را بازیابی یا برای همیشه
+        حذف کن.
+      </p>
+    </div>
+
+    <span class="badge badge-warning">
+      {{ page_obj.paginator.count }}
+      ستون
+    </span>
+  </div>
+
+  {% if columns %}
+    <div class="workspace-grid">
+      {% for column in columns %}
+        <article
+          class="workspace-card"
+          data-reveal
+          data-tilt
+        >
+          <div class="workspace-card__main">
+            <div class="workspace-card__top">
+              <div
+                class="workspace-card__mark"
+                aria-hidden="true"
+              >
+                {{ column.title|slice:":1"|upper }}
+              </div>
+
+              <span class="badge badge-warning">
+                آرشیوشده
+              </span>
+            </div>
+
+            <div class="workspace-card__content">
+              <h3>
+                {{ column.title }}
+              </h3>
+
+              <p>
+                جایگاه پیشین:
+                {{ column.position|add:"1" }}
+              </p>
+            </div>
+
+            <div class="workspace-card__meta">
+              <span>
+                {{ column.updated_at|timesince }}
+                پیش
+              </span>
+
+              <span>
+                {% if column.created_by %}
+                  {{ column.created_by.username }}
+                {% else %}
+                  حساب حذف‌شده
+                {% endif %}
+              </span>
+            </div>
+          </div>
+
+          <footer class="workspace-card__footer">
+            {% if can_restore_columns %}
+              <form
+                method="post"
+                action="{% url 'columns:restore' workspace.pk board.pk column.pk %}"
+              >
+                {% csrf_token %}
+
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                >
+                  <svg class="tf-icon">
+                    <use href="#icon-refresh"></use>
+                  </svg>
+
+                  بازیابی
+                </button>
+              </form>
+            {% endif %}
+
+            {% if can_delete_columns %}
+              <a
+                class="btn btn-danger"
+                href="{% url 'columns:delete' workspace.pk board.pk column.pk %}"
+              >
+                <svg class="tf-icon">
+                  <use href="#icon-trash"></use>
+                </svg>
+
+                حذف دائمی
+              </a>
+            {% endif %}
+
+            {% if not can_restore_columns %}
+              <span class="badge badge-info">
+                فقط قابل مشاهده
+              </span>
+            {% endif %}
+          </footer>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section
+      class="empty-state workspace-empty-state"
+      data-reveal
+    >
+      <div class="empty-icon">
+        <svg class="tf-icon">
+          <use href="#icon-archive"></use>
+        </svg>
+      </div>
+
+      <h2>
+        آرشیو خالی است
+      </h2>
+
+      <p class="page-subtitle">
+        هنوز هیچ ستونی از این Board
+        آرشیو نشده است.
+      </p>
+
+      <a
+        class="btn btn-primary"
+        href="{% url 'boards:detail' workspace.pk board.pk %}"
+      >
+        بازگشت به Board
+      </a>
+    </section>
+  {% endif %}
+</section>
+{% endblock content %}

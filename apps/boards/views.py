@@ -169,8 +169,18 @@ class BoardDetailView(
             'can_delete_board': can_delete_board,
             'can_archive_board': can_edit_board,
             'can_create_column': can_edit_board,
+            'can_update_columns': can_edit_board,
+            'can_archive_columns': can_edit_board,
             'columns': columns,
             'columns_count': len(columns),
+            'archived_columns_count': (
+                Column.objects
+                .archived()
+                .for_board(
+                    self.object
+                )
+                .count()
+            ),
         })
         
         return context

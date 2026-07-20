@@ -43,6 +43,34 @@ class ColumnManager(
             return 0
         
         return max_position + 1
+    
+    def normalize_positions(
+        self,
+        *,
+        board,
+    ):
+        columns = list(
+            self.get_queryset()
+            .select_for_update()
+            .active()
+            .for_board(board)
+            .order_by(
+                'position',
+                'pk'
+            )
+        )
+        
+        for expected_position, column in enumerate(columns):
+            if column.position == expected_position:
+                continue
+            
+            column.position = expected_position
+            column.save(
+                update_fields=[
+                    'position',
+                    'updated_at',
+                ]
+            )
 
 class Column(TimeStampedModel):
     board = models.ForeignKey(
