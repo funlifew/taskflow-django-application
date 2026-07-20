@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | ویرایش {{ column.title }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="page-head page-head--animated"
+  data-reveal
+>
+  <div>
+    <span class="badge badge-primary eyebrow">
+      <svg class="tf-icon">
+        <use href="#icon-edit"></use>
+      </svg>
+
+      ویرایش ستون
+    </span>
+
+    <h1 class="page-title">
+      ویرایش «{{ column.title }}»
+    </h1>
+
+    <p class="page-subtitle">
+      این ستون متعلق به Board
+      «{{ board.title }}»
+      است.
+    </p>
+  </div>
+</section>
+
+<div class="workspace-form-layout">
+  <section
+    class="form-card animated-border"
+    data-tilt-surface
+    data-reveal
+  >
+    <form
+      class="form-grid"
+      method="post"
+      novalidate
+    >
+      {% csrf_token %}
+
+      {% include "columns/includes/_form.html" %}
+
+      <div class="form-actions">
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-check"></use>
+          </svg>
+
+          ذخیره تغییرات
+        </button>
+
+        <a
+          class="btn btn-ghost"
+          href="{% url 'boards:detail' workspace.pk board.pk %}"
+        >
+          انصراف
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <aside class="workspace-form-note panel">
+    <span class="badge badge-info">
+      جایگاه {{ column.position|add:"1" }}
+    </span>
+
+    <h2 class="card-title">
+      {{ board.title }}
+    </h2>
+
+    <p class="card-text">
+      ویرایش عنوان، جایگاه ستون را تغییر
+      نمی‌دهد.
+    </p>
+  </aside>
+</div>
+{% endblock content %}
