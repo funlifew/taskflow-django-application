@@ -1,0 +1,71 @@
+{% if tasks %}
+  <div class="info-list">
+    {% for task in tasks %}
+      <article class="info-row">
+        <div>
+          <strong>
+            {{ task.title }}
+          </strong>
+
+          {% if task.description %}
+            <p class="card-text">
+              {{ task.description|truncatechars:90 }}
+            </p>
+          {% endif %}
+
+          <div class="meta-row">
+            {% if task.priority == "urgent" %}
+              <span class="badge badge-danger">
+                {{ task.get_priority_display }}
+              </span>
+            {% elif task.priority == "high" %}
+              <span class="badge badge-warning">
+                {{ task.get_priority_display }}
+              </span>
+            {% elif task.priority == "medium" %}
+              <span class="badge badge-info">
+                {{ task.get_priority_display }}
+              </span>
+            {% else %}
+              <span class="badge badge-success">
+                {{ task.get_priority_display }}
+              </span>
+            {% endif %}
+
+            <span class="badge">
+              {{ task.get_status_display }}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <span>
+            <svg class="tf-icon">
+              <use href="#icon-user"></use>
+            </svg>
+
+            {% if task.assignee %}
+              {{ task.assignee.get_full_name|default:task.assignee.username }}
+            {% else %}
+              بدون مسئول
+            {% endif %}
+          </span>
+
+          {% if task.due_at %}
+            <span>
+              <svg class="tf-icon">
+                <use href="#icon-calendar"></use>
+              </svg>
+
+              {{ task.due_at|date:"Y/m/d H:i" }}
+            </span>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="card-text">
+    هنوز Task فعالی در این ستون وجود ندارد.
+  </p>
+{% endif %}

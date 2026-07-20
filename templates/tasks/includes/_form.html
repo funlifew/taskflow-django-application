@@ -1,0 +1,150 @@
+{% if form.non_field_errors %}
+  <div
+    class="form-errors"
+    role="alert"
+    data-reveal
+  >
+    {% for error in form.non_field_errors %}
+      <p class="error-text">
+        {{ error }}
+      </p>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="field" data-reveal>
+  <div class="label-row">
+    <label for="{{ form.title.id_for_label }}">
+      عنوان Task
+    </label>
+
+    <span class="help">
+      حداقل ۲ کاراکتر
+    </span>
+  </div>
+
+  <div class="input-with-icon">
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+    >
+      <use href="#icon-check"></use>
+    </svg>
+
+    {{ form.title }}
+  </div>
+
+  {% for error in form.title.errors %}
+    <p class="error-text">
+      {{ error }}
+    </p>
+  {% endfor %}
+</div>
+
+<div class="field" data-reveal>
+  <div class="label-row">
+    <label for="{{ form.description.id_for_label }}">
+      توضیحات
+    </label>
+
+    <span class="help">
+      اختیاری
+    </span>
+  </div>
+
+  <div
+    class="
+      input-with-icon
+      input-with-icon--textarea
+    "
+  >
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+    >
+      <use href="#icon-edit"></use>
+    </svg>
+
+    {{ form.description }}
+  </div>
+
+  {% for error in form.description.errors %}
+    <p class="error-text">
+      {{ error }}
+    </p>
+  {% endfor %}
+</div>
+
+<div class="field" data-reveal>
+  <div class="label-row">
+    <label for="{{ form.priority.id_for_label }}">
+      اولویت
+    </label>
+  </div>
+
+  {{ form.priority }}
+
+  {% for error in form.priority.errors %}
+    <p class="error-text">
+      {{ error }}
+    </p>
+  {% endfor %}
+</div>
+
+<div class="field" data-reveal>
+  <div class="label-row">
+    <label for="{{ form.assignee.id_for_label }}">
+      مسئول
+    </label>
+
+    <span class="help">
+      اختیاری
+    </span>
+  </div>
+
+  <div class="input-with-icon">
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+    >
+      <use href="#icon-user"></use>
+    </svg>
+
+    {{ form.assignee }}
+  </div>
+
+  {% for error in form.assignee.errors %}
+    <p class="error-text">
+      {{ error }}
+    </p>
+  {% endfor %}
+</div>
+
+<div class="field" data-reveal>
+  <div class="label-row">
+    <label for="{{ form.due_at.id_for_label }}">
+      مهلت انجام
+    </label>
+
+    <span class="help">
+      اختیاری
+    </span>
+  </div>
+
+  <div class="input-with-icon">
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+    >
+      <use href="#icon-calendar"></use>
+    </svg>
+
+    {{ form.due_at }}
+  </div>
+
+  {% for error in form.due_at.errors %}
+    <p class="error-text">
+      {{ error }}
+    </p>
+  {% endfor %}
+</div>

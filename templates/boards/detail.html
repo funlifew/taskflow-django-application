@@ -286,10 +286,7 @@
                 {{ column.title }}
               </h3>
 
-              <p>
-                Taskهای این ستون در مرحله بعد
-                به این بخش اضافه می‌شوند.
-              </p>
+              {% include "tasks/includes/_task_list.html" with tasks=column.active_tasks %}
             </div>
 
             <div class="workspace-card__meta">
@@ -318,11 +315,25 @@
 
 <footer class="workspace-card__footer">
   <span class="badge">
-    ۰ Task
+    {{ column.active_tasks|length }}
+    Task
   </span>
 
-  {% if can_update_columns or can_archive_columns %}
+  {% if can_create_tasks or can_update_columns or can_archive_columns %}
     <div class="actions">
+      {% if can_create_tasks %}
+        <a
+          class="btn btn-primary"
+          href="{% url 'tasks:create' workspace.pk board.pk column.pk %}"
+        >
+          <svg class="tf-icon">
+            <use href="#icon-plus"></use>
+          </svg>
+
+          Task جدید
+        </a>
+      {% endif %}
+
       {% if can_update_columns %}
         <a
           class="btn btn-ghost"
