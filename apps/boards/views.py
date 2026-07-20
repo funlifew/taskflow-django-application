@@ -25,6 +25,7 @@ from .mixins import (
 )
 
 from apps.columns.models import Column
+from apps.tasks.models import Task
 
 # Create your views here.
 
@@ -135,19 +136,39 @@ class BoardDetailView(
             .get_board_queryset()
             .prefetch_related(
                 Prefetch(
-                    'columns',
+                    "columns",
                     queryset=(
                         Column.objects
                         .active()
                         .select_related(
-                            'created_by',
+                            "created_by",
+                        )
+                        .prefetch_related(
+                            Prefetch(
+                                "tasks",
+                                queryset=(
+                                    Task.objects
+                                    .active()
+                                    .select_related(
+                                        "assignee",
+                                        "created_by",
+                                    )
+                                    .order_by(
+                                        "position",
+                                        "pk",
+                                    )
+                                ),
+                                to_attr=(
+                                    "active_tasks"
+                                ),
+                            )
                         )
                         .order_by(
-                            'position',
-                            'pk',
+                            "position",
+                            "pk",
                         )
                     ),
-                    to_attr='active_columns',
+                    to_attr="active_columns",
                 )
             )
         )
@@ -162,6 +183,11 @@ class BoardDetailView(
         
         columns = self.object.active_columns
         
+        tasks_count = sum(
+            len(column.active_tasks)
+            for column in columns
+        )
+        
         context.update({
             'workspace': self.get_workspace(),
             'current_user_role': current_user_role,
@@ -171,6 +197,7 @@ class BoardDetailView(
             'can_create_column': can_edit_board,
             'can_update_columns': can_edit_board,
             'can_archive_columns': can_edit_board,
+            "can_create_tasks": can_edit_board,
             'columns': columns,
             'columns_count': len(columns),
             'archived_columns_count': (
@@ -181,6 +208,7 @@ class BoardDetailView(
                 )
                 .count()
             ),
+            'tasks_count': tasks_count,
         })
         
         return context

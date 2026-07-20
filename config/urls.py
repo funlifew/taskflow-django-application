@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include('apps.accounts.urls', namespace='accounts')),
     path('dashboard/', include('apps.dashboard.urls', namespace='dashboard')),
+    path('workspace/<int:workspace_pk>/boards/<int:board_pk>/columns/<int:column_pk>/tasks/', include('apps.tasks.urls', namespace='tasks')),
     path('workspaces/<int:workspace_pk>/boards/<int:board_pk>/columns/', include('apps.columns.urls', namespace='columns')),
     path('workspaces/<int:workspace_pk>/boards/', include('apps.boards.urls', namespace='boards')),
     path('workspaces/', include('apps.workspaces.urls', namespace='workspaces')),
