@@ -17,7 +17,7 @@ class ColumnForm(forms.ModelForm):
                         'مثلا برای انجام، '
                         "درحال انجام یا تکمیل‌شده"
                     ),
-                    'autocmplete': 'off',
+                    'autocomplete': 'off',
                     'maxlength': 100,
                 }
             ),
