@@ -72,6 +72,18 @@ class TaskManager(
                 'pk',
             )
         )
+        
+        for expected_position, task in enumerate(tasks):
+            if task.position == expected_position:
+                continue
+            
+            task.position = expected_position
+            task.save(
+                update_fields=[
+                    'position',
+                    'updated_at',
+                ]
+            )
 
 class Task(TimeStampedModel):
     class Priority(models.TextChoices):
