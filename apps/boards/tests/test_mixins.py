@@ -422,3 +422,25 @@ class BoardPermissionMixinTests(BoardTestBase):
             response.status_code,
             404,
         )
+    
+    def test_workspace_owner_role_is_detected_directly(
+        self
+    ):
+        self.client.force_login(self.owner)
+
+        view = BoardReadProbeView()
+        view.request = type(
+            "Request",
+            (),
+            {
+                "user": self.owner,
+            },
+        )()
+        view.kwargs = {
+            "workspace_pk": self.workspace.pk,
+        }
+
+        self.assertEqual(
+            view.get_current_user_role(),
+            WorkspaceMembership.Role.OWNER,
+        )
