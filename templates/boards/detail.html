@@ -372,6 +372,13 @@
       مشاهده
     </span>
   {% endif %}
+
+  <a
+  class="btn btn-ghost"
+  href="{% url 'tasks:archived_list' workspace.pk board.pk column.pk %}"
+>
+  آرشیو Taskها
+</a>
 </footer>
         </article>
       {% endfor %}

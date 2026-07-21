@@ -4,7 +4,11 @@
       <article class="info-row">
         <div>
           <strong>
-            {{ task.title }}
+            <a
+              href="{% url 'tasks:detail' workspace.pk board.pk column.pk task.pk %}"
+            >
+              {{ task.title }}
+            </a>
           </strong>
 
           {% if task.description %}
