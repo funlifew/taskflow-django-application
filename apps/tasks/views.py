@@ -104,6 +104,12 @@ class TaskCreateView(
             ]
         )
         
+        board.save(
+            update_fields=[
+                'updated_at',
+            ]
+        )
+        
         messages.success(
             self.request,
             (
