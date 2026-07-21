@@ -55,6 +55,35 @@ class TaskManager(
             return 0
         
         return max_position + 1
+    
+    
+    def normalize_positions(
+        self,
+        *,
+        column,
+    ):
+        tasks = list(
+            self.get_queryset()
+            .select_for_update()
+            .active()
+            .for_column(column)
+            .order_by(
+                'position',
+                'pk',
+            )
+        )
+        
+        for expected_position, task in enumerate(tasks):
+            if task.position == expected_position:
+                continue
+            
+            task.position = expected_position
+            task.save(
+                update_fields=[
+                    'position',
+                    'updated_at',
+                ]
+            )
 
 class Task(TimeStampedModel):
     class Priority(models.TextChoices):

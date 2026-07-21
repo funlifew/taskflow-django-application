@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}
+  TaskFlow | حذف {{ task.title }}
+{% endblock title %}
+
+{% block content %}
+<section class="form-card animated-border">
+  <span class="badge badge-danger">
+    حذف دائمی
+  </span>
+
+  <h1 class="page-title">
+    Task «{{ task.title }}» حذف شود؟
+  </h1>
+
+  <p class="page-subtitle">
+    این عملیات قابل بازگشت نیست.
+  </p>
+
+  <form
+    method="post"
+    class="form-actions"
+  >
+    {% csrf_token %}
+
+    <button
+      class="btn btn-danger"
+      type="submit"
+    >
+      حذف دائمی
+    </button>
+
+    <a
+      class="btn btn-ghost"
+      href="{% url 'tasks:archived_list' workspace.pk board.pk column.pk %}"
+    >
+      انصراف
+    </a>
+  </form>
+</section>
+{% endblock content %}

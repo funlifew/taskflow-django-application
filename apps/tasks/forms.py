@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from apps.columns.models import Column
 
 from .models import Task
 
@@ -127,3 +128,66 @@ class TaskForm(forms.ModelForm):
             )
 
         return title
+
+
+class TaskStatusForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = (
+            'status',
+        )
+        
+        widgets = {
+            'status': forms.Select(
+                attrs={
+                    'class': 'input',
+                }
+            ),
+        }
+
+class TaskMoveForm(forms.Form):
+    target_column = forms.ModelChoiceField(
+        label='ستون مقصد',
+        queryset=Column.objects.none(),
+        widget=forms.Select(
+            attrs={
+                'class': 'input',
+            }
+        ),
+    )
+    
+    
+    def __init__(
+        self,
+        *args,
+        board=None,
+        current_column=None,
+        **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+        
+        self.board = board
+        self.current_column = current_column
+        
+        if board is None:
+            return
+        
+        queryset = (
+            Column.objects
+            .active()
+            .for_board(board)
+            .order_by(
+                'position',
+                'pk',
+            )
+        )
+        
+        if current_column is not None:
+            queryset = queryset.exclude(
+                pk=current_column.pk,
+            )
+        
+        self.fields['target_column'].queryset = queryset

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+  TaskFlow | انتقال {{ task.title }}
+{% endblock title %}
+
+{% block content %}
+<section class="form-card animated-border">
+  <span class="badge badge-info">
+    انتقال Task
+  </span>
+
+  <h1 class="page-title">
+    انتقال «{{ task.title }}»
+  </h1>
+
+  <p class="page-subtitle">
+    ستون فعلی:
+    «{{ column.title }}»
+  </p>
+
+  <form
+    method="post"
+    class="form-grid"
+    novalidate
+  >
+    {% csrf_token %}
+
+    <div class="field">
+      <label for="{{ form.target_column.id_for_label }}">
+        ستون مقصد
+      </label>
+
+      {{ form.target_column }}
+
+      {% for error in form.target_column.errors %}
+        <p class="error-text">
+          {{ error }}
+        </p>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <button
+        class="btn btn-primary"
+        type="submit"
+      >
+        انتقال Task
+      </button>
+
+      <a
+        class="btn btn-ghost"
+        href="{% url 'tasks:detail' workspace.pk board.pk column.pk task.pk %}"
+      >
+        انصراف
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock content %}

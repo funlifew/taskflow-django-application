@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | {{ task.title }}
+{% endblock title %}
+
+{% block content %}
+<section
+  class="workspace-detail-hero animated-border"
+  data-reveal
+>
+  <div
+    class="workspace-detail-hero__mark"
+    aria-hidden="true"
+  >
+    {{ task.title|slice:":1"|upper }}
+  </div>
+
+  <div class="workspace-detail-hero__body">
+    <div class="meta-row">
+      <span class="badge badge-primary">
+        {{ task.get_priority_display }}
+      </span>
+
+      <span class="badge badge-info">
+        {{ task.get_status_display }}
+      </span>
+
+      <span class="badge">
+        {{ column.title }}
+      </span>
+    </div>
+
+    <h1 class="page-title">
+      {{ task.title }}
+    </h1>
+
+    <p class="page-subtitle">
+      {% if task.description %}
+        {{ task.description }}
+      {% else %}
+        برای این Task توضیحی ثبت نشده است.
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="actions">
+    {% if can_update_task %}
+      <a
+        class="btn btn-primary"
+        href="{% url 'tasks:update' workspace.pk board.pk column.pk task.pk %}"
+      >
+        ویرایش
+      </a>
+    {% endif %}
+
+    {% if can_move_task %}
+      <a
+        class="btn btn-ghost"
+        href="{% url 'tasks:move' workspace.pk board.pk column.pk task.pk %}"
+      >
+        انتقال
+      </a>
+    {% endif %}
+
+    {% if can_archive_task %}
+      <form
+        method="post"
+        action="{% url 'tasks:archive' workspace.pk board.pk column.pk task.pk %}"
+      >
+        {% csrf_token %}
+
+        <button
+          class="btn btn-soft"
+          type="submit"
+        >
+          آرشیو
+        </button>
+      </form>
+    {% endif %}
+
+    <a
+      class="btn btn-ghost"
+      href="{% url 'boards:detail' workspace.pk board.pk %}"
+    >
+      بازگشت به Board
+    </a>
+  </div>
+</section>
+
+<section class="workspace-detail-stats">
+  <article class="stat-card">
+    <div class="stat-label">
+      مسئول
+    </div>
+
+    <div class="stat-value stat-value--text">
+      {% if task.assignee %}
+        {{ task.assignee.get_full_name|default:task.assignee.username }}
+      {% else %}
+        بدون مسئول
+      {% endif %}
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-label">
+      مهلت انجام
+    </div>
+
+    <div class="stat-value stat-value--text">
+      {% if task.due_at %}
+        {{ task.due_at|date:"Y/m/d H:i" }}
+      {% else %}
+        بدون مهلت
+      {% endif %}
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-label">
+      جایگاه
+    </div>
+
+    <div class="stat-value">
+      {{ task.position|add:"1" }}
+    </div>
+  </article>
+</section>
+
+{% if can_update_task %}
+<section class="panel" data-reveal>
+  <h2 class="card-title">
+    تغییر وضعیت
+  </h2>
+
+  <form
+    method="post"
+    class="form-actions"
+    action="{% url 'tasks:status' workspace.pk board.pk column.pk task.pk %}"
+  >
+    {% csrf_token %}
+
+    {{ status_form.status }}
+
+    <button
+      class="btn btn-primary"
+      type="submit"
+    >
+      ذخیره وضعیت
+    </button>
+  </form>
+</section>
+{% endif %}
+{% endblock content %}
