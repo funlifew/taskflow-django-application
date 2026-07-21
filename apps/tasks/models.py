@@ -55,6 +55,23 @@ class TaskManager(
             return 0
         
         return max_position + 1
+    
+    
+    def normalize_positions(
+        self,
+        *,
+        column,
+    ):
+        tasks = list(
+            self.get_queryset()
+            .select_for_update()
+            .active()
+            .for_column(column)
+            .order_by(
+                'position',
+                'pk',
+            )
+        )
 
 class Task(TimeStampedModel):
     class Priority(models.TextChoices):
