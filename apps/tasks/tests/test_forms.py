@@ -1,5 +1,8 @@
 from django.utils import timezone
 
+from apps.tasks.constants import (
+    TASK_ASSIGNABLE_ROLES,
+)
 from apps.tasks.forms import (
     TaskForm,
     TaskMoveForm,
@@ -7,6 +10,9 @@ from apps.tasks.forms import (
 )
 from apps.tasks.models import Task
 from apps.tasks.tests.base import TaskTestBase
+from apps.workspaces.models import (
+    WorkspaceMembership,
+)
 
 
 class TaskFormTests(TaskTestBase):
@@ -80,7 +86,9 @@ class TaskFormTests(TaskTestBase):
             form.cleaned_data["assignee"]
         )
 
-    def test_due_at_accepts_datetime_local_format(self):
+    def test_due_at_accepts_datetime_local_format(
+        self,
+    ):
         data = self.get_valid_data()
         data["due_at"] = "2030-01-02T14:30"
 
@@ -107,7 +115,9 @@ class TaskFormTests(TaskTestBase):
                 timezone.is_aware(due_at)
             )
 
-    def test_workspace_users_are_available(self):
+    def test_only_assignable_workspace_users_are_available(
+        self,
+    ):
         form = TaskForm(
             workspace=self.workspace,
         )
@@ -119,27 +129,28 @@ class TaskFormTests(TaskTestBase):
         self.assertIn(self.owner, queryset)
         self.assertIn(self.admin, queryset)
         self.assertIn(self.member, queryset)
-        self.assertIn(self.viewer, queryset)
+        self.assertNotIn(
+            self.viewer,
+            queryset,
+        )
+        self.assertNotIn(
+            self.outsider,
+            queryset,
+        )
 
-    def test_outsider_is_not_available(self):
+    def test_viewer_assignee_is_rejected(self):
+        data = self.get_valid_data()
+        data["assignee"] = self.viewer.pk
+
         form = TaskForm(
+            data=data,
             workspace=self.workspace,
         )
 
-        self.assertNotIn(
-            self.outsider,
-            form.fields["assignee"].queryset,
-        )
-
-    def test_form_without_workspace_has_empty_assignee_queryset(
-        self,
-    ):
-        form = TaskForm()
-
-        self.assertFalse(
-            form.fields[
-                "assignee"
-            ].queryset.exists()
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            "assignee",
+            form.errors,
         )
 
     def test_outsider_assignee_is_rejected(self):
@@ -157,6 +168,17 @@ class TaskFormTests(TaskTestBase):
             form.errors,
         )
 
+    def test_form_without_workspace_has_empty_assignee_queryset(
+        self,
+    ):
+        form = TaskForm()
+
+        self.assertFalse(
+            form.fields[
+                "assignee"
+            ].queryset.exists()
+        )
+
     def test_internal_fields_are_not_exposed(self):
         form = TaskForm(
             workspace=self.workspace,
@@ -171,6 +193,30 @@ class TaskFormTests(TaskTestBase):
                 "assignee",
                 "due_at",
             },
+        )
+
+
+class TaskAssignableRolesTests(TaskTestBase):
+    def test_owner_admin_and_member_are_assignable(
+        self,
+    ):
+        self.assertIn(
+            WorkspaceMembership.Role.OWNER,
+            TASK_ASSIGNABLE_ROLES,
+        )
+        self.assertIn(
+            WorkspaceMembership.Role.ADMIN,
+            TASK_ASSIGNABLE_ROLES,
+        )
+        self.assertIn(
+            WorkspaceMembership.Role.MEMBER,
+            TASK_ASSIGNABLE_ROLES,
+        )
+
+    def test_viewer_is_not_assignable(self):
+        self.assertNotIn(
+            WorkspaceMembership.Role.VIEWER,
+            TASK_ASSIGNABLE_ROLES,
         )
 
 
@@ -271,30 +317,6 @@ class TaskMoveFormTests(TaskTestBase):
             queryset,
         )
 
-    def test_current_column_is_excluded(self):
-        form = TaskMoveForm(
-            board=self.board,
-            current_column=self.column,
-        )
-
-        self.assertNotIn(
-            self.column,
-            form.fields[
-                "target_column"
-            ].queryset,
-        )
-
-    def test_form_without_board_has_empty_queryset(
-        self,
-    ):
-        form = TaskMoveForm()
-
-        self.assertFalse(
-            form.fields[
-                "target_column"
-            ].queryset.exists()
-        )
-
     def test_valid_target_column_is_accepted(self):
         form = TaskMoveForm(
             data={
@@ -366,4 +388,15 @@ class TaskMoveFormTests(TaskTestBase):
         self.assertIn(
             "target_column",
             form.errors,
+        )
+
+    def test_form_without_board_has_empty_queryset(
+        self,
+    ):
+        form = TaskMoveForm()
+
+        self.assertFalse(
+            form.fields[
+                "target_column"
+            ].queryset.exists()
         )

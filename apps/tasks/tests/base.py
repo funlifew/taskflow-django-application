@@ -1,9 +1,9 @@
+from django.utils import timezone
+
 from apps.columns.tests.base import (
     ColumnTestBase,
 )
-
 from apps.tasks.models import Task
-from django.utils import timezone
 
 
 class TaskTestBase(ColumnTestBase):
@@ -20,6 +20,8 @@ class TaskTestBase(ColumnTestBase):
             position=0,
             assignee=cls.member,
             created_by=cls.owner,
+            is_archived=False,
+            archived_at=None,
         )
 
     def create_task(
@@ -56,7 +58,7 @@ class TaskTestBase(ColumnTestBase):
             )
         else:
             archived_at = None
-        
+
         return Task.objects.create(
             column=column,
             title=title,
