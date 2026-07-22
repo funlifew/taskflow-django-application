@@ -9,9 +9,13 @@ from apps.workspaces.models import (
     WorkspaceMembership,
 )
 
+from .constants import (
+    TASK_ASSIGNABLE_ROLES,
+)
+
 # Create your models here.
 
-class TaskQueryset(models.QuerySet):
+class TaskQuerySet(models.QuerySet):
     def active(self):
         return self.filter(
             is_archived=False,
@@ -34,7 +38,7 @@ class TaskQueryset(models.QuerySet):
 
 class TaskManager(
     models.Manager.from_queryset(
-        TaskQueryset
+        TaskQuerySet
     )
 ):
     def next_position(
@@ -56,34 +60,6 @@ class TaskManager(
         
         return max_position + 1
     
-    
-    def normalize_positions(
-        self,
-        *,
-        column,
-    ):
-        tasks = list(
-            self.get_queryset()
-            .select_for_update()
-            .active()
-            .for_column(column)
-            .order_by(
-                'position',
-                'pk',
-            )
-        )
-        
-        for expected_position, task in enumerate(tasks):
-            if task.position == expected_position:
-                continue
-            
-            task.position = expected_position
-            task.save(
-                update_fields=[
-                    'position',
-                    'updated_at',
-                ]
-            )
 
 class Task(TimeStampedModel):
     class Priority(models.TextChoices):
@@ -153,6 +129,11 @@ class Task(TimeStampedModel):
         default=False,
     )
     
+    archived_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    
     objects = TaskManager()
     
     class Meta:
@@ -172,6 +153,19 @@ class Task(TimeStampedModel):
                 ),
                 name='tasks_active_column_pos_unique'
             ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        is_archived=False,
+                        archived_at__isnull=True,
+                    )
+                    | Q(
+                        is_archived=True,
+                        archived_at__isnull=False,
+                    )
+                ),
+                name='tasks_archive_state_consistent',
+            )
         ]
         
         indexes = [
@@ -199,6 +193,27 @@ class Task(TimeStampedModel):
     def clean(self):
         super().clean()
         
+        archive_state_is_invalid = (
+            (
+                self.is_archived
+                and self.archived_at is None
+            )
+            or (
+                not self.is_archived
+                and self.archived_at is not None
+            )
+        )
+        
+        if archive_state_is_invalid:
+            raise ValidationError(
+                {
+                    'is_archived': (
+                        "وضعیت Archive و زمان Archive "
+                        "با یکدیگر سازگار نیستند."
+                    ),
+                }
+            )
+        
         if(
             not self.assignee_id
             or not self.column_id
@@ -217,21 +232,22 @@ class Task(TimeStampedModel):
         ):
             return
         
-        is_workspace_member = (
+        is_assignable_member = (
             WorkspaceMembership.objects
             .filter(
                 workspace=workspace,
                 user_id=self.assignee_id,
+                role__in=TASK_ASSIGNABLE_ROLES,
             )
             .exists()
         )
         
-        if not is_workspace_member:
+        if not is_assignable_member:
             raise ValidationError(
                 {
                     "assignee": (
-                        "مسئول Task باید عضو "
-                        "Workspace مربوطه باشد."
+                        "مسئول Task باید مالک، مدیر "
+                        "یا عضو Workspace باشد."
                     ),
                 }
             )
