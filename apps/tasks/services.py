@@ -38,7 +38,7 @@ class TaskPositionService:
             task.position = expected_position
             
             task.save(
-                updated_fields=[
+                update_fields=[
                     'position',
                     'updated_at',
                 ]
@@ -214,7 +214,7 @@ class TaskLifecycleService:
         
         cls._touch_parents(
             board=board,
-            column=(column, ),
+            columns=(column, ),
         )
         
         return task, board, column
@@ -279,7 +279,7 @@ class TaskLifecycleService:
         
         task.column = target_column
         task.position = (
-            Task.objects.next_position(column=target_column),
+            Task.objects.next_position(column=target_column)
         )
         
         task.save(
