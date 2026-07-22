@@ -5,7 +5,7 @@
 {% endblock data_page %}
 
 {% block title %}
-  TaskFlow | ساخت Task
+  TaskFlow | ویرایش {{ task.title }}
 {% endblock title %}
 
 {% block content %}
@@ -19,7 +19,7 @@
         <use href="#icon-check"></use>
       </svg>
 
-      Task جدید
+      ویرایش Task
     </span>
 
     <h1 class="page-title">
@@ -27,9 +27,9 @@
     </h1>
 
     <p class="page-subtitle">
-      Task جدید داخل ستون
-      «{{ column.title }}»
-      ساخته می‌شود.
+      اطلاعات Task
+      «{{ task.title }}»
+      را ویرایش کن.
     </p>
   </div>
 </section>
@@ -111,18 +111,18 @@
       </div>
 
       <div class="info-row">
-        <span>جایگاه</span>
+        <span>جایگاه فعلی</span>
 
         <strong>
-          {{ next_position|add:"1" }}
+          {{ task.position|add:"1" }}
         </strong>
       </div>
 
       <div class="info-row">
-        <span>وضعیت اولیه</span>
+        <span>وضعیت فعلی</span>
 
         <strong>
-          برای انجام
+          {{ task.get_status_display }}
         </strong>
       </div>
     </div>
