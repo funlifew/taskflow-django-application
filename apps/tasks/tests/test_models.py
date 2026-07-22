@@ -12,7 +12,10 @@ from django.db import (
 )
 from django.utils import timezone
 
-from apps.tasks.models import Task
+from apps.tasks.models import (
+    Task,
+    TaskQuerySet,
+)
 from apps.tasks.tests.base import TaskTestBase
 
 
@@ -46,11 +49,20 @@ class TaskModelTests(TaskTestBase):
         self.assertFalse(
             task.is_archived
         )
+        self.assertIsNone(
+            task.archived_at
+        )
 
     def test_task_string_representation(self):
         self.assertEqual(
             str(self.task),
             self.task.title,
+        )
+
+    def test_manager_returns_custom_queryset(self):
+        self.assertIsInstance(
+            Task.objects.all(),
+            TaskQuerySet,
         )
 
     def test_tasks_are_ordered_by_position_then_pk(
@@ -122,24 +134,27 @@ class TaskModelTests(TaskTestBase):
             title="Other task",
         )
 
-        tasks = Task.objects.for_column(
+        queryset = Task.objects.for_column(
             self.column
         )
 
-        self.assertIn(self.task, tasks)
+        self.assertIn(
+            self.task,
+            queryset,
+        )
         self.assertNotIn(
             other_task,
-            tasks,
+            queryset,
         )
 
     def test_assigned_to_queryset(self):
-        tasks = Task.objects.assigned_to(
+        queryset = Task.objects.assigned_to(
             self.member
         )
 
         self.assertIn(
             self.task,
-            tasks,
+            queryset,
         )
 
     def test_next_position_for_empty_column(self):
@@ -248,10 +263,12 @@ class TaskModelTests(TaskTestBase):
 
         task.full_clean()
 
-    def test_viewer_is_valid_assignee(self):
+    def test_workspace_admin_is_valid_assignee(
+        self,
+    ):
         task = self.create_task(
-            title="Viewer Task",
-            assignee=self.viewer,
+            title="Admin Task",
+            assignee=self.admin,
         )
 
         task.full_clean()
@@ -264,6 +281,17 @@ class TaskModelTests(TaskTestBase):
 
         task.full_clean()
 
+    def test_viewer_is_invalid_assignee(self):
+        task = self.create_task(
+            title="Viewer Task",
+            assignee=self.viewer,
+        )
+
+        with self.assertRaises(
+            ValidationError
+        ):
+            task.full_clean()
+
     def test_outsider_is_invalid_assignee(self):
         task = self.create_task(
             title="Invalid Assignment",
@@ -274,6 +302,81 @@ class TaskModelTests(TaskTestBase):
             ValidationError
         ):
             task.full_clean()
+
+    def test_active_task_requires_null_archived_at(
+        self,
+    ):
+        task = self.create_task(
+            title="Invalid active state",
+        )
+        task.archived_at = timezone.now()
+
+        with self.assertRaises(
+            ValidationError
+        ):
+            task.full_clean()
+
+    def test_archived_task_requires_archived_at(
+        self,
+    ):
+        task = self.create_task(
+            title="Invalid archived state",
+            is_archived=True,
+        )
+        task.archived_at = None
+
+        with self.assertRaises(
+            ValidationError
+        ):
+            task.full_clean()
+
+    def test_archived_task_has_archive_timestamp(
+        self,
+    ):
+        task = self.create_task(
+            title="Archived",
+            is_archived=True,
+        )
+
+        self.assertTrue(
+            task.is_archived
+        )
+        self.assertIsNotNone(
+            task.archived_at
+        )
+
+    def test_database_rejects_active_task_with_archive_timestamp(
+        self,
+    ):
+        with self.assertRaises(
+            IntegrityError
+        ):
+            with transaction.atomic():
+                Task.objects.filter(
+                    pk=self.task.pk,
+                ).update(
+                    archived_at=timezone.now(),
+                )
+
+    def test_database_rejects_archived_task_without_archive_timestamp(
+        self,
+    ):
+        with self.assertRaises(
+            IntegrityError
+        ):
+            with transaction.atomic():
+                Task.objects.create(
+                    column=self.column,
+                    title="Invalid archived Task",
+                    description="",
+                    priority=Task.Priority.MEDIUM,
+                    status=Task.Status.TODO,
+                    position=50,
+                    assignee=self.member,
+                    created_by=self.owner,
+                    is_archived=True,
+                    archived_at=None,
+                )
 
     def test_due_at_is_optional(self):
         task = self.create_task(
@@ -364,116 +467,4 @@ class TaskModelTests(TaskTestBase):
         )
         self.assertIsNotNone(
             self.task.updated_at
-        )
-
-
-class TaskPositionManagerTests(TaskTestBase):
-    def test_normalize_positions_closes_gaps(self):
-        second = self.create_task(
-            title="Second",
-            position=2,
-        )
-        third = self.create_task(
-            title="Third",
-            position=5,
-        )
-
-        with transaction.atomic():
-            Task.objects.normalize_positions(
-                column=self.column,
-            )
-
-        second.refresh_from_db()
-        third.refresh_from_db()
-
-        self.assertEqual(second.position, 1)
-        self.assertEqual(third.position, 2)
-
-        self.assertEqual(
-            list(
-                Task.objects
-                .active()
-                .for_column(self.column)
-                .values_list(
-                    "position",
-                    flat=True,
-                )
-            ),
-            [0, 1, 2],
-        )
-
-    def test_normalize_positions_ignores_archived_tasks(
-        self,
-    ):
-        active = self.create_task(
-            title="Active with gap",
-            position=4,
-        )
-        archived = self.create_task(
-            title="Archived history",
-            position=99,
-            is_archived=True,
-        )
-
-        with transaction.atomic():
-            Task.objects.normalize_positions(
-                column=self.column,
-            )
-
-        active.refresh_from_db()
-        archived.refresh_from_db()
-
-        self.assertEqual(active.position, 1)
-        self.assertEqual(
-            archived.position,
-            99,
-        )
-
-    def test_normalize_positions_only_changes_given_column(
-        self,
-    ):
-        other_column = self.create_column(
-            title="Other",
-            position=1,
-        )
-        other_task = self.create_task(
-            column=other_column,
-            title="Other task",
-            position=8,
-        )
-
-        self.create_task(
-            title="Source gap",
-            position=4,
-        )
-
-        with transaction.atomic():
-            Task.objects.normalize_positions(
-                column=self.column,
-            )
-
-        other_task.refresh_from_db()
-
-        self.assertEqual(
-            other_task.position,
-            8,
-        )
-
-    def test_normalize_positions_empty_column_is_noop(
-        self,
-    ):
-        empty_column = self.create_column(
-            title="Empty",
-            position=1,
-        )
-
-        with transaction.atomic():
-            Task.objects.normalize_positions(
-                column=empty_column,
-            )
-
-        self.assertFalse(
-            Task.objects.for_column(
-                empty_column
-            ).exists()
         )

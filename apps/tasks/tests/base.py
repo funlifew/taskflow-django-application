@@ -1,7 +1,8 @@
+from django.utils import timezone
+
 from apps.columns.tests.base import (
     ColumnTestBase,
 )
-
 from apps.tasks.models import Task
 
 
@@ -19,6 +20,8 @@ class TaskTestBase(ColumnTestBase):
             position=0,
             assignee=cls.member,
             created_by=cls.owner,
+            is_archived=False,
+            archived_at=None,
         )
 
     def create_task(
@@ -34,6 +37,7 @@ class TaskTestBase(ColumnTestBase):
         created_by=None,
         due_at=None,
         is_archived=False,
+        archived_at=None,
     ):
         column = column or self.column
 
@@ -47,6 +51,14 @@ class TaskTestBase(ColumnTestBase):
         if created_by is None:
             created_by = self.owner
 
+        if is_archived:
+            archived_at = (
+                archived_at
+                or timezone.now()
+            )
+        else:
+            archived_at = None
+
         return Task.objects.create(
             column=column,
             title=title,
@@ -58,4 +70,5 @@ class TaskTestBase(ColumnTestBase):
             created_by=created_by,
             due_at=due_at,
             is_archived=is_archived,
+            archived_at=archived_at,
         )
