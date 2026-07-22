@@ -2,8 +2,10 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from apps.columns.models import Column
+from apps.workspaces.models import WorkspaceMembership
 
 from .models import Task
+from .constants import TASK_ASSIGNABLE_ROLES
 
 
 User = get_user_model()
@@ -105,6 +107,9 @@ class TaskForm(forms.ModelForm):
                 | Q(
                     workspace_memberships__workspace=(
                         workspace
+                    ),
+                    workspace_membership__role__in=(
+                        TASK_ASSIGNABLE_ROLES
                     ),
                 )
             )
