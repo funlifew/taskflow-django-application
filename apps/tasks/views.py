@@ -231,20 +231,39 @@ class TaskUpdateView(
             is_archived=False,
         )
         
+        editable_fields = (
+            'title',
+            'description',
+            'priority',
+            'assignee',
+            'due_at',
+        )
+        
         locked_task = get_object_or_404(
             Task.objects.select_for_update(),
             pk=self.object.pk,
             column=column,
             is_archived=False,
         )
-
-        self.object = form.save(
-            commit=False
-        )
-
-        self.object.full_clean()
-        self.object.save()
         
+        for field_name in editable_fields:
+            setattr(
+                locked_task,
+                field_name,
+                form.cleaned_data[field_name],
+            )
+        
+        locked_task.full_clean()
+        locked_task.save(
+            update_fields=[
+                *editable_fields,
+                'updated_at',
+            ]
+        )
+        
+        self.object = locked_task
+
+
         column.save(
             update_fields=[
                 'updated_at',
@@ -561,7 +580,8 @@ class ArchivedTaskListView(
         context.update(
             {
                 'workspace': self.get_workspace(),
-                'column': self.get_board(),
+                'board': self.get_board(),
+                'column': self.get_column(),
                 'current_user_role': current_user_role,
                 'can_restore_tasks': current_user_role in BOARD_WRITE_ROLES,
                 'can_delete_tasks': current_user_role in BOARD_DELETE_ROLES,
@@ -751,6 +771,8 @@ class TaskDeleteView(
                 'current_user_role': self.get_current_user_role(),
             }
         )
+        
+        return context
     
     @transaction.atomic
     def form_valid(self, form):
