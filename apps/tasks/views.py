@@ -39,6 +39,9 @@ from .mixins import (
     TaskObjectMixin,
 )
 from .models import Task
+from .services import (
+    TaskLifecycleService,
+)
 
 # Create your views here.
 
@@ -441,90 +444,20 @@ class TaskMoveView(
         
         return context
     
-    @transaction.atomic
     def form_valid(self, form):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
+        target_column = form.cleaned_data['target_column']
+        
+        (
+            task,
+            board,
+            source_column,
+            target_column,
+        ) = TaskLifecycleService.move(
             workspace=self.get_workspace(),
-            is_archived=False,
-        )
-        
-        source_column_pk = self.get_column().pk
-        
-        target_column_pk = form.cleaned_data['target_column'].pk
-        
-        locked_columns = {
-            column.pk: column
-            for column in (
-                Column.objects
-                .select_for_update()
-                .filter(
-                    board=board,
-                    is_archived=False,
-                    pk__in=[
-                        source_column_pk,
-                        target_column_pk,
-                    ],
-                )
-                .order_by('pk')
-            )
-        }
-        
-        if (
-            source_column_pk
-            not in locked_columns
-            or target_column_pk
-            not in locked_columns
-        ):
-            raise Http404
-        
-        source_column = locked_columns[source_column_pk]
-        target_column = locked_columns[target_column_pk]
-        
-        
-        task = get_object_or_404(
-            Task.objects.select_for_update(),
-            pk=self.kwargs['task_pk'],
-            column=source_column,
-            is_archived=False,
-        )
-        
-        task.column = target_column
-        task.position = (
-            Task.objects.next_position(
-                column=target_column,
-            )
-        )
-        
-        task.save(
-            update_fields=[
-                'column',
-                'position',
-                'updated_at',
-            ]
-        )
-        
-        Task.objects.normalize_positions(
-            column=source_column,
-        )
-        
-        source_column.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
-        target_column.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
+            board_pk=self.get_board().pk,
+            source_column_pk=self.get_column().pk,
+            target_column_pk=target_column.pk,
+            task_pk=self.kwargs['task_pk'],
         )
         
         messages.success(
@@ -567,7 +500,7 @@ class ArchivedTaskListView(
                 'created_by',
             )
             .order_by(
-                '-updated_at',
+                '-archived_at',
                 '-pk',
             )
         )
@@ -599,56 +532,19 @@ class TaskArchiveView(
         'post',
     ]
     
-    @transaction.atomic
     def post(
         self,
         request,
         *args,
         **kwargs,
     ):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
-            workspace=self.get_workspace(),
-            is_archived=False,
-        )
-        
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.get_column().pk,
-            board=board,
-            is_archived=False,
-        )
-        
-        task = get_object_or_404(
-            Task.objects.select_for_update(),
-            pk=self.kwargs['task_pk'],
-            column=column,
-            is_archived=False,
-        )
-        
-        task.is_archived = True
-        task.save(
-            update_fields=[
-                'is_archived',
-                'updated_at',
-            ]
-        )
-        
-        Task.objects.normalize_positions(
-            column=column,
-        )
-        
-        column.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
+        task, board, column = (
+            TaskLifecycleService.archive(
+                workspace=self.get_workspace(),
+                board_pk=self.get_board().pk,
+                column_pk=self.get_column().pk,
+                task_pk=self.kwargs['task_pk'],
+            )
         )
         
         messages.success(
@@ -673,60 +569,21 @@ class TaskRestoreView(
     http_method_names = [
         'post'
     ]
-    @transaction.atomic
+
+
     def post(
         self,
         request,
         *args,
         **kwargs,
     ):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
-            workspace=self.get_workspace(),
-            is_archived=False,
-        )
-        
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.get_column().pk,
-            board=board,
-            is_archived=False,
-        )
-        
-        task = get_object_or_404(
-            Task.objects.select_for_update(),
-            pk=self.kwargs['task_pk'],
-            column=column,
-            is_archived=True,
-        )
-
-        task.position = (
-            Task.objects.next_position(
-                column=column,
+        task, board, column = (
+            TaskLifecycleService.restore(
+                workspace=self.get_workspace(),
+                board_pk=self.get_board().pk,
+                column_pk=self.get_column().pk,
+                task_pk=self.kwargs['task_pk'],
             )
-        )
-        
-        task.is_archived = False
-        
-        task.save(
-            update_fields=[
-                'position',
-                'is_archived',
-                'updated_at',
-            ]
-        )
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
-        column.save(
-            update_fields=[
-                'updated_at',
-            ]
         )
         
         messages.success(
@@ -774,42 +631,14 @@ class TaskDeleteView(
         
         return context
     
-    @transaction.atomic
     def form_valid(self, form):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
-            workspace=self.get_workspace(),
-            is_archived=False,
-        )
-
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.get_column().pk,
-            board=board,
-            is_archived=False,
-        )
-
-        task = get_object_or_404(
-            Task.objects.select_for_update(),
-            pk=self.object.pk,
-            column=column,
-            is_archived=True,
-        )
-        
-        task_title = task.title
-        task.delete()
-        
-        column.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
+        task_title, board, column = (
+            TaskLifecycleService.delete_archived(
+                workspace=self.get_workspace(),
+                board_pk=self.get_board().pk,
+                column_pk=self.get_column().pk,
+                task_pk=self.object.pk,
+            )
         )
         
         messages.success(
