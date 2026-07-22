@@ -108,7 +108,7 @@ class TaskForm(forms.ModelForm):
                     workspace_memberships__workspace=(
                         workspace
                     ),
-                    workspace_membership__role__in=(
+                    workspace_memberships__role__in=(
                         TASK_ASSIGNABLE_ROLES
                     ),
                 )
