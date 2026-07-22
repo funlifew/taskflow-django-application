@@ -13,7 +13,6 @@ from django.db import (
 from django.utils import timezone
 
 from apps.tasks.models import Task
-
 from apps.tasks.tests.base import TaskTestBase
 
 
@@ -26,7 +25,6 @@ class TaskModelTests(TaskTestBase):
             self.task.column,
             self.column,
         )
-
         self.assertIn(
             self.task,
             self.column.tasks.all(),
@@ -55,12 +53,13 @@ class TaskModelTests(TaskTestBase):
             self.task.title,
         )
 
-    def test_tasks_are_ordered_by_position(self):
+    def test_tasks_are_ordered_by_position_then_pk(
+        self,
+    ):
         second_task = self.create_task(
             title="Second",
             position=1,
         )
-
         third_task = self.create_task(
             title="Third",
             position=2,
@@ -113,6 +112,26 @@ class TaskModelTests(TaskTestBase):
             Task.objects.archived(),
         )
 
+    def test_for_column_queryset(self):
+        other_column = self.create_column(
+            title="Other",
+            position=1,
+        )
+        other_task = self.create_task(
+            column=other_column,
+            title="Other task",
+        )
+
+        tasks = Task.objects.for_column(
+            self.column
+        )
+
+        self.assertIn(self.task, tasks)
+        self.assertNotIn(
+            other_task,
+            tasks,
+        )
+
     def test_assigned_to_queryset(self):
         tasks = Task.objects.assigned_to(
             self.member
@@ -129,14 +148,10 @@ class TaskModelTests(TaskTestBase):
             position=1,
         )
 
-        position = (
+        self.assertEqual(
             Task.objects.next_position(
                 column=other_column,
-            )
-        )
-
-        self.assertEqual(
-            position,
+            ),
             0,
         )
 
@@ -146,19 +161,15 @@ class TaskModelTests(TaskTestBase):
             position=1,
         )
 
-        position = (
+        self.assertEqual(
             Task.objects.next_position(
                 column=self.column,
-            )
-        )
-
-        self.assertEqual(
-            position,
+            ),
             2,
         )
 
     def test_next_position_ignores_archived_tasks(
-        self
+        self,
     ):
         self.create_task(
             title="Archived",
@@ -166,19 +177,15 @@ class TaskModelTests(TaskTestBase):
             is_archived=True,
         )
 
-        position = (
+        self.assertEqual(
             Task.objects.next_position(
                 column=self.column,
-            )
-        )
-
-        self.assertEqual(
-            position,
+            ),
             1,
         )
 
     def test_active_positions_are_unique_per_column(
-        self
+        self,
     ):
         with self.assertRaises(
             IntegrityError
@@ -190,14 +197,13 @@ class TaskModelTests(TaskTestBase):
                 )
 
     def test_archived_tasks_may_share_positions(
-        self
+        self,
     ):
         first = self.create_task(
             title="Archived One",
             position=7,
             is_archived=True,
         )
-
         second = self.create_task(
             title="Archived Two",
             position=7,
@@ -210,13 +216,12 @@ class TaskModelTests(TaskTestBase):
         )
 
     def test_same_position_in_different_columns(
-        self
+        self,
     ):
         other_column = self.create_column(
             title="Other Column",
             position=1,
         )
-
         other_task = self.create_task(
             column=other_column,
             title="Other Task",
@@ -229,16 +234,32 @@ class TaskModelTests(TaskTestBase):
         )
 
     def test_workspace_member_is_valid_assignee(
-        self
+        self,
     ):
         self.task.full_clean()
 
     def test_workspace_owner_is_valid_assignee(
-        self
+        self,
     ):
         task = self.create_task(
             title="Owner Task",
             assignee=self.owner,
+        )
+
+        task.full_clean()
+
+    def test_viewer_is_valid_assignee(self):
+        task = self.create_task(
+            title="Viewer Task",
+            assignee=self.viewer,
+        )
+
+        task.full_clean()
+
+    def test_unassigned_task_is_valid(self):
+        task = self.create_task(
+            title="Unassigned Task",
+            assignee=None,
         )
 
         task.full_clean()
@@ -268,7 +289,6 @@ class TaskModelTests(TaskTestBase):
             timezone.now()
             + timedelta(days=3)
         )
-
         task = self.create_task(
             title="Scheduled Task",
             due_at=due_at,
@@ -284,12 +304,10 @@ class TaskModelTests(TaskTestBase):
             title="Temporary Column",
             position=1,
         )
-
         task = self.create_task(
             column=other_column,
             title="Temporary Task",
         )
-
         task_pk = task.pk
 
         other_column.delete()
@@ -308,7 +326,6 @@ class TaskModelTests(TaskTestBase):
             email="temporary-assignee@example.com",
             password="StrongPassword123!",
         )
-
         task = self.create_task(
             title="Assigned Task",
             assignee=assignee,
@@ -329,7 +346,6 @@ class TaskModelTests(TaskTestBase):
             email="temporary-creator@example.com",
             password="StrongPassword123!",
         )
-
         task = self.create_task(
             title="Created Task",
             created_by=creator,
@@ -348,4 +364,116 @@ class TaskModelTests(TaskTestBase):
         )
         self.assertIsNotNone(
             self.task.updated_at
+        )
+
+
+class TaskPositionManagerTests(TaskTestBase):
+    def test_normalize_positions_closes_gaps(self):
+        second = self.create_task(
+            title="Second",
+            position=2,
+        )
+        third = self.create_task(
+            title="Third",
+            position=5,
+        )
+
+        with transaction.atomic():
+            Task.objects.normalize_positions(
+                column=self.column,
+            )
+
+        second.refresh_from_db()
+        third.refresh_from_db()
+
+        self.assertEqual(second.position, 1)
+        self.assertEqual(third.position, 2)
+
+        self.assertEqual(
+            list(
+                Task.objects
+                .active()
+                .for_column(self.column)
+                .values_list(
+                    "position",
+                    flat=True,
+                )
+            ),
+            [0, 1, 2],
+        )
+
+    def test_normalize_positions_ignores_archived_tasks(
+        self,
+    ):
+        active = self.create_task(
+            title="Active with gap",
+            position=4,
+        )
+        archived = self.create_task(
+            title="Archived history",
+            position=99,
+            is_archived=True,
+        )
+
+        with transaction.atomic():
+            Task.objects.normalize_positions(
+                column=self.column,
+            )
+
+        active.refresh_from_db()
+        archived.refresh_from_db()
+
+        self.assertEqual(active.position, 1)
+        self.assertEqual(
+            archived.position,
+            99,
+        )
+
+    def test_normalize_positions_only_changes_given_column(
+        self,
+    ):
+        other_column = self.create_column(
+            title="Other",
+            position=1,
+        )
+        other_task = self.create_task(
+            column=other_column,
+            title="Other task",
+            position=8,
+        )
+
+        self.create_task(
+            title="Source gap",
+            position=4,
+        )
+
+        with transaction.atomic():
+            Task.objects.normalize_positions(
+                column=self.column,
+            )
+
+        other_task.refresh_from_db()
+
+        self.assertEqual(
+            other_task.position,
+            8,
+        )
+
+    def test_normalize_positions_empty_column_is_noop(
+        self,
+    ):
+        empty_column = self.create_column(
+            title="Empty",
+            position=1,
+        )
+
+        with transaction.atomic():
+            Task.objects.normalize_positions(
+                column=empty_column,
+            )
+
+        self.assertFalse(
+            Task.objects.for_column(
+                empty_column
+            ).exists()
         )

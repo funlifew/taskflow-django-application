@@ -1,13 +1,15 @@
+from datetime import timedelta
+
 from django.urls import reverse
+from django.utils import timezone
 
+from apps.boards.models import Board
+from apps.columns.models import Column
 from apps.tasks.models import Task
-
 from apps.tasks.tests.base import TaskTestBase
 
 
-class TaskCreateViewTests(
-    TaskTestBase
-):
+class TaskCreateViewTests(TaskTestBase):
     def get_url(
         self,
         *,
@@ -46,9 +48,7 @@ class TaskCreateViewTests(
             "due_at": "2030-01-01T12:30",
         }
 
-    def test_anonymous_user_is_redirected(
-        self
-    ):
+    def test_anonymous_user_is_redirected(self):
         response = self.client.get(
             self.get_url()
         )
@@ -59,7 +59,7 @@ class TaskCreateViewTests(
         )
 
     def test_owner_admin_and_member_can_open_create(
-        self
+        self,
     ):
         for user in (
             self.owner,
@@ -81,12 +81,9 @@ class TaskCreateViewTests(
                     response.status_code,
                     200,
                 )
-
                 self.client.logout()
 
-    def test_viewer_cannot_open_create(
-        self
-    ):
+    def test_viewer_cannot_open_create(self):
         self.client.force_login(
             self.viewer
         )
@@ -100,9 +97,7 @@ class TaskCreateViewTests(
             403,
         )
 
-    def test_outsider_cannot_open_create(
-        self
-    ):
+    def test_outsider_cannot_open_create(self):
         self.client.force_login(
             self.outsider
         )
@@ -114,6 +109,36 @@ class TaskCreateViewTests(
         self.assertEqual(
             response.status_code,
             403,
+        )
+
+    def test_create_context_is_scoped_to_requested_hierarchy(
+        self,
+    ):
+        self.client.force_login(
+            self.owner
+        )
+
+        response = self.client.get(
+            self.get_url()
+        )
+
+        self.assertEqual(
+            response.context["workspace"],
+            self.workspace,
+        )
+        self.assertEqual(
+            response.context["board"],
+            self.board,
+        )
+        self.assertEqual(
+            response.context["column"],
+            self.column,
+        )
+        self.assertEqual(
+            response.context[
+                "next_position"
+            ],
+            1,
         )
 
     def test_valid_post_creates_task(self):
@@ -143,10 +168,7 @@ class TaskCreateViewTests(
             task.column,
             self.column,
         )
-        self.assertEqual(
-            task.position,
-            1,
-        )
+        self.assertEqual(task.position, 1)
         self.assertEqual(
             task.priority,
             Task.Priority.URGENT,
@@ -185,22 +207,54 @@ class TaskCreateViewTests(
             ),
         )
 
+    def test_create_updates_parent_timestamps(
+        self,
+    ):
+        old_time = (
+            timezone.now()
+            - timedelta(days=1)
+        )
+
+        Board.objects.filter(
+            pk=self.board.pk
+        ).update(updated_at=old_time)
+        Column.objects.filter(
+            pk=self.column.pk
+        ).update(updated_at=old_time)
+
+        self.client.force_login(
+            self.owner
+        )
+        self.client.post(
+            self.get_url(),
+            data=self.get_valid_data(),
+        )
+
+        self.board.refresh_from_db()
+        self.column.refresh_from_db()
+
+        self.assertGreater(
+            self.board.updated_at,
+            old_time,
+        )
+        self.assertGreater(
+            self.column.updated_at,
+            old_time,
+        )
+
     def test_internal_fields_cannot_be_tampered_with(
-        self
+        self,
     ):
         self.client.force_login(
             self.member
         )
 
         data = self.get_valid_data()
-
         data.update(
             {
                 "column": 999999,
                 "position": 500,
-                "status": (
-                    Task.Status.DONE
-                ),
+                "status": Task.Status.DONE,
                 "created_by": (
                     self.outsider.pk
                 ),
@@ -221,10 +275,7 @@ class TaskCreateViewTests(
             task.column,
             self.column,
         )
-        self.assertEqual(
-            task.position,
-            1,
-        )
+        self.assertEqual(task.position, 1)
         self.assertEqual(
             task.status,
             Task.Status.TODO,
@@ -237,9 +288,7 @@ class TaskCreateViewTests(
             task.is_archived
         )
 
-    def test_outsider_cannot_be_assigned(
-        self
-    ):
+    def test_outsider_cannot_be_assigned(self):
         initial_count = (
             Task.objects.count()
         )
@@ -249,7 +298,6 @@ class TaskCreateViewTests(
         )
 
         data = self.get_valid_data()
-
         data["assignee"] = (
             self.outsider.pk
         )
@@ -263,12 +311,10 @@ class TaskCreateViewTests(
             response.status_code,
             200,
         )
-
         self.assertEqual(
             Task.objects.count(),
             initial_count,
         )
-
         self.assertIn(
             "assignee",
             response.context[
@@ -277,7 +323,7 @@ class TaskCreateViewTests(
         )
 
     def test_invalid_title_does_not_create_task(
-        self
+        self,
     ):
         initial_count = (
             Task.objects.count()
@@ -299,15 +345,12 @@ class TaskCreateViewTests(
             response.status_code,
             200,
         )
-
         self.assertEqual(
             Task.objects.count(),
             initial_count,
         )
 
-    def test_archived_column_returns_404(
-        self
-    ):
+    def test_archived_column_returns_404(self):
         archived_column = (
             self.create_column(
                 title="Archived Column",
@@ -331,14 +374,11 @@ class TaskCreateViewTests(
             404,
         )
 
-    def test_archived_board_returns_404(
-        self
-    ):
+    def test_archived_board_returns_404(self):
         archived_board = self.create_board(
             title="Archived Board",
             is_archived=True,
         )
-
         archived_board_column = (
             self.create_column(
                 board=archived_board,
@@ -364,12 +404,11 @@ class TaskCreateViewTests(
         )
 
     def test_column_from_another_board_returns_404(
-        self
+        self,
     ):
         other_board = self.create_board(
             title="Other Board",
         )
-
         other_column = self.create_column(
             board=other_board,
             title="Other Column",
@@ -392,6 +431,7 @@ class TaskCreateViewTests(
             404,
         )
 
+
 class BoardDetailTaskIntegrationTests(
     TaskTestBase
 ):
@@ -406,9 +446,38 @@ class BoardDetailTaskIntegrationTests(
             },
         )
 
-    def test_active_tasks_are_displayed(
-        self
-    ):
+    def task_detail_url(self, task=None):
+        task = task or self.task
+
+        return reverse(
+            "tasks:detail",
+            kwargs={
+                "workspace_pk": (
+                    self.workspace.pk
+                ),
+                "board_pk": self.board.pk,
+                "column_pk": (
+                    task.column_id
+                ),
+                "task_pk": task.pk,
+            },
+        )
+
+    def archived_list_url(self):
+        return reverse(
+            "tasks:archived_list",
+            kwargs={
+                "workspace_pk": (
+                    self.workspace.pk
+                ),
+                "board_pk": self.board.pk,
+                "column_pk": (
+                    self.column.pk
+                ),
+            },
+        )
+
+    def test_active_tasks_are_displayed(self):
         second_task = self.create_task(
             title="Task دوم",
             position=1,
@@ -417,7 +486,6 @@ class BoardDetailTaskIntegrationTests(
         self.client.force_login(
             self.owner
         )
-
         response = self.client.get(
             self.get_board_url()
         )
@@ -431,9 +499,7 @@ class BoardDetailTaskIntegrationTests(
             second_task.title,
         )
 
-    def test_archived_tasks_are_hidden(
-        self
-    ):
+    def test_archived_tasks_are_hidden(self):
         archived_task = self.create_task(
             title="Task آرشیوشده",
             position=20,
@@ -443,7 +509,6 @@ class BoardDetailTaskIntegrationTests(
         self.client.force_login(
             self.owner
         )
-
         response = self.client.get(
             self.get_board_url()
         )
@@ -453,14 +518,11 @@ class BoardDetailTaskIntegrationTests(
             archived_task.title,
         )
 
-    def test_tasks_follow_position_order(
-        self
-    ):
+    def test_tasks_follow_position_order(self):
         second_task = self.create_task(
             title="Task دوم",
             position=1,
         )
-
         third_task = self.create_task(
             title="Task سوم",
             position=2,
@@ -469,7 +531,6 @@ class BoardDetailTaskIntegrationTests(
         self.client.force_login(
             self.owner
         )
-
         response = self.client.get(
             self.get_board_url()
         )
@@ -489,9 +550,7 @@ class BoardDetailTaskIntegrationTests(
             ],
         )
 
-    def test_total_task_count_is_available(
-        self
-    ):
+    def test_total_task_count_is_available(self):
         self.create_task(
             title="Task دوم",
             position=1,
@@ -500,7 +559,6 @@ class BoardDetailTaskIntegrationTests(
         self.client.force_login(
             self.owner
         )
-
         response = self.client.get(
             self.get_board_url()
         )
@@ -512,9 +570,47 @@ class BoardDetailTaskIntegrationTests(
             2,
         )
 
-    def test_member_sees_create_task_link(
-        self
+    def test_task_title_links_to_detail(self):
+        self.client.force_login(
+            self.viewer
+        )
+
+        response = self.client.get(
+            self.get_board_url()
+        )
+
+        self.assertContains(
+            response,
+            self.task_detail_url(),
+        )
+
+    def test_all_readers_see_archived_task_link(
+        self,
     ):
+        for user in (
+            self.owner,
+            self.admin,
+            self.member,
+            self.viewer,
+        ):
+            with self.subTest(
+                user=user.username
+            ):
+                self.client.force_login(
+                    user
+                )
+
+                response = self.client.get(
+                    self.get_board_url()
+                )
+
+                self.assertContains(
+                    response,
+                    self.archived_list_url(),
+                )
+                self.client.logout()
+
+    def test_member_sees_create_task_link(self):
         self.client.force_login(
             self.member
         )
@@ -542,7 +638,7 @@ class BoardDetailTaskIntegrationTests(
         )
 
     def test_viewer_does_not_see_create_task_link(
-        self
+        self,
     ):
         self.client.force_login(
             self.viewer
@@ -569,7 +665,6 @@ class BoardDetailTaskIntegrationTests(
             response,
             create_url,
         )
-
         self.assertFalse(
             response.context[
                 "can_create_tasks"
