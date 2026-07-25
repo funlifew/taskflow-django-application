@@ -1,3 +1,6 @@
+from django.core.exceptions import (
+    ValidationError,
+)
 from django.contrib import messages
 from django.db import transaction
 from django.http import Http404
@@ -33,6 +36,7 @@ from .forms import (
     TaskForm,
     TaskMoveForm,
     TaskStatusForm,
+    TaskReorderForm,
 )
 from .mixins import (
     ArchivedTaskObjectMixin,
@@ -41,6 +45,9 @@ from .mixins import (
 from .models import Task
 from .services import (
     TaskLifecycleService,
+)
+from .reordering import (
+    TaskReorderingService,
 )
 
 # Create your views here.
@@ -159,30 +166,14 @@ class TaskDetailView(
     model = Task
     template_name = 'tasks/detail.html'
     context_object_name = 'task'
-    
+
     def get_context_data(
         self,
         **kwargs,
     ):
-        context = super().get_context_data(**kwargs)
-        
-        current_user_role = self.get_current_user_role()
-        
-        context.update(
-            {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'column': self.get_column(),
-                'current_user_role': current_user_role,
-                'can_update_task': current_user_role in BOARD_WRITE_ROLES,
-                'can_archive_task': current_user_role in BOARD_WRITE_ROLES,
-                'can_move_task': current_user_role in BOARD_WRITE_ROLES,
-                'status_form': TaskStatusForm(instance=self.object),
-            }
+        context = super().get_context_data(
+            **kwargs
         )
-        
-        return context
-    
 
 class TaskUpdateView(
     TaskObjectMixin,
