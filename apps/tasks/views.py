@@ -3,7 +3,10 @@ from django.core.exceptions import (
 )
 from django.contrib import messages
 from django.db import transaction
-from django.http import Http404
+from django.http import (
+    Http404,
+    JsonResponse,
+)
 from django.shortcuts import (
     get_object_or_404,
     redirect,
@@ -37,6 +40,7 @@ from .forms import (
     TaskMoveForm,
     TaskStatusForm,
     TaskReorderForm,
+    TaskDragReorderForm,
 )
 from .mixins import (
     ArchivedTaskObjectMixin,
@@ -49,6 +53,8 @@ from .services import (
 from .reordering import (
     TaskReorderingService,
 )
+
+import json
 
 # Create your views here.
 
@@ -890,4 +896,305 @@ class TaskDeleteView(
                     ]
                 ),
             },
+        )
+
+class TaskDragReorderView(
+    TaskObjectMixin,
+    BoardWriteRequiredMixin,
+    View,
+):
+    http_method_names = [
+        'post',
+    ]
+    
+    @staticmethod
+    def _error_response(
+        errors,
+        *,
+        status=400
+    ):
+        return JsonResponse(
+            {
+                'ok': False,
+                'errors': errors,
+            },
+            status=status,
+        )
+    
+    @classmethod
+    def _parse_payload(
+        cls,
+        request,
+    ):
+        try:
+            raw_body = (
+                request.body
+                .decode('utf-8')
+                .strip()
+            )
+        except UnicodeDecodeError:
+            return (
+                None,
+                {
+                    "__all__": [
+                        (
+                            "بدنه درخواست "
+                            "قابل خواندن نیست."
+                        ),
+                    ],
+                },
+            )
+        
+        if not raw_body:
+            return {}, None
+        
+        try:
+            payload = json.loads(
+                raw_body
+            )
+        except json.JSONDecodeError:
+            return (
+                None,
+                {
+                    "__all__": [
+                        (
+                            "ساختار JSON "
+                            "درخواست معتبر نیست."
+                        ),
+                    ],
+                },
+            )
+        
+        if not isinstance(
+            payload,
+            dict,
+        ):
+            return (
+                None,
+                {
+                    "__all__": [
+                        (
+                            "بدنه درخواست باید "
+                            "یک JSON object باشد."
+                        ),
+                    ],
+                },
+            )
+        
+        return payload, None
+    
+    @staticmethod
+    def _serializer_form_errors(
+        form,
+    ):
+        return {
+            field_name: [
+                str(error)
+                for error in error_list
+            ]
+            for (
+                field_name,
+                error_list,
+            ) in form.errors.items()
+        }
+    
+    @staticmethod
+    def _serialize_validation_error(
+        error,
+    ):
+        try:
+            message_dict = (
+                error.message_dict
+            )
+        except AttributeError:
+            return {
+                "__all__": [
+                    str(message)
+                    for message in (
+                        error.messages
+                    )
+                ],
+            }
+
+        return {
+            field_name: [
+                str(message)
+                for message in messages
+            ]
+            for (
+                field_name,
+                messages,
+            ) in message_dict.items()
+        }
+    
+    @staticmethod
+    def _serialize_columns(
+        *columns,
+    ):
+        column_map = {
+            column.pk: column
+            for column in columns
+        }
+        
+        ordered_column_ids = list(
+            dict.fromkeys(
+                column.pk
+                for column in columns
+            )
+        )
+        
+        task_ids_by_column = {
+            column_id: []
+            for column_id in ordered_column_ids
+        }
+        
+        task_rows = (
+            Task.objects
+            .active()
+            .filter(
+                column_id__in=ordered_column_ids,
+            )
+            .order_by(
+                'column_id',
+                'position',
+                'pk',
+            )
+            .values_list(
+                'column_id',
+                'pk',
+            )
+        )
+        
+        for (
+            column_id,
+            task_id,
+        ) in task_rows:
+            task_ids_by_column[column_id].append(task_id)
+        
+        return [
+            {
+                "id": column_id,
+                "title": (
+                    column_map[
+                        column_id
+                    ].title
+                ),
+                "task_ids": (
+                    task_ids_by_column[
+                        column_id
+                    ]
+                ),
+                "count": len(
+                    task_ids_by_column[
+                        column_id
+                    ]
+                ),
+            }
+            for column_id in (
+                ordered_column_ids
+            )
+        ]
+    
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        board = self.get_board()
+        source_column = self.get_column()
+        
+        scoped_task = self.get_task()
+        
+        (
+            payload,
+            payload_errors,
+        ) = self._parse_payload(
+            request
+        )
+        
+        if payload_errors:
+            return self._error_response(
+                payload_errors,
+            )
+        
+        form = TaskDragReorderForm(
+            data=payload,
+            board=board,
+        )
+        
+        if not form.is_valid():
+            return self._error_response(
+                self._serializer_form_errors(
+                    form
+                ),
+            )
+        
+        selected_target_column = form.cleaned_data['target_column']
+        target_position = form.cleaned_data['target_position']
+
+        try:
+            (
+                task,
+                board,
+                source_column,
+                target_column,
+            ) = (
+                TaskReorderingService
+                .reorder(
+                    workspace=self.get_workspace(),
+                    board_pk=board.pk,
+                    source_column_pk=source_column.pk,
+                    target_column_pk=selected_target_column.pk,
+                    task_pk=scoped_task.pk,
+                    target_position=target_position,
+                )
+            )
+        except ValidationError as error:
+            return self._error_response(
+                (
+                    self
+                    ._serialize_validation_error(
+                        error
+                    )
+                ),
+            )
+        
+        
+        reorder_url = reverse(
+            'tasks:drag_reorder',
+            kwargs={
+                'workspace_pk': board.workspace_id,
+                'board_pk': board.pk,
+                'column_pk': target_column.pk,
+                'task_pk': task.pk,
+            }
+        )
+        
+        return JsonResponse(
+            {
+                "ok": True,
+                "message": (
+                    f'Task «{task.title}» '
+                    "با موفقیت جابه‌جا شد."
+                ),
+                "task": {
+                    "id": task.pk,
+                    "column_id": (
+                        task.column_id
+                    ),
+                    "position": (
+                        task.position
+                    ),
+                    "reorder_url": (
+                        reorder_url
+                    ),
+                },
+                "columns": (
+                    self._serialize_columns(
+                        source_column,
+                        target_column,
+                    )
+                ),
+            }
         )

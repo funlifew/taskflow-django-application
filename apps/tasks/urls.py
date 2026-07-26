@@ -41,6 +41,15 @@ urlpatterns = [
         name='reorder',
     ),
     path(
+        "<int:task_pk>/drag-reorder/",
+        (
+            views
+            .TaskDragReorderView
+            .as_view()
+        ),
+        name="drag_reorder",
+    ),
+    path(
         "<int:task_pk>/move-up/",
         views.TaskMoveUpView.as_view(),
         name='move_up',
