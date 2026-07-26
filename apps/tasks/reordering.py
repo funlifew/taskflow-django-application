@@ -75,7 +75,7 @@ class TaskReorderingService:
             .select_for_update()
             .active()
             .filter(
-                column__id__in=column_ids,
+                column_id__in=column_ids,
             )
             .select_related(
                 'column',
@@ -139,13 +139,15 @@ class TaskReorderingService:
             )
     
     @staticmethod
-    def _persist_order(
+    def _persist_orders(
         *,
         orders,
     ):
         now = timezone.now()
+
+        # باید فقط یک‌بار و قبل از هر دو حلقه ساخته شود.
         tasks_to_update = []
-        
+
         for (
             column,
             ordered_tasks,
@@ -156,23 +158,25 @@ class TaskReorderingService:
             ) in enumerate(
                 ordered_tasks
             ):
-                task.column = column,
+                task.column = column
                 task.position = position
                 task.updated_at = now
-                
-                tasks_to_update.append(task)
-        
+
+                tasks_to_update.append(
+                    task
+                )
+
         if not tasks_to_update:
             return
-        
+
         Task.objects.bulk_update(
             tasks_to_update,
             fields=[
-                'column',
-                'position',
-                'updated_at',
+                "column",
+                "position",
+                "updated_at",
             ],
-        )
+        )    
     
     @staticmethod
     def _touch_parents(
@@ -266,11 +270,9 @@ class TaskReorderingService:
         source_column = columns[source_column_pk]
         target_column = columns[target_column_pk]
         
-        tasks_by_column = (
-            cls._group_tasks(
-                locked_tasks=locked_tasks,
-                column_ids=columns,
-            )
+        tasks_by_column = cls._group_tasks(
+            locked_tasks=locked_tasks,
+            column_ids=columns,
         )
         
         source_tasks = tasks_by_column[source_column_pk]
@@ -288,30 +290,21 @@ class TaskReorderingService:
         if moving_task is None:
             raise Http404
         
-        same_column = (
-            source_column_pk
-            == target_column_pk
-        )
+        same_column = source_column_pk == target_column_pk
         
         if same_column:
-            current_position = (
-                source_tasks.index(
-                    moving_task
-                )
-            )
+            current_position = source_tasks.index(moving_task)
             
-            maximum_position = (
-                len(source_tasks) - 1
-            )
+            maximum_position = len(source_tasks) - 1
             
             if target_position is None:
                 target_position = maximum_position
                 
-            
             cls._validate_target_position(
                 target_position=target_position,
                 maximum_position=maximum_position,
             )
+            
             
             if current_position == target_position:
                 return (
@@ -357,10 +350,7 @@ class TaskReorderingService:
             
             final_target_tasks = list(target_tasks)
             
-            final_target_tasks.insert(
-                target_position,
-                moving_task,
-            )
+            final_target_tasks.insert(target_position, moving_task)
             
             final_orders = (
                 (
@@ -376,6 +366,10 @@ class TaskReorderingService:
         cls._stage_locked_tasks(
             tasks_by_column=tasks_by_column,
         )
+        cls._persist_orders(
+            orders=final_orders,
+        )
+        
         cls._touch_parents(
             board=board,
             columns=(
@@ -442,7 +436,7 @@ class TaskReorderingService:
         offset,
     ):
         if offset not in (-1, 1):
-            raise ValidationError(
+            raise ValueError(
                 "offset must be -1 or 1"
             )
             
