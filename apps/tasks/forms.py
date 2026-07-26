@@ -199,39 +199,34 @@ class TaskMoveForm(forms.Form):
 
 class TaskReorderForm(forms.Form):
     target_column = forms.ModelChoiceField(
-        label='ستون مقصد',
-        queryset=(
-            Column.objects.none()
-        ),
+        label="ستون مقصد",
+        queryset=Column.objects.none(),
         widget=forms.Select(
             attrs={
-                'class': 'input',
+                "class": "input",
             }
         ),
         help_text=(
-            "برای جابه‌جایی داخل "
-            "همین ستون، ستون فعلی "
-            "را انتخاب کن."
+            "برای جابه‌جایی داخل همین ستون، "
+            "ستون فعلی را انتخاب کن."
         ),
     )
-    
+
     target_position = forms.IntegerField(
-        label='جایگاه مقصد',
+        label="جایگاه مقصد",
         min_value=1,
         widget=forms.NumberInput(
             attrs={
-                'class': 'input',
-                'min': 1,
-                'step': 1,
+                "class": "input",
+                "min": 1,
+                "step": 1,
             }
         ),
         help_text=(
-            "جایگاه را از عدد ۱ "
-            "وارد کن. عدد ۱ یعنی "
-            "ابتدای ستون."
+            "عدد ۱ یعنی ابتدای ستون."
         ),
     )
-    
+
     def __init__(
         self,
         *args,
@@ -243,59 +238,82 @@ class TaskReorderForm(forms.Form):
             *args,
             **kwargs,
         )
-        
+
         self.board = board
         self.task = task
-        
-        if (
-            board is None
-            or task is None
-        ):
+
+        if board is None:
+            self.fields[
+                "target_column"
+            ].queryset = (
+                Column.objects.none()
+            )
+
             return
-        
-        self.fields['target_column'].queryset = (
+
+        self.fields[
+            "target_column"
+        ].queryset = (
             Column.objects
             .active()
             .for_board(board)
             .order_by(
-                'position',
-                'pk',
+                "position",
+                "pk",
             )
         )
-        
-        if not self.is_bound:
+
+        if (
+            task is not None
+            and not self.is_bound
+        ):
             self.initial.update(
                 {
-                    'target_column': task.column,
-                    'target_position': task.position + 1,
+                    "target_column": (
+                        task.column
+                    ),
+                    "target_position": (
+                        task.position + 1
+                    ),
                 }
             )
-    
+
     def clean(self):
         cleaned_data = super().clean()
-        
-        target_column = cleaned_data.get('target_column')
-        target_position = cleaned_data.get('target_position')
-        
+
+        target_column = (
+            cleaned_data.get(
+                "target_column"
+            )
+        )
+
+        target_position = (
+            cleaned_data.get(
+                "target_position"
+            )
+        )
+
         if (
             target_column is None
             or target_position is None
             or self.task is None
         ):
             return cleaned_data
-        
-        target_task_count = (
-            Task.objects
-            .active()
-            .for_column(target_column)
-            .count()
-        )
-        
+
         same_column = (
             target_column.pk
             == self.task.column_id
         )
-        
+
+        target_task_count = (
+            Task.objects
+            .active()
+            .for_column(
+                target_column
+            )
+            .count()
+        )
+
         if same_column:
             maximum_user_position = (
                 target_task_count
@@ -304,7 +322,7 @@ class TaskReorderForm(forms.Form):
             maximum_user_position = (
                 target_task_count + 1
             )
-        
+
         if (
             target_position
             > maximum_user_position
@@ -314,13 +332,14 @@ class TaskReorderForm(forms.Form):
                 (
                     "بیشترین جایگاه مجاز "
                     "برای این ستون "
-                    f"{maximum_user_position} "
-                    "است."
+                    f"{maximum_user_position} است."
                 ),
             )
-            
+
             return cleaned_data
-        
-        cleaned_data['target_position'] = target_position - 1
-        
+
+        cleaned_data[
+            "target_position"
+        ] = target_position - 1
+
         return cleaned_data

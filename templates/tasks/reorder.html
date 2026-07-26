@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+  TaskFlow | تغییر جایگاه {{ task.title }}
+{% endblock title %}
+
+{% block content %}
+<section class="form-card animated-border">
+  <span class="badge badge-info">
+    تغییر جایگاه Task
+  </span>
+
+  <h1 class="page-title">
+    تغییر جایگاه «{{ task.title }}»
+  </h1>
+
+  <p class="page-subtitle">
+    ستون فعلی:
+    «{{ column.title }}»
+    —
+    جایگاه فعلی:
+    {{ task.position|add:"1" }}
+  </p>
+
+  <form
+    method="post"
+    class="form-grid"
+    novalidate
+  >
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="error-text">
+        {% for error in form.non_field_errors %}
+          <p>
+            {{ error }}
+          </p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="field">
+      <label
+        for="{{ form.target_column.id_for_label }}"
+      >
+        {{ form.target_column.label }}
+      </label>
+
+      {{ form.target_column }}
+
+      {% if form.target_column.help_text %}
+        <p class="field-help">
+          {{ form.target_column.help_text }}
+        </p>
+      {% endif %}
+
+      {% for error in form.target_column.errors %}
+        <p class="error-text">
+          {{ error }}
+        </p>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label
+        for="{{ form.target_position.id_for_label }}"
+      >
+        {{ form.target_position.label }}
+      </label>
+
+      {{ form.target_position }}
+
+      {% if form.target_position.help_text %}
+        <p class="field-help">
+          {{ form.target_position.help_text }}
+        </p>
+      {% endif %}
+
+      {% for error in form.target_position.errors %}
+        <p class="error-text">
+          {{ error }}
+        </p>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <button
+        class="btn btn-primary"
+        type="submit"
+      >
+        ذخیره جایگاه
+      </button>
+
+      <a
+        class="btn btn-ghost"
+        href="{% url 'tasks:detail' workspace.pk board.pk column.pk task.pk %}"
+      >
+        انصراف
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock content %}

@@ -36,6 +36,21 @@ urlpatterns = [
         name='move',
     ),
     path(
+        "<int:task_pk>/reorder/",
+        views.TaskReorderView.as_view(),
+        name='reorder',
+    ),
+    path(
+        "<int:task_pk>/move-up/",
+        views.TaskMoveUpView.as_view(),
+        name='move_up',
+    ),
+    path(
+        "<int:task_pk>/move-down/",
+        views.TaskMoveDownView.as_view(),
+        name='move_down',
+    ),
+    path(
         '<int:task_pk>/archive/',
         views.TaskArchiveView.as_view(),
         name='archive',

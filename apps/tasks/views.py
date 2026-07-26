@@ -174,6 +174,49 @@ class TaskDetailView(
         context = super().get_context_data(
             **kwargs
         )
+        
+        current_user_role = self.get_current_user_role()
+        column = self.get_column()
+        
+        can_write = current_user_role in BOARD_WRITE_ROLES
+        
+        has_previous_task = (
+            Task.objects
+            .active()
+            .for_column(column)
+            .filter(
+                position__lt=self.object.position
+            )
+            .exists()
+        )
+        
+        has_next_task = (
+            Task.objects
+            .active()
+            .for_column(column)
+            .filter(
+                position__gt=self.object.position,
+            )
+            .exists()
+        )
+        
+        context.update(
+            {
+                'workspace': self.get_workspace(),
+                'board': self.get_board(),
+                'column': column,
+                'current_user_role': current_user_role,
+                'can_update_task': can_write,
+                'can_archive_task': can_write,
+                'can_move_task': can_write,
+                'can_reorder_task': can_write,
+                'can_move_up': can_write and has_previous_task,
+                'can_move_down': can_write and has_next_task,
+                'status_form': TaskStatusForm(instance=self.object),
+            }
+        )
+        
+        return context
 
 class TaskUpdateView(
     TaskObjectMixin,
@@ -467,6 +510,189 @@ class TaskMoveView(
             task_pk=task.pk,
         )
 
+class TaskReorderView(
+    TaskObjectMixin,
+    BoardWriteRequiredMixin,
+    FormView,
+):
+    form_class = TaskReorderForm
+    template_name = (
+        "tasks/reorder.html"
+    )
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        kwargs.update(
+            {
+                "board": self.get_board(),
+                "task": self.get_task(),
+            }
+        )
+
+        return kwargs
+
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(
+            **kwargs
+        )
+
+        context.update(
+            {
+                "workspace": (
+                    self.get_workspace()
+                ),
+                "board": self.get_board(),
+                "column": (
+                    self.get_column()
+                ),
+                "task": self.get_task(),
+                "current_user_role": (
+                    self
+                    .get_current_user_role()
+                ),
+            }
+        )
+
+        return context
+
+    def form_valid(self, form):
+        selected_target_column = (
+            form.cleaned_data[
+                "target_column"
+            ]
+        )
+
+        target_position = (
+            form.cleaned_data[
+                "target_position"
+            ]
+        )
+
+        (
+            task,
+            board,
+            source_column,
+            target_column,
+        ) = TaskReorderingService.reorder(
+            workspace=(
+                self.get_workspace()
+            ),
+            board_pk=(
+                self.get_board().pk
+            ),
+            source_column_pk=(
+                self.get_column().pk
+            ),
+            target_column_pk=(
+                selected_target_column.pk
+            ),
+            task_pk=(
+                self.kwargs[
+                    "task_pk"
+                ]
+            ),
+            target_position=(
+                target_position
+            ),
+        )
+
+        messages.success(
+            self.request,
+            (
+                f'Task «{task.title}» '
+                f'به ستون '
+                f'«{target_column.title}» '
+                f'و جایگاه '
+                f'{task.position + 1} منتقل شد.'
+            ),
+        )
+
+        return redirect(
+            "tasks:detail",
+            workspace_pk=(
+                board.workspace_id
+            ),
+            board_pk=board.pk,
+            column_pk=(
+                target_column.pk
+            ),
+            task_pk=task.pk,
+        )
+
+class TaskRelativeMoveView(
+    TaskObjectMixin,
+    BoardWriteRequiredMixin,
+    View,
+):
+    http_method_names = [
+        'post',
+    ]
+    
+    service_method_name = None
+    success_message = None
+    
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        service_method = getattr(TaskReorderingService, self.service_method_name)
+        
+        (
+            task,
+            board,
+            source_column,
+            target_column,
+        ) = service_method(
+            workspace=self.get_workspace(),
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+            task_pk=self.kwargs['task_pk'],
+        )
+        
+        messages.success(
+            request,
+            self.success_message.format(
+                title=task.title,
+            ),
+        )
+        
+        return redirect(
+            "tasks:detail",
+            workspace_pk=(
+                board.workspace_id
+            ),
+            board_pk=board.pk,
+            column_pk=(
+                target_column.pk
+            ),
+            task_pk=task.pk,
+        )
+
+class TaskMoveUpView(
+    TaskRelativeMoveView,
+):
+    service_method_name = 'move_up'
+    
+    success_message = (
+        'Task «{title}» یک جایگاه '
+        "به بالا منتقل شد."
+    )
+
+class TaskMoveDownView(
+    TaskRelativeMoveView,
+):
+    service_method_name = "move_down"
+
+    success_message = (
+        'Task «{title}» یک جایگاه '
+        "به پایین منتقل شد."
+    )
 
 class ArchivedTaskListView(
     ColumnObjectMixin,

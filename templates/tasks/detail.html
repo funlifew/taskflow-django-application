@@ -49,47 +49,89 @@
   </div>
 
   <div class="actions">
-    {% if can_update_task %}
-      <a
-        class="btn btn-primary"
-        href="{% url 'tasks:update' workspace.pk board.pk column.pk task.pk %}"
-      >
-        ویرایش
-      </a>
-    {% endif %}
+    <div class="actions">
+  {% if can_update_task %}
+    <a
+      class="btn btn-primary"
+      href="{% url 'tasks:update' workspace.pk board.pk column.pk task.pk %}"
+    >
+      ویرایش
+    </a>
+  {% endif %}
 
-    {% if can_move_task %}
-      <a
-        class="btn btn-ghost"
-        href="{% url 'tasks:move' workspace.pk board.pk column.pk task.pk %}"
-      >
-        انتقال
-      </a>
-    {% endif %}
-
-    {% if can_archive_task %}
-      <form
-        method="post"
-        action="{% url 'tasks:archive' workspace.pk board.pk column.pk task.pk %}"
-      >
-        {% csrf_token %}
-
-        <button
-          class="btn btn-soft"
-          type="submit"
-        >
-          آرشیو
-        </button>
-      </form>
-    {% endif %}
-
+  {% if can_reorder_task %}
     <a
       class="btn btn-ghost"
-      href="{% url 'boards:detail' workspace.pk board.pk %}"
+      href="{% url 'tasks:reorder' workspace.pk board.pk column.pk task.pk %}"
     >
-      بازگشت به Board
+      تغییر جایگاه
     </a>
-  </div>
+  {% endif %}
+
+  {% if can_move_up %}
+    <form
+      method="post"
+      action="{% url 'tasks:move_up' workspace.pk board.pk column.pk task.pk %}"
+    >
+      {% csrf_token %}
+
+      <button
+        class="btn btn-ghost"
+        type="submit"
+      >
+        انتقال به بالا
+      </button>
+    </form>
+  {% endif %}
+
+  {% if can_move_down %}
+    <form
+      method="post"
+      action="{% url 'tasks:move_down' workspace.pk board.pk column.pk task.pk %}"
+    >
+      {% csrf_token %}
+
+      <button
+        class="btn btn-ghost"
+        type="submit"
+      >
+        انتقال به پایین
+      </button>
+    </form>
+  {% endif %}
+
+  {% if can_move_task %}
+    <a
+      class="btn btn-ghost"
+      href="{% url 'tasks:move' workspace.pk board.pk column.pk task.pk %}"
+    >
+      انتقال سریع به ستون دیگر
+    </a>
+  {% endif %}
+
+  {% if can_archive_task %}
+    <form
+      method="post"
+      action="{% url 'tasks:archive' workspace.pk board.pk column.pk task.pk %}"
+    >
+      {% csrf_token %}
+
+      <button
+        class="btn btn-soft"
+        type="submit"
+      >
+        آرشیو
+      </button>
+    </form>
+  {% endif %}
+
+  <a
+    class="btn btn-ghost"
+    href="{% url 'boards:detail' workspace.pk board.pk %}"
+  >
+    بازگشت به Board
+  </a>
+</div>
 </section>
 
 <section class="workspace-detail-stats">
