@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block data_page %}
   workspaces
@@ -253,7 +254,17 @@
 </div>
 
   {% if columns %}
-    <div class="workspace-grid">
+  <p
+      class="task-drag-status"
+      data-drag-status
+      aria-live="polite"
+    ></p>
+    <div
+      class="workspace-grid"
+      data-task-board
+      data-board-id="{{ board.pk }}"
+      data-drag-enabled="{{ can_drag_tasks|yesno:'true,false' }}"
+    >
       {% for column in columns %}
         <article
           class="workspace-card"
@@ -286,7 +297,7 @@
                 {{ column.title }}
               </h3>
 
-              {% include "tasks/includes/_task_list.html" with tasks=column.active_tasks %}
+              {% include "tasks/includes/_task_list.html" with tasks=column.active_tasks can_drag_tasks=can_drag_tasks %}
             </div>
 
             <div class="workspace-card__meta">
@@ -314,7 +325,10 @@
           </div>
 
 <footer class="workspace-card__footer">
-  <span class="badge">
+  <span
+    class="badge"
+    data-column-task-count="{{ column.pk }}"
+  >
     {{ column.active_tasks|length }}
     Task
   </span>
@@ -477,3 +491,12 @@
   </div>
 </section>
 {% endblock content %}
+
+{% block extra_js %}
+  {{ block.super }}
+
+  {% if can_drag_tasks %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"></script>
+    <script src="{% static 'js/task-drag-drop.js' %}"></script>
+  {% endif %}
+{% endblock extra_js %}
