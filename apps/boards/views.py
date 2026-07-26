@@ -198,6 +198,7 @@ class BoardDetailView(
             'can_update_columns': can_edit_board,
             'can_archive_columns': can_edit_board,
             "can_create_tasks": can_edit_board,
+            "can_drag_tasks": can_edit_board,
             'columns': columns,
             'columns_count': len(columns),
             'archived_columns_count': (

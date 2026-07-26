@@ -343,3 +343,82 @@ class TaskReorderForm(forms.Form):
         ] = target_position - 1
 
         return cleaned_data
+
+class TaskDragReorderForm(forms.Form):
+    target_column = forms.ModelChoiceField(
+        queryset=Column.objects.none(),
+        error_messages={
+            "required": (
+                "ستون مقصد الزامی است."
+            ),
+            "invalid_choice": (
+                "ستون مقصد معتبر نیست."
+            ),
+        },
+    )
+    
+    target_position = forms.IntegerField(
+        min_value=0,
+        error_messages={
+            "required": (
+                "جایگاه مقصد الزامی است."
+            ),
+            "invalid": (
+                "جایگاه مقصد باید "
+                "یک عدد صحیح باشد."
+            ),
+            "min_value": (
+                "جایگاه مقصد "
+                "نمی‌تواند منفی باشد."
+            ),
+        },
+    )
+    
+    def __init__(
+        self,
+        *args,
+        board=None,
+        **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+        
+        self.board = board
+        
+        if board is None:
+            return
+        
+        self.fields['target_column'].queryset = (
+            Column.objects
+            .active()
+            .for_board(board)
+            .order_by(
+                'position',
+                'pk',
+            )
+        )
+        
+    
+    def clean_target_position(self):
+        raw_target_position = (
+            self.data.get('target_position')
+        )
+        
+        if (
+            isinstance(
+                raw_target_position,
+                bool,
+            )
+            or not isinstance(
+                raw_target_position,
+                int,
+            )
+        ):
+            raise forms.ValidationError(
+                "جایگاه مقصد باید "
+                "یک عدد صحیح باشد."
+            )
+        
+        return self.cleaned_data['target_position']
