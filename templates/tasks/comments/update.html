@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block data_page %}
+  workspaces
+{% endblock data_page %}
+
+{% block title %}
+  TaskFlow | ویرایش دیدگاه
+{% endblock title %}
+
+{% block content %}
+<section
+  class="panel form-card"
+  data-reveal
+>
+  <div class="workspace-section-head">
+    <h1 class="page-title">
+      ویرایش دیدگاه
+    </h1>
+
+    <p class="page-subtitle">
+      دیدگاه مربوط به Task
+      «{{ task.title }}»
+    </p>
+  </div>
+
+  <form
+    method="post"
+    class="stack"
+  >
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="form-errors">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="field">
+      {{ form.body.label_tag }}
+      {{ form.body }}
+      {{ form.body.errors }}
+    </div>
+
+    <div class="form-actions">
+      <button
+        class="btn btn-primary"
+        type="submit"
+      >
+        ذخیره تغییرات
+      </button>
+
+      <a
+        class="btn btn-ghost"
+        href="{% url 'tasks:detail' workspace.pk board.pk column.pk task.pk %}"
+      >
+        انصراف
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock content %}
