@@ -1,0 +1,41 @@
+<article class="task-activity">
+  <span
+    class="task-activity__dot"
+    aria-hidden="true"
+  ></span>
+
+  <div class="task-activity__body">
+    <p>
+      <strong>
+        {% if activity.actor %}
+          {{ activity.actor.get_full_name|default:activity.actor.username }}
+        {% else %}
+          سیستم
+        {% endif %}
+      </strong>
+
+      {{ activity.get_action_display }}
+    </p>
+
+    {% if activity.action == "moved" %}
+      <p class="card-text">
+        از
+        «{{ activity.metadata.source_column_title }}»
+        به
+        «{{ activity.metadata.target_column_title }}»
+      </p>
+    {% elif activity.action == "status_changed" %}
+      <p class="card-text">
+        از
+        «{{ activity.metadata.old_status_label }}»
+        به
+        «{{ activity.metadata.new_status_label }}»
+      </p>
+    {% endif %}
+
+    <time class="muted">
+      {{ activity.created_at|timesince }}
+      پیش
+    </time>
+  </div>
+</article>

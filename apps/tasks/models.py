@@ -255,3 +255,293 @@ class Task(TimeStampedModel):
     
     def __str__(self):
         return self.title
+
+class TaskCommentQuerySet(models.QuerySet):
+    def for_task(self, task):
+        return self.filter(
+            task=task,
+        )
+    
+    def visible(self):
+        return self.filter(
+            is_deleted=False,
+        )
+    
+    def deleted(self):
+        return self.filter(
+            is_deleted=True,
+        )
+    
+class TaskCommentManager(
+    models.Manager.from_queryset(TaskCommentQuerySet)
+):
+    pass
+
+class TaskComment(TimeStampedModel):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='task_comments',
+    )
+    body = models.TextField(
+        max_length=3000,
+    )
+    
+    is_deleted = models.BooleanField(
+        default=False,
+    )
+    
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='deleted_task_ccomments'
+    )
+    
+    objects = TaskCommentManager()
+    
+    class Meta:
+        ordering = [
+            'created_at',
+            'pk',
+        ]
+        
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        is_deleted=False,
+                        deleted_at__isnull=True,
+                        deleted_by__isnull=True,
+                    )
+                    | Q(
+                        is_deleted=True,
+                        deleted_at__isnull=False,
+                    )
+                ),
+                name=(
+                    'task_comment_'
+                    'deleted_consistent'
+                )
+            )
+        ]
+        
+        indexes = [
+            models.Index(
+                fields=(
+                    'task',
+                    'is_deleted',
+                    'created_at',
+                ),
+                name=(
+                    'task_comment_'
+                    'task_state_idx'
+                ),
+            ),
+        ]
+        
+        verbose_name = (
+            "دیدگاه Task"
+        )
+
+        verbose_name_plural = (
+            "دیدگاه‌های Task"
+        )
+    
+    def clean(self):
+        super().clean()
+        
+        self.body = self.body.strip()
+        
+        if (
+            not self.is_deleted
+            and not self.body
+        ):
+            raise ValidationError(
+                {
+                    "body": (
+                        "متن دیدگاه "
+                        "نمی‌تواند خالی باشد."
+                    ),
+                }
+            )
+        
+        deletion_state_invalid = (
+            (
+                self.is_deleted
+                and self.deleted_at
+                is None
+            )
+            or (
+                not self.is_deleted
+                and (
+                    self.deleted_at
+                    is not None
+                    or self.deleted_by_id
+                    is not None
+                )
+            )
+        )
+        
+        if deletion_state_invalid:
+            raise ValidationError(
+                {
+                    "is_deleted": (
+                        "وضعیت حذف دیدگاه "
+                        "سازگار نیست."
+                    ),
+                }
+            )
+    
+    def __str__(self):
+        return (
+            f"{self.task}: "
+            f"{self.body[:50]}"
+        )
+
+class TaskActivity(models.Model):
+    class Action(models.TextChoices):
+        CREATED = (
+            "created",
+            "Task ساخته شد",
+        )
+
+        UPDATED = (
+            "updated",
+            "Task ویرایش شد",
+        )
+
+        STATUS_CHANGED = (
+            "status_changed",
+            "وضعیت تغییر کرد",
+        )
+
+        ASSIGNEE_CHANGED = (
+            "assignee_changed",
+            "مسئول تغییر کرد",
+        )
+
+        MOVED = (
+            "moved",
+            "به ستون دیگری منتقل شد",
+        )
+
+        REORDERED = (
+            "reordered",
+            "جایگاه تغییر کرد",
+        )
+
+        COMMENTED = (
+            "commented",
+            "دیدگاه ثبت شد",
+        )
+
+        COMMENT_UPDATED = (
+            "comment_updated",
+            "دیدگاه ویرایش شد",
+        )
+
+        COMMENT_DELETED = (
+            "comment_deleted",
+            "دیدگاه حذف شد",
+        )
+
+        ARCHIVED = (
+            "archived",
+            "Task آرشیو شد",
+        )
+
+        RESTORED = (
+            "restored",
+            "Task بازیابی شد",
+        )
+    
+    
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='activities',
+    )
+    
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='task_activities',
+    )
+    
+    action = models.CharField(
+        max_length=32,
+        choices=Action.choices,
+    )
+    
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+    
+    
+    class Meta:
+        ordering = [
+            '-created_at',
+            '-pk',
+        ]
+        
+        indexes = [
+            models.Index(
+                fields=(
+                    'task',
+                    'created_at',
+                ),
+                name=(
+                    'tasks_activity_'
+                    'task_time_idx'
+                ),
+            ),
+        ]
+        
+        verbose_name = (
+            "فعالیت Task"
+        )
+
+        verbose_name_plural = (
+            "فعالیت‌های Task"
+        )
+    
+    def clean(self):
+        super().clean()
+        
+        if not isinstance(
+            self.metadata,
+            dict,
+        ):
+            raise ValidationError(
+                {
+                    "metadata": (
+                        "اطلاعات فعالیت باید "
+                        "یک JSON object باشد."
+                    ),
+                }
+            )
+    
+    def __str__(self):
+        return (
+            f"{self.task}: "
+            f"{self.get_action_display()}"
+        )
