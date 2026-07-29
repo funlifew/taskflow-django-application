@@ -5,7 +5,7 @@ from apps.tasks.models import (
     TaskComment,
 )
 
-from .collaboration_base import (
+from apps.tasks.tests.collaboration_base import (
     TaskCollaborationTestBase,
 )
 
