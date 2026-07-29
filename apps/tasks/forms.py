@@ -4,7 +4,7 @@ from django.db.models import Q
 from apps.columns.models import Column
 from apps.workspaces.models import WorkspaceMembership
 
-from .models import Task
+from .models import Task, TaskComment, TaskActivity
 from .constants import TASK_ASSIGNABLE_ROLES
 
 
@@ -422,3 +422,48 @@ class TaskDragReorderForm(forms.Form):
             )
         
         return self.cleaned_data['target_position']
+
+class TaskCommentForm(
+    forms.ModelForm
+):
+    class Meta:
+        model = TaskComment
+        
+        fields = (
+            'body',
+        )
+        
+        labels = {
+            'body': 'متن دیدگاه',
+        }
+        
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "class": "input",
+                    "rows": 4,
+                    "maxlength": 3000,
+                    "placeholder": (
+                        "دیدگاه، سؤال یا "
+                        "گزارش پیشرفت خود را "
+                        "بنویسید..."
+                    ),
+                }
+            ),
+        }
+
+    def clean_body(self):
+        body = (
+            self.cleaned_data[
+                'body'
+            ]
+            .strip()
+        )
+        
+        if not body:
+            raise forms.ValidationError(
+                "متن دیدگاه "
+                "نمی‌تواند خالی باشد."
+            )
+
+        return body

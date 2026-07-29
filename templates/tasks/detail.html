@@ -198,4 +198,92 @@
   </form>
 </section>
 {% endif %}
+
+<section class="task-collaboration-grid">
+  <section
+    class="panel"
+    data-reveal
+  >
+    <div class="spread workspace-section-head">
+      <div>
+        <h2 class="card-title">
+          دیدگاه‌ها
+        </h2>
+
+        <p class="card-text">
+          {{ comments_count }}
+          دیدگاه فعال
+        </p>
+      </div>
+    </div>
+
+    {% if can_comment %}
+      <form
+        method="post"
+        class="stack"
+        action="{% url 'tasks:comment_create' workspace.pk board.pk column.pk task.pk %}"
+      >
+        {% csrf_token %}
+
+        <div class="field">
+          {{ comment_form.body.label_tag }}
+          {{ comment_form.body }}
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="btn btn-primary"
+            type="submit"
+          >
+            ثبت دیدگاه
+          </button>
+        </div>
+      </form>
+
+      <div class="divider"></div>
+    {% endif %}
+
+    <div class="task-comment-list">
+      {% for comment in comments %}
+        {% include "tasks/includes/_comment.html" %}
+      {% empty %}
+        <div class="empty-state workspace-compact-empty">
+          <h3>
+            هنوز دیدگاهی ثبت نشده
+          </h3>
+
+          <p class="page-subtitle">
+            اولین گفتگو درباره این Task
+            را شروع کنید.
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <aside
+    class="panel"
+    data-reveal
+  >
+    <div class="workspace-section-head">
+      <h2 class="card-title">
+        تاریخچه فعالیت
+      </h2>
+
+      <p class="card-text">
+        ۵۰ فعالیت اخیر این Task
+      </p>
+    </div>
+
+    <div class="task-activity-list">
+      {% for activity in activities %}
+        {% include "tasks/includes/_activity_item.html" %}
+      {% empty %}
+        <p class="card-text">
+          هنوز فعالیتی ثبت نشده است.
+        </p>
+      {% endfor %}
+    </div>
+  </aside>
+</section>
 {% endblock content %}

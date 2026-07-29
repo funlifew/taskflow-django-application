@@ -1,0 +1,65 @@
+<article
+  class="task-comment{% if comment.is_deleted %} task-comment--deleted{% endif %}"
+>
+  <header class="task-comment__header">
+    <div>
+      <strong>
+        {% if comment.author %}
+          {{ comment.author.get_full_name|default:comment.author.username }}
+        {% else %}
+          کاربر حذف‌شده
+        {% endif %}
+      </strong>
+
+      <span class="muted">
+        {{ comment.created_at|timesince }}
+        پیش
+      </span>
+
+      {% if not comment.is_deleted and comment.updated_at != comment.created_at %}
+        <span class="badge">
+          ویرایش‌شده
+        </span>
+      {% endif %}
+    </div>
+
+    {% if not comment.is_deleted %}
+      <div class="actions">
+        {% if comment.author_id == request.user.id %}
+          <a
+            class="btn btn-ghost"
+            href="{% url 'tasks:comment_update' workspace.pk board.pk column.pk task.pk comment.pk %}"
+          >
+            ویرایش
+          </a>
+        {% endif %}
+
+        {% if comment.author_id == request.user.id or can_moderate_comments %}
+          <form
+            method="post"
+            action="{% url 'tasks:comment_delete' workspace.pk board.pk column.pk task.pk comment.pk %}"
+          >
+            {% csrf_token %}
+
+            <button
+              class="btn btn-soft"
+              type="submit"
+            >
+              حذف
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    {% endif %}
+  </header>
+
+  <div class="task-comment__body">
+    {% if comment.is_deleted %}
+      <p class="muted">
+        این دیدگاه حذف شده است.
+      </p>
+    {% else %}
+      {{ comment.body|linebreaksbr }}
+    {% endif %}
+  </div>
+</article>

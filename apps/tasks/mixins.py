@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from apps.columns.mixins import ColumnObjectMixin
-from .models import Task
+from .models import Task, TaskComment
 
 
 class TaskObjectMixin(
@@ -59,3 +59,58 @@ class ArchivedTaskObjectMixin(
                 is_archived=True,
             )
         )
+
+class TaskCommentObjectMixin(
+    TaskObjectMixin
+):
+    comment_url_kwarg = 'comment_pk'
+
+    pk_url_kwarg = 'comment_pk'
+
+    include_deleted_comments = False
+    
+    def get_comment_queryset(
+        self,
+    ):
+        queryset = (
+            TaskComment.objects
+            .for_task(
+                self.get_task()
+            )
+            .select_related(
+                "author",
+                'deleted_by',
+                'task',
+            )
+        )
+        
+        if not (
+            self
+            .include_deleted_comments
+        ):
+            queryset = queryset.visible()
+        
+        return queryset
+    
+    def get_queryset(self):
+        return (
+            self.get_comment_queryset()
+        )
+    
+    def get_comment(self):
+        if not hasattr(
+            self,
+            '_comment',
+        ):
+            self._comment = (
+                get_object_or_404(
+                    self
+                    .get_comment_queryset(),
+                    pk=self.kwargs[
+                        self
+                        .comment_url_kwarg
+                    ],
+                )
+            )
+
+        return self._comment

@@ -21,6 +21,46 @@ urlpatterns = [
         name='detail',
     ),
     path(
+        (
+            "<int:task_pk>/"
+            "comments/create/"
+        ),
+        (
+            views
+            .TaskCommentCreateView
+            .as_view()
+        ),
+        name="comment_create",
+    ),
+    path(
+        (
+            "<int:task_pk>/"
+            "comments/"
+            "<int:comment_pk>/"
+            "update/"
+        ),
+        (
+            views
+            .TaskCommentUpdateView
+            .as_view()
+        ),
+        name="comment_update",
+    ),
+    path(
+        (
+            "<int:task_pk>/"
+            "comments/"
+            "<int:comment_pk>/"
+            "delete/"
+        ),
+        (
+            views
+            .TaskCommentDeleteView
+            .as_view()
+        ),
+        name="comment_delete",
+    ),
+    path(
         '<int:task_pk>/update/',
         views.TaskUpdateView.as_view(),
         name='update',
