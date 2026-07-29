@@ -6,9 +6,169 @@ from django.utils import timezone
 from django.urls import reverse
 
 from .models import(
+    Workspace,
     WorkspaceInvitation,
     WorkspaceMembership,
 )
+
+from datetime import timedelta
+
+WORKSPACE_INVITATION_LIFETIME = timedelta(days=3)
+
+@transaction.atomic
+def create_workspace(
+    *,
+    owner,
+    name,
+    description="",
+):
+    workspace = Workspace.objects.create(
+        owner=owner,
+        name=name,
+        description=description,
+        is_archived=False,
+    )
+    
+    WorkspaceMembership.objects.create(
+        workspace=workspace,
+        user=owner,
+        role=WorkspaceMembership.Role.OWNER,
+    )
+    
+    return workspace
+
+@transaction.atomic
+def create_workspace_invitation(
+    *,
+    request,
+    workspace,
+    invited_by,
+    email,
+    role,
+):
+    if role == WorkspaceMembership.Role.OWNER:
+        raise ValueError(
+            "نمی‌توان کاربر را با نقش مالک دعوت کرد."
+        )
+    
+    invitation = WorkspaceInvitation.objects.create(
+        workspace=workspace,
+        invited_by=invited_by,
+        email=email.strip().lower(),
+        role=role,
+        status=WorkspaceInvitation.Status.PENDING,
+        expires_at=(
+            timezone.now()
+            + WORKSPACE_INVITATION_LIFETIME
+        ),
+    )
+    
+    transaction.on_commit(
+        lambda: send_workspace_invitation_email(
+            request,
+            invitation,
+        )
+    )
+    
+    return invitation
+
+@transaction.atomic
+def update_workspace_membership_role(
+    *,
+    workspace,
+    membership,
+    requester_role,
+    new_role,
+):
+    locked_membership = (
+        WorkspaceMembership.objects
+        .select_for_update()
+        .select_related(
+            'user',
+            'workspace',
+        )
+        .get(
+            pk=membership.pk,
+            workspace=workspace,
+        )
+    )
+    
+    if locked_membership.role == WorkspaceMembership.Role.OWNER:
+        raise PermissionError(
+            "نقش مالک از این بخش قابل تغییر نیست."
+        )
+
+    if new_role == WorkspaceMembership.Role.OWNER:
+        raise PermissionError(
+            "انتقال مالکیت باید از بخش جداگانه انجام شود."
+        )
+    
+    if requester_role == WorkspaceMembership.Role.ADMIN:
+        if locked_membership.role == WorkspaceMembership.Role.ADMIN:
+            raise PermissionError(
+                "مدیر نمی‌تواند نقش مدیر دیگری را تغییر دهد."
+            )
+        
+        if new_role == WorkspaceMembership.Role.ADMIN:
+            raise PermissionError(
+                "فقط مالک Workspace می‌تواند نقش مدیر بدهد."
+            )
+    
+    if locked_membership.role == new_role:
+        return locked_membership
+    
+    
+    locked_membership.role = new_role
+    locked_membership.save(
+        update_fields=[
+            'role',
+            'updated_at',
+        ]
+    )
+    
+    return locked_membership
+
+@transaction.atomic
+def remove_workspace_membership(
+    *,
+    workspace,
+    membership,
+    requester_role,
+):
+    locked_membership = (
+        WorkspaceMembership.objects
+        .select_for_update()
+        .select_related(
+            'user',
+            'workspace',
+        )
+        .get(
+            pk=membership.pk,
+            workspace=workspace,
+        )
+    )
+    
+    if locked_membership.role == WorkspaceMembership.Role.OWNER:
+        raise PermissionError(
+            "مالک Workspace قابل حذف نیست."
+        )
+    
+    if (
+        requester_role == WorkspaceMembership.Role.ADMIN
+        and locked_membership.role
+        == WorkspaceMembership.Role.ADMIN
+    ):
+        raise PermissionError(
+            "مدیر نمی‌تواند مدیر دیگری را حذف کند."
+        )
+    
+    member_name = (
+        locked_membership.user.get_full_name()
+        or locked_membership.user.username
+    )
+    locked_membership.delete()
+
+    return member_name
 
 def send_workspace_invitation_email(
     request,
