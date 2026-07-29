@@ -1,5 +1,6 @@
 from django.core.exceptions import (
     ValidationError,
+    PermissionDenied,
 )
 from django.contrib import messages
 from django.db import transaction
@@ -41,17 +42,27 @@ from .forms import (
     TaskStatusForm,
     TaskReorderForm,
     TaskDragReorderForm,
+    TaskCommentForm,
 )
 from .mixins import (
     ArchivedTaskObjectMixin,
     TaskObjectMixin,
+    TaskCommentObjectMixin,
 )
-from .models import Task
+from .models import (
+    Task,
+    TaskComment,
+    TaskActivity,
+)
 from .services import (
     TaskLifecycleService,
 )
 from .reordering import (
     TaskReorderingService,
+)
+from .collaboration import (
+    COMMENT_MODERATOR_ROLES,
+    TaskCommentService,
 )
 
 import json
@@ -206,6 +217,39 @@ class TaskDetailView(
             .exists()
         )
         
+        comments = (
+            TaskComment.objects
+            .for_task(self.object)
+            .select_related(
+                'author',
+                'deleted_by',
+            )
+            .order_by(
+                'created_at',
+                'pk',
+            )
+        )
+        
+        activities = (
+            TaskActivity.objects
+            .filter(
+                task=self.object,
+            )
+            .select_related(
+                'actor',
+            )
+            .order_by(
+                '-created_at',
+                '-pk',
+            )[:50]
+        )
+        
+        can_comment = can_write
+        can_moderate_comments = (
+            current_user_role
+            in COMMENT_MODERATOR_ROLES
+        )
+        
         context.update(
             {
                 'workspace': self.get_workspace(),
@@ -218,11 +262,209 @@ class TaskDetailView(
                 'can_reorder_task': can_write,
                 'can_move_up': can_write and has_previous_task,
                 'can_move_down': can_write and has_next_task,
+                'can_comment': can_comment,
+                'can_moderate_comments': can_moderate_comments,
+                'comments': comments,
+                'comments_count': (
+                    comments
+                    .visible()
+                    .count()
+                ),
+                'activities': activities,
+                'comment_form': TaskCommentForm(),
                 'status_form': TaskStatusForm(instance=self.object),
             }
         )
         
         return context
+
+class TaskCommentCreateView(
+    TaskObjectMixin,
+    BoardWriteRequiredMixin,
+    View,
+):
+    http_method_names = [
+        'post',
+    ]
+    
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        form = TaskCommentForm(
+            request.POST
+        )
+        
+        if not form.is_valid():
+            messages.error(
+                request,
+                (
+                    "متن دیدگاه معتبر "
+                    "نیست."
+                ),
+            )
+            
+            return redirect(
+                "tasks:detail",
+                workspace_pk=self.get_workspace().pk,
+                board_pk=self.get_board().pk,
+                column_pk=self.get_column().pk,
+                task_pk=self.get_task().pk,
+            )
+        (
+            comment,
+            task,
+            board,
+            column,
+        ) = TaskCommentService.create(
+            workspace=self.get_workspace(),
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+            task_pk=self.get_task().pk,
+            actor=request.user,
+            body=form.cleaned_data['body'],
+        )
+        
+        messages.success(
+            request,
+            'دیدگاه ثبت شد.',
+        )
+        
+        return redirect(
+            'tasks:detail',
+            workspace_pk=board.workspace_id,
+            board_pk=board.pk,
+            column_pk=column.pk,
+            task_pk=task.pk,
+        )
+        
+
+class TaskCommentUpdateView(
+    TaskCommentObjectMixin,
+    BoardWriteRequiredMixin,
+    UpdateView,
+):
+    model = TaskComment
+    form_class = TaskCommentForm
+    
+    template_name = 'tasks/comments/update.html'
+    context_object_name = 'comment'
+
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(**kwargs)
+        
+        context.update(
+            {
+                'workspace': self.get_workspace(),
+                'board': self.get_board(),
+                'column': self.get_column(),
+                'task': self.get_task(),
+                'current_user_role': self.get_current_user_role(),
+            }
+        )
+        
+        return context
+    
+    
+    def form_valid(
+        self,
+        form,
+    ):
+        (
+            comment,
+            task,
+            board,
+            column,
+        ) = TaskCommentService.update(
+            workspace=self.get_workspace(),
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+            task_pk=self.get_task().pk,
+            comment_pk=self.get_comment().pk,
+            actor=self.request.user,
+            body=form.cleaned_data['body'],
+        )
+        
+        self.object = comment
+        
+        messages.success(
+            self.request,
+            'دیدگاه ویرایش شد.',
+        )
+        
+        return redirect(
+            'tasks:detail',
+            workspace_pk=board.workspace_id,
+            board_pk=board.pk,
+            column_pk=column.pk,
+            task_pk=task.pk,
+        )
+    
+    def get_object(
+        self,
+        queryset=None,
+    ):
+        comment = self.get_comment()
+        
+        if (
+            comment.author_id
+            != self.request.user.id
+        ):
+            raise PermissionDenied(
+                "فقط نویسنده دیدگاه "
+                "می‌تواند آن را ویرایش کند."
+            )
+        
+        return comment
+        
+class TaskCommentDeleteView(
+    TaskCommentObjectMixin,
+    BoardWriteRequiredMixin,
+    View,
+):
+    http_method_names = [
+        'post',
+    ]
+    
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        (
+            comment,
+            task,
+            board,
+            column,
+        ) = TaskCommentService.delete(
+            workspace=self.get_workspace(),
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+            task_pk=self.get_task().pk,
+            comment_pk=self.get_comment().pk,
+            actor=request.user,
+        )
+        
+        messages.success(
+            request,
+            "دیدگاه حذف شد.",
+        )
+
+        return redirect(
+            "tasks:detail",
+            workspace_pk=(
+                board.workspace_id
+            ),
+            board_pk=board.pk,
+            column_pk=column.pk,
+            task_pk=task.pk,
+        )
 
 class TaskUpdateView(
     TaskObjectMixin,
