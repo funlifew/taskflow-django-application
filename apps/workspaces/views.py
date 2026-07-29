@@ -1,12 +1,15 @@
-from datetime import timedelta
-
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
-from django.db import transaction
-from django.db.models import Count, OuterRef, Q, Subquery
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse, reverse_lazy
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+)
+from django.shortcuts import (
+    get_object_or_404,
+    redirect,
+)
+from django.urls import (
+    reverse,
+    reverse_lazy,
+)
 from django.utils import timezone
 from django.views import View
 from django.views.generic import (
@@ -36,11 +39,23 @@ from .models import (
     WorkspaceInvitation,
     WorkspaceMembership,
 )
+from .selectors import (
+    get_active_workspace_boards,
+    get_manageable_workspace_memberships,
+    get_pending_invitations_for_user,
+    get_pending_workspace_invitations,
+    get_workspace_list_queryset,
+    get_workspace_list_summary,
+    get_workspace_memberships,
+)
 from .services import (
     accept_workspace_invitation,
+    create_workspace,
+    create_workspace_invitation,
     decline_workspace_invitation,
-    send_workspace_invitation_email,
     expire_stale_workspace_invitations,
+    remove_workspace_membership,
+    update_workspace_membership_role,
 )
 
 
@@ -54,94 +69,46 @@ class WorkspaceListView(
     paginate_by = 9
 
     def get_base_queryset(self):
-        current_user_role = (
-            WorkspaceMembership.objects
-            .filter(
-                workspace=OuterRef("pk"),
-                user=self.request.user,
-            )
-            .values("role")[:1]
-        )
-
-        return (
-            super()
-            .get_queryset()
-            .select_related("owner")
-            .annotate(
-                members_count=Count(
-                    "memberships",
-                    distinct=True,
-                ),
-                current_user_role=Subquery(
-                    current_user_role
-                ),
-            )
-            .order_by("-updated_at")
+        return get_workspace_list_queryset(
+            queryset=super().get_queryset(),
+            user=self.request.user,
         )
 
     def get_queryset(self):
-        queryset = self.get_base_queryset()
-
-        search_query = (
-            self.request.GET.get("q", "").strip()
+        return get_workspace_list_queryset(
+            queryset=super().get_queryset(),
+            user=self.request.user,
+            search_query=self.request.GET.get(
+                'q',
+                '',
+            ),
+            selected_role=self.request.GET.get(
+                'role',
+                '',
+            ),
         )
-        selected_role = (
-            self.request.GET.get("role", "").strip()
-        )
-
-        if search_query:
-            queryset = queryset.filter(
-                Q(name__icontains=search_query)
-                | Q(description__icontains=search_query)
-                | Q(owner__username__icontains=search_query)
-                | Q(owner__first_name__icontains=search_query)
-                | Q(owner__last_name__icontains=search_query)
-            )
-
-        if selected_role in WorkspaceMembership.Role.values:
-            queryset = queryset.filter(
-                memberships__user=self.request.user,
-                memberships__role=selected_role,
-            )
-
-        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
-        accessible_workspaces = self.get_base_queryset()
+        base_queryset = self.get_base_queryset()
 
         pending_invitations = (
-            WorkspaceInvitation.objects
-            .filter(
-                email__iexact=user.email,
-                status=WorkspaceInvitation.Status.PENDING,
-                expires_at__gt=timezone.now(),
-                workspace__is_archived=False,
+            get_pending_invitations_for_user(
+                user=user,
             )
-            .select_related(
-                "workspace",
-                "invited_by",
-            )
-            .order_by("-created_at")
         )
 
         context.update(
+            get_workspace_list_summary(
+                queryset=base_queryset,
+                user=user,
+            )
+        )
+        
+        context.update(
             {
-                "total_workspaces": (
-                    accessible_workspaces.count()
-                ),
-                "owned_workspaces_count": (
-                    accessible_workspaces
-                    .filter(owner=user)
-                    .count()
-                ),
-                "joined_workspaces_count": (
-                    accessible_workspaces
-                    .exclude(owner=user)
-                    .count()
-                ),
                 "pending_invitations": (
                     pending_invitations
                 ),
@@ -149,7 +116,9 @@ class WorkspaceListView(
                     pending_invitations.count()
                 ),
                 "search_query": (
-                    self.request.GET.get("q", "").strip()
+                    self.request.GET
+                    .get("q", "")
+                    .strip()
                 ),
                 "selected_role": (
                     self.request.GET
@@ -157,7 +126,9 @@ class WorkspaceListView(
                     .strip()
                 ),
                 "role_choices": (
-                    WorkspaceMembership.Role.choices
+                    WorkspaceMembership
+                    .Role
+                    .choices
                 ),
             }
         )
@@ -183,8 +154,13 @@ class WorkspaceDetailView(
             )
         )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(
+            **kwargs
+        )
 
         workspace = self.object
         user = self.request.user
@@ -199,68 +175,66 @@ class WorkspaceDetailView(
             current_user_role = (
                 WorkspaceMembership.Role.OWNER
             )
-        elif membership:
+        elif membership is not None:
             current_user_role = membership.role
         else:
             current_user_role = None
 
-        can_manage_members = current_user_role in {
-            WorkspaceMembership.Role.OWNER,
-            WorkspaceMembership.Role.ADMIN,
-        }
+        can_manage_members = (
+            current_user_role
+            in {
+                WorkspaceMembership.Role.OWNER,
+                WorkspaceMembership.Role.ADMIN,
+            }
+        )
+
+        can_create_board = (
+            current_user_role
+            in {
+                WorkspaceMembership.Role.OWNER,
+                WorkspaceMembership.Role.ADMIN,
+                WorkspaceMembership.Role.MEMBER,
+            }
+        )
 
         is_owner = (
-            workspace.owner_id == user.id
+            current_user_role
+            == WorkspaceMembership.Role.OWNER
         )
-        
-        can_create_board = current_user_role in {
-            WorkspaceMembership.Role.OWNER,
-            WorkspaceMembership.Role.ADMIN,
-            WorkspaceMembership.Role.MEMBER,
-        }
-        
+
         active_boards = (
-            workspace.boards
-            .filter(
-                is_archived=False,
-            )
-            .select_related(
-                'created_by',
-            )
-            .order_by(
-                '-updated_at',
-                '-pk',
+            get_active_workspace_boards(
+                workspace=workspace,
             )
         )
+
+        pending_invitations_count = 0
+
+        if can_manage_members:
+            pending_invitations_count = (
+                get_pending_workspace_invitations(
+                    workspace=workspace,
+                )
+                .count()
+            )
 
         context.update(
             {
                 "current_user_membership": membership,
                 "current_user_role": current_user_role,
                 "can_manage_members": can_manage_members,
-
-                # UpdateView و DeleteView فعلاً فقط Owner هستند.
                 "can_edit_workspace": is_owner,
                 "can_delete_workspace": is_owner,
-                
-                'can_create_board': can_create_board,
-                'active_boards_count': active_boards.count(),
-                'recent_boards': active_boards[:4],
-
+                "can_create_board": can_create_board,
+                "active_boards_count": (
+                    active_boards.count()
+                ),
+                "recent_boards": active_boards[:4],
                 "members_count": (
                     workspace.memberships.count()
                 ),
                 "pending_invitations_count": (
-                    workspace.invitations.filter(
-                        status=(
-                            WorkspaceInvitation
-                            .Status
-                            .PENDING
-                        ),
-                        expires_at__gt=timezone.now(),
-                    ).count()
-                    if can_manage_members
-                    else 0
+                    pending_invitations_count
                 ),
             }
         )
@@ -277,16 +251,11 @@ class WorkspaceCreateView(
     template_name = "workspaces/create.html"
 
     def form_valid(self, form):
-        with transaction.atomic():
-            self.object = form.save(commit=False)
-            self.object.owner = self.request.user
-            self.object.save()
-
-            WorkspaceMembership.objects.create(
-                workspace=self.object,
-                user=self.request.user,
-                role=WorkspaceMembership.Role.OWNER,
-            )
+        self.object = create_workspace(
+            owner=self.request.user,
+            name=form.cleaned_data['name'],
+            description=form.cleaned_data['description'],
+        )
 
         messages.success(
             self.request,
@@ -362,6 +331,7 @@ class WorkspaceInvitationCreateView(
 
     def get_form_kwargs(self):
         workspace = self.get_workspace()
+        
         expire_stale_workspace_invitations(
             workspace=workspace
         )
@@ -382,24 +352,13 @@ class WorkspaceInvitationCreateView(
     def form_valid(self, form):
         workspace = self.get_workspace()
 
-        with transaction.atomic():
-            invitation = form.save(commit=False)
-            invitation.workspace = workspace
-            invitation.invited_by = self.request.user
-            invitation.expires_at = (
-                timezone.now()
-                + timedelta(days=3)
-            )
-            invitation.save()
-
-            transaction.on_commit(
-                lambda: (
-                    send_workspace_invitation_email(
-                        self.request,
-                        invitation,
-                    )
-                )
-            )
+        create_workspace_invitation(
+            request=self.request,
+            workspace=workspace,
+            invited_by=self.request.user,
+            email=form.cleaned_data['email'],
+            role=form.cleaned_data['role'],
+        )
 
         messages.success(
             self.request,
@@ -556,69 +515,65 @@ class WorkspaceMemberListView(
 ):
     template_name = "workspaces/members.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(
+            **kwargs
+        )
 
         workspace = self.get_workspace()
-        requester_membership = self.get_membership()
+        current_user_role = (
+            self.get_current_user_role()
+        )
 
-        if workspace.owner_id == self.request.user.id:
-            current_user_role = (
-                WorkspaceMembership.Role.OWNER
-            )
-        elif requester_membership:
-            current_user_role = (
-                requester_membership.role
-            )
-        else:
-            current_user_role = None
-
-        can_manage_members = current_user_role in {
-            WorkspaceMembership.Role.OWNER,
-            WorkspaceMembership.Role.ADMIN,
-        }
+        can_manage_members = (
+            current_user_role
+            in {
+                WorkspaceMembership.Role.OWNER,
+                WorkspaceMembership.Role.ADMIN,
+            }
+        )
 
         memberships = (
-            workspace.memberships
-            .select_related("user")
-            .order_by(
-                "role",
-                "created_at",
+            get_workspace_memberships(
+                workspace=workspace,
             )
         )
 
         if can_manage_members:
             pending_invitations = (
-                workspace.invitations
-                .filter(
-                    status=(
-                        WorkspaceInvitation
-                        .Status
-                        .PENDING
-                    ),
-                    expires_at__gt=timezone.now(),
+                get_pending_workspace_invitations(
+                    workspace=workspace,
                 )
-                .select_related("invited_by")
-                .order_by("-created_at")
             )
         else:
             pending_invitations = (
-                WorkspaceInvitation.objects.none()
+                WorkspaceInvitation
+                .objects
+                .none()
             )
 
         context.update(
             {
                 "workspace": workspace,
                 "memberships": memberships,
-                "members_count": memberships.count(),
+                "members_count": (
+                    memberships.count()
+                ),
                 "pending_invitations": (
                     pending_invitations
                 ),
                 "pending_invitations_count": (
                     pending_invitations.count()
                 ),
-                "current_user_role": current_user_role,
-                "can_manage_members": can_manage_members,
+                "current_user_role": (
+                    current_user_role
+                ),
+                "can_manage_members": (
+                    can_manage_members
+                ),
             }
         )
 
@@ -639,76 +594,72 @@ class WorkspaceMembershipUpdateView(
     context_object_name = "membership"
     pk_url_kwarg = "membership_pk"
 
+    def get_queryset(self):
+        return (
+            get_manageable_workspace_memberships(
+                workspace=self.get_workspace(),
+                requester_role=(
+                    self.get_current_user_role()
+                ),
+            )
+        )
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        
-        workspace = self.get_workspace()
-        requester_membership = self.get_membership()
-        
-        if workspace.owner_id == self.request.user.id:
-            requester_role = WorkspaceMembership.Role.OWNER
-        else:
-            requester_role = requester_membership.role
-        
-        
-        kwargs['requester_role'] = requester_role
-        
-        
+
+        kwargs["requester_role"] = (
+            self.get_current_user_role()
+        )
+
         return kwargs
-    
-    def get_queryset(self):
-        queryset = (
-            WorkspaceMembership.objects
-            .filter(
-                workspace=self.get_workspace(),
-            )
-            .exclude(
-                role=WorkspaceMembership.Role.OWNER,
-            )
-            .select_related(
-                "user",
-                "workspace",
-            )
+
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(
+            **kwargs
         )
 
-        requester_membership = (
-            self.get_membership()
+        context["workspace"] = (
+            self.get_workspace()
         )
-
-        # Admin اجازه تغییر نقش Admin دیگری را ندارد.
-        if (
-            requester_membership
-            and requester_membership.role
-            == WorkspaceMembership.Role.ADMIN
-        ):
-            queryset = queryset.exclude(
-                role=WorkspaceMembership.Role.ADMIN,
-            )
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context["workspace"] = self.get_workspace()
 
         return context
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
+    def form_valid(
+        self,
+        form,
+    ):
+        self.object = (
+            update_workspace_membership_role(
+                workspace=self.get_workspace(),
+                membership=self.object,
+                requester_role=(
+                    self.get_current_user_role()
+                ),
+                new_role=(
+                    form.cleaned_data["role"]
+                ),
+            )
+        )
 
         messages.success(
             self.request,
             "نقش عضو با موفقیت تغییر کرد.",
         )
 
-        return response
+        return redirect(
+            self.get_success_url()
+        )
 
     def get_success_url(self):
         return reverse(
             "workspaces:members",
             kwargs={
-                "pk": self.get_workspace().pk,
+                "pk": (
+                    self.get_workspace().pk
+                ),
             },
         )
 
@@ -725,62 +676,61 @@ class WorkspaceMembershipDeleteView(
     pk_url_kwarg = "membership_pk"
 
     def get_queryset(self):
-        workspace = self.get_workspace()
-
-        queryset = (
-            WorkspaceMembership.objects
-            .filter(workspace=workspace)
-            .exclude(
-                role=WorkspaceMembership.Role.OWNER,
-            )
-            .select_related(
-                "user",
-                "workspace",
+        return (
+            get_manageable_workspace_memberships(
+                workspace=self.get_workspace(),
+                requester_role=(
+                    self.get_current_user_role()
+                ),
             )
         )
 
-        requester_membership = (
-            self.get_membership()
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(
+            **kwargs
         )
 
-        # Admin نمی‌تواند Admin دیگری را حذف کند.
-        if (
-            requester_membership
-            and requester_membership.role
-            == WorkspaceMembership.Role.ADMIN
-        ):
-            queryset = queryset.exclude(
-                role=WorkspaceMembership.Role.ADMIN,
-            )
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context["workspace"] = self.get_workspace()
+        context["workspace"] = (
+            self.get_workspace()
+        )
 
         return context
 
-    def form_valid(self, form):
+    def form_valid(
+        self,
+        form,
+    ):
         member_name = (
-            self.object.user.get_full_name()
-            or self.object.user.username
+            remove_workspace_membership(
+                workspace=self.get_workspace(),
+                membership=self.object,
+                requester_role=(
+                    self.get_current_user_role()
+                ),
+            )
         )
-
-        response = super().form_valid(form)
 
         messages.success(
             self.request,
-            f"«{member_name}» از Workspace حذف شد.",
+            (
+                f"«{member_name}» "
+                "از Workspace حذف شد."
+            ),
         )
 
-        return response
+        return redirect(
+            self.get_success_url()
+        )
 
     def get_success_url(self):
         return reverse(
             "workspaces:members",
             kwargs={
-                "pk": self.get_workspace().pk,
+                "pk": (
+                    self.get_workspace().pk
+                ),
             },
         )
