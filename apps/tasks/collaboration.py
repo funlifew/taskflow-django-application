@@ -7,8 +7,6 @@ from django.shortcuts import (
 )
 from django.utils import timezone
 
-from apps.boards.models import Board
-from apps.columns.models import Column
 from apps.workspaces.models import (
     WorkspaceMembership,
 )
@@ -17,6 +15,11 @@ from .models import (
     Task,
     TaskActivity,
     TaskComment,
+)
+
+from .services import (
+    TaskScopeService,
+    TaskTouchService,
 )
 
 COMMENT_MODERATOR_ROLES = (
@@ -53,39 +56,6 @@ class TaskActivityService:
 
 class TaskCommentService:
     @staticmethod
-    def _lock_scope(
-        *,
-        workspace,
-        board_pk,
-        column_pk,
-        task_pk,
-    ):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=board_pk,
-            workspace=workspace,
-            is_archived=False,
-        )
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=column_pk,
-            board=board,
-            is_archived=False,
-        )
-        task = get_object_or_404(
-            Task.objects.select_for_update(),
-            pk=task_pk,
-            column=column,
-            is_archived=False,
-        )
-        
-        return (
-            board,
-            column,
-            task,
-        )
-        
-    @staticmethod
     def _get_actor_role(
         *,
         workspace,
@@ -117,38 +87,6 @@ class TaskCommentService:
         
         return membership.role
     
-    @staticmethod
-    def _touch_scope(
-        *,
-        board,
-        column,
-        task,
-    ):
-        now = timezone.now()
-
-        Task.objects.filter(
-            pk=task.pk
-        ).update(
-            updated_at=now,
-        )
-        
-        Column.objects.filter(
-            pk=column.pk,
-        ).update(
-            updated_at=now,
-        )
-        
-        Board.objects.filter(
-            pk=board.pk,
-        ).update(
-            updated_at=now,
-        )
-        
-        task.updated_at = now
-        column.updated_at = now
-        board.updated_at = now
-    
-    
     @classmethod
     @transaction.atomic
     def create(
@@ -164,8 +102,8 @@ class TaskCommentService:
         (
             board,
             column,
-            task
-        ) = cls._lock_scope(
+            task,
+        ) = TaskScopeService.lock_task_scope(
             workspace=workspace,
             board_pk=board_pk,
             column_pk=column_pk,
@@ -197,10 +135,10 @@ class TaskCommentService:
             },
         )
         
-        cls._touch_scope(
+        TaskTouchService.touch(
             board=board,
-            column=column,
-            task=task,
+            columns=(column,),
+            tasks=(task,),
         )
         
         return (
@@ -227,7 +165,7 @@ class TaskCommentService:
             board,
             column,
             task,
-        ) = cls._lock_scope(
+        ) = TaskScopeService.lock_task_scope(
             workspace=workspace,
             board_pk=board_pk,
             column_pk=column_pk,
@@ -291,10 +229,10 @@ class TaskCommentService:
             },
         )
         
-        cls._touch_scope(
+        TaskTouchService.touch(
             board=board,
-            column=column,
-            task=task,
+            columns=(column,),
+            tasks=(task,),
         )
         
         return (
@@ -320,7 +258,7 @@ class TaskCommentService:
             board,
             column,
             task,
-        ) = cls._lock_scope(
+        ) = TaskScopeService.lock_task_scope(
             workspace=workspace,
             board_pk=board_pk,
             column_pk=column_pk,
@@ -393,10 +331,10 @@ class TaskCommentService:
         )
         
         
-        cls._touch_scope(
+        TaskTouchService.touch(
             board=board,
-            column=column,
-            task=task,
+            columns=(column,),
+            tasks=(task,),
         )
         
         return (
