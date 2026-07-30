@@ -1,17 +1,12 @@
-from django.core.exceptions import (
-    ValidationError,
-    PermissionDenied,
-)
+import json
+
 from django.contrib import messages
-from django.db import transaction
-from django.http import (
-    Http404,
-    JsonResponse,
+from django.core.exceptions import (
+    PermissionDenied,
+    ValidationError,
 )
-from django.shortcuts import (
-    get_object_or_404,
-    redirect,
-)
+from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import View
 from django.views.generic import (
@@ -30,42 +25,45 @@ from apps.boards.mixins import (
     BoardReadRequiredMixin,
     BoardWriteRequiredMixin,
 )
-from apps.boards.models import Board
 from apps.columns.mixins import (
     ColumnObjectMixin,
 )
-from apps.columns.models import Column
 
-from .forms import (
-    TaskForm,
-    TaskMoveForm,
-    TaskStatusForm,
-    TaskReorderForm,
-    TaskDragReorderForm,
-    TaskCommentForm,
-)
-from .mixins import (
-    ArchivedTaskObjectMixin,
-    TaskObjectMixin,
-    TaskCommentObjectMixin,
-)
-from .models import (
-    Task,
-    TaskComment,
-    TaskActivity,
-)
-from .services import (
-    TaskLifecycleService,
-)
-from .reordering import (
-    TaskReorderingService,
-)
 from .collaboration import (
     COMMENT_MODERATOR_ROLES,
     TaskCommentService,
 )
-
-import json
+from .forms import (
+    TaskCommentForm,
+    TaskDragReorderForm,
+    TaskForm,
+    TaskMoveForm,
+    TaskReorderForm,
+    TaskStatusForm,
+)
+from .mixins import (
+    ArchivedTaskObjectMixin,
+    TaskCommentObjectMixin,
+    TaskObjectMixin,
+)
+from .models import (
+    Task,
+    TaskComment,
+)
+from .reordering import (
+    TaskReorderingService,
+)
+from .selectors import (
+    get_archived_tasks,
+    get_recent_task_activities,
+    get_task_comments,
+    get_task_navigation,
+    get_visible_task_comments_count,
+    serialize_task_columns,
+)
+from .services import (
+    TaskLifecycleService,
+)
 
 # Create your views here.
 
@@ -110,67 +108,44 @@ class TaskCreateView(
         return context
     
     
-    @transaction.atomic
-    def form_valid(self, form):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
+    def form_valid(
+        self,
+        form,
+    ):
+        (
+            self.object,
+            board,
+            column,
+        ) = TaskLifecycleService.create(
             workspace=self.get_workspace(),
-            is_archived=False,
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+            actor=self.request.user,
+            title=form.cleaned_data["title"],
+            description=(
+                form.cleaned_data[
+                    "description"
+                ]
+            ),
+            priority=(
+                form.cleaned_data["priority"]
+            ),
+            assignee=(
+                form.cleaned_data["assignee"]
+            ),
+            due_at=form.cleaned_data["due_at"],
         )
-        
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.get_column().pk,
-            board=board,
-            is_archived=False,
-        )
-        
-        self.object = form.save(
-            commit=False
-        )
-        
-        self.object.column = column
-        self.object.position = (
-            Task.objects.next_position(
-                column=column,
-            )
-        )
-        
-        self.object.status = (
-            Task.Status.TODO
-        )
-        
-        self.object.created_by = self.request.user
-        
-        self.object.is_archived = False
-        
-        self.object.full_clean()
-        self.object.save()
-        
-        column.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
+
         messages.success(
             self.request,
             (
-                f'Task «{self.object.title}» '
+                f"Task «{self.object.title}» "
                 "با موفقیت ساخته شد."
             ),
         )
-        
-        
+
         return redirect(
-            'boards:detail',
+            "boards:detail",
             workspace_pk=board.workspace_id,
             board_pk=board.pk,
         )
@@ -185,97 +160,82 @@ class TaskDetailView(
     context_object_name = 'task'
 
     def get_context_data(
-        self,
-        **kwargs,
+    self,
+    **kwargs,
     ):
         context = super().get_context_data(
             **kwargs
         )
-        
-        current_user_role = self.get_current_user_role()
-        column = self.get_column()
-        
-        can_write = current_user_role in BOARD_WRITE_ROLES
-        
-        has_previous_task = (
-            Task.objects
-            .active()
-            .for_column(column)
-            .filter(
-                position__lt=self.object.position
-            )
-            .exists()
+
+        current_user_role = (
+            self.get_current_user_role()
         )
-        
-        has_next_task = (
-            Task.objects
-            .active()
-            .for_column(column)
-            .filter(
-                position__gt=self.object.position,
-            )
-            .exists()
+
+        can_write = (
+            current_user_role
+            in BOARD_WRITE_ROLES
         )
-        
-        comments = (
-            TaskComment.objects
-            .for_task(self.object)
-            .select_related(
-                'author',
-                'deleted_by',
-            )
-            .order_by(
-                'created_at',
-                'pk',
-            )
+
+        (
+            has_previous_task,
+            has_next_task,
+        ) = get_task_navigation(
+            task=self.object,
         )
-        
+
+        comments = get_task_comments(
+            task=self.object,
+        )
+
         activities = (
-            TaskActivity.objects
-            .filter(
+            get_recent_task_activities(
                 task=self.object,
             )
-            .select_related(
-                'actor',
+        )
+
+        context.update(
+            self.get_task_context(
+                task=self.object,
             )
-            .order_by(
-                '-created_at',
-                '-pk',
-            )[:50]
         )
-        
-        can_comment = can_write
-        can_moderate_comments = (
-            current_user_role
-            in COMMENT_MODERATOR_ROLES
-        )
-        
+
         context.update(
             {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'column': column,
-                'current_user_role': current_user_role,
-                'can_update_task': can_write,
-                'can_archive_task': can_write,
-                'can_move_task': can_write,
-                'can_reorder_task': can_write,
-                'can_move_up': can_write and has_previous_task,
-                'can_move_down': can_write and has_next_task,
-                'can_comment': can_comment,
-                'can_moderate_comments': can_moderate_comments,
-                'comments': comments,
-                'comments_count': (
-                    comments
-                    .visible()
-                    .count()
+                "can_update_task": can_write,
+                "can_archive_task": can_write,
+                "can_move_task": can_write,
+                "can_reorder_task": can_write,
+                "can_move_up": (
+                    can_write
+                    and has_previous_task
                 ),
-                'activities': activities,
-                'comment_form': TaskCommentForm(),
-                'status_form': TaskStatusForm(instance=self.object),
+                "can_move_down": (
+                    can_write
+                    and has_next_task
+                ),
+                "can_comment": can_write,
+                "can_moderate_comments": (
+                    current_user_role
+                    in COMMENT_MODERATOR_ROLES
+                ),
+                "comments": comments,
+                "comments_count": (
+                    get_visible_task_comments_count(
+                        task=self.object,
+                    )
+                ),
+                "activities": activities,
+                "comment_form": (
+                    TaskCommentForm()
+                ),
+                "status_form": (
+                    TaskStatusForm(
+                        instance=self.object,
+                    )
+                ),
             }
         )
-        
+
         return context
 
 class TaskCommentCreateView(
@@ -357,17 +317,9 @@ class TaskCommentUpdateView(
         **kwargs,
     ):
         context = super().get_context_data(**kwargs)
-        
         context.update(
-            {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'column': self.get_column(),
-                'task': self.get_task(),
-                'current_user_role': self.get_current_user_role(),
-            }
+            self.get_task_context()
         )
-        
         return context
     
     
@@ -483,113 +435,65 @@ class TaskUpdateView(
         return kwargs
     
     def get_context_data(
-        self,
-        **kwargs,
+    self,
+    **kwargs,
     ):
-        context = super().get_context_data(**kwargs)
-        
-        context.update(
-            {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'column': self.get_column(),
-                'current_user_role': self.get_current_user_role(),
-            }
+        context = super().get_context_data(
+            **kwargs
         )
-        
+
+        context.update(
+            self.get_task_context(
+                task=self.object,
+            )
+        )
+
         return context
     
     
-    @transaction.atomic
-    def form_valid(self, form):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
+    def form_valid(
+    self,
+    form,
+    ):
+        (
+            self.object,
+            board,
+            column,
+        ) = TaskLifecycleService.update(
             workspace=self.get_workspace(),
-            is_archived=False,
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+            task_pk=self.get_task().pk,
+            title=form.cleaned_data["title"],
+            description=(
+                form.cleaned_data[
+                    "description"
+                ]
+            ),
+            priority=(
+                form.cleaned_data["priority"]
+            ),
+            assignee=(
+                form.cleaned_data["assignee"]
+            ),
+            due_at=form.cleaned_data["due_at"],
         )
-        
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.get_column().pk,
-            board=board,
-            is_archived=False,
-        )
-        
-        editable_fields = (
-            'title',
-            'description',
-            'priority',
-            'assignee',
-            'due_at',
-        )
-        
-        locked_task = get_object_or_404(
-            Task.objects.select_for_update(),
-            pk=self.object.pk,
-            column=column,
-            is_archived=False,
-        )
-        
-        for field_name in editable_fields:
-            setattr(
-                locked_task,
-                field_name,
-                form.cleaned_data[field_name],
-            )
-        
-        locked_task.full_clean()
-        locked_task.save(
-            update_fields=[
-                *editable_fields,
-                'updated_at',
-            ]
-        )
-        
-        self.object = locked_task
 
-
-        column.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
         messages.success(
             self.request,
             (
-                f'Task «{self.object.title}» '
+                f"Task «{self.object.title}» "
                 "با موفقیت ویرایش شد."
             ),
         )
 
         return redirect(
-            self.get_success_url()
-        )
-    
-    def get_success_url(self):
-        return reverse(
             "tasks:detail",
-            kwargs={
-                "workspace_pk": (
-                    self.get_workspace().pk
-                ),
-                "board_pk": (
-                    self.get_board().pk
-                ),
-                "column_pk": (
-                    self.get_column().pk
-                ),
-                "task_pk": self.object.pk,
-            },
+            workspace_pk=board.workspace_id,
+            board_pk=board.pk,
+            column_pk=column.pk,
+            task_pk=self.object.pk,
         )
-
 
 class TaskStatusUpdateView(
     TaskObjectMixin,
@@ -600,39 +504,19 @@ class TaskStatusUpdateView(
         'post',
     ]
     
-    @transaction.atomic
     def post(
         self,
         request,
         *args,
         **kwargs,
     ):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
-            workspace=self.get_workspace(),
-            is_archived=False,
-        )
-        
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.get_column().pk,
-            board=board,
-            is_archived=False,
-        )
+        scoped_task = self.get_task()
 
-        task = get_object_or_404(
-            Task.objects.select_for_update(),
-            pk=self.kwargs["task_pk"],
-            column=column,
-            is_archived=False,
-        )
-        
         form = TaskStatusForm(
             request.POST,
-            instance=task,
+            instance=scoped_task,
         )
-        
+
         if not form.is_valid():
             messages.error(
                 request,
@@ -641,38 +525,34 @@ class TaskStatusUpdateView(
 
             return redirect(
                 "tasks:detail",
-                workspace_pk=board.workspace_id,
-                board_pk=board.pk,
-                column_pk=column.pk,
-                task_pk=task.pk,
+                workspace_pk=(
+                    self.get_workspace().pk
+                ),
+                board_pk=self.get_board().pk,
+                column_pk=(
+                    self.get_column().pk
+                ),
+                task_pk=scoped_task.pk,
             )
-        
-        
-        task = form.save(commit=False)
-        task.full_clean()
-        task.save(
-            update_fields=[
-                'status',
-                'updated_at',
-            ]
-        )
-        
-        column.save(
-            update_fields=[
-                "updated_at",
-            ]
-        )
 
-        board.save(
-            update_fields=[
-                "updated_at",
-            ]
+        (
+            task,
+            board,
+            column,
+        ) = TaskLifecycleService.update_status(
+            workspace=self.get_workspace(),
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+            task_pk=scoped_task.pk,
+            status=(
+                form.cleaned_data["status"]
+            ),
         )
 
         messages.success(
             request,
             (
-                f'وضعیت Task «{task.title}» '
+                f"وضعیت Task «{task.title}» "
                 "به‌روزرسانی شد."
             ),
         )
@@ -713,17 +593,9 @@ class TaskMoveView(
         context = super().get_context_data(
             **kwargs
         )
-        
         context.update(
-            {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'column': self.get_column(),
-                'task': self.get_task(),
-                'current_user_role': self.get_current_user_role(),
-            }
+            self.get_task_context()
         )
-        
         return context
     
     def form_valid(self, form):
@@ -787,24 +659,9 @@ class TaskReorderView(
         context = super().get_context_data(
             **kwargs
         )
-
         context.update(
-            {
-                "workspace": (
-                    self.get_workspace()
-                ),
-                "board": self.get_board(),
-                "column": (
-                    self.get_column()
-                ),
-                "task": self.get_task(),
-                "current_user_role": (
-                    self
-                    .get_current_user_role()
-                ),
-            }
+            self.get_task_context()
         )
-
         return context
 
     def form_valid(self, form):
@@ -953,21 +810,8 @@ class ArchivedTaskListView(
     paginate_by = 12
     
     def get_queryset(self):
-        return (
-            Task.objects
-            .archived()
-            .for_column(
-                self.get_column()
-            )
-            .select_related(
-                'column',
-                'assignee',
-                'created_by',
-            )
-            .order_by(
-                '-archived_at',
-                '-pk',
-            )
+        return get_archived_tasks(
+            column=self.get_column(),
         )
     
     def get_context_data(self, **kwargs):
@@ -1084,16 +928,9 @@ class TaskDeleteView(
         context = super().get_context_data(
             **kwargs
         )
-        
         context.update(
-            {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'column': self.get_column(),
-                'current_user_role': self.get_current_user_role(),
-            }
+            self.get_task_context()
         )
-        
         return context
     
     def form_valid(self, form):
@@ -1269,74 +1106,6 @@ class TaskDragReorderView(
             ) in message_dict.items()
         }
     
-    @staticmethod
-    def _serialize_columns(
-        *columns,
-    ):
-        column_map = {
-            column.pk: column
-            for column in columns
-        }
-        
-        ordered_column_ids = list(
-            dict.fromkeys(
-                column.pk
-                for column in columns
-            )
-        )
-        
-        task_ids_by_column = {
-            column_id: []
-            for column_id in ordered_column_ids
-        }
-        
-        task_rows = (
-            Task.objects
-            .active()
-            .filter(
-                column_id__in=ordered_column_ids,
-            )
-            .order_by(
-                'column_id',
-                'position',
-                'pk',
-            )
-            .values_list(
-                'column_id',
-                'pk',
-            )
-        )
-        
-        for (
-            column_id,
-            task_id,
-        ) in task_rows:
-            task_ids_by_column[column_id].append(task_id)
-        
-        return [
-            {
-                "id": column_id,
-                "title": (
-                    column_map[
-                        column_id
-                    ].title
-                ),
-                "task_ids": (
-                    task_ids_by_column[
-                        column_id
-                    ]
-                ),
-                "count": len(
-                    task_ids_by_column[
-                        column_id
-                    ]
-                ),
-            }
-            for column_id in (
-                ordered_column_ids
-            )
-        ]
-    
     def post(
         self,
         request,
@@ -1432,11 +1201,9 @@ class TaskDragReorderView(
                         reorder_url
                     ),
                 },
-                "columns": (
-                    self._serialize_columns(
-                        source_column,
-                        target_column,
-                    )
+                "columns": serialize_task_columns(
+                    source_column,
+                    target_column,
                 ),
             }
         )
