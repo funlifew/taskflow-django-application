@@ -1,10 +1,5 @@
 from django.contrib import messages
-from django.db import transaction
-from django.urls import reverse
-from django.shortcuts import (
-    get_object_or_404,
-    redirect,
-)
+from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import (
     CreateView,
@@ -21,16 +16,20 @@ from apps.boards.mixins import (
     BoardReadRequiredMixin,
     BoardWriteRequiredMixin,
 )
-from apps.boards.models import Board
 
 from .forms import ColumnForm
-from .models import Column
 from .mixins import (
     ArchivedColumnObjectMixin,
     ColumnObjectMixin,
 )
+from .models import Column
+from .selectors import (
+    get_archived_columns,
+)
+from .services import (
+    ColumnLifecycleService,
+)
 
-# Create your views here.
 
 class ColumnCreateView(
     BoardObjectMixin,
@@ -39,8 +38,8 @@ class ColumnCreateView(
 ):
     model = Column
     form_class = ColumnForm
-    template_name = 'columns/create.html'
-    
+    template_name = "columns/create.html"
+
     def get_context_data(
         self,
         **kwargs,
@@ -48,66 +47,56 @@ class ColumnCreateView(
         context = super().get_context_data(
             **kwargs
         )
-        
+
+        board = self.get_board()
+
         context.update(
             {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'current_user_role': self.get_current_user_role(),
-                'next_position': Column.objects.next_position(board=self.get_board()),
+                "workspace": (
+                    self.get_workspace()
+                ),
+                "board": board,
+                "current_user_role": (
+                    self.get_current_user_role()
+                ),
+                "next_position": (
+                    Column.objects.next_position(
+                        board=board,
+                    )
+                ),
             }
         )
-        
+
         return context
-    
-    @transaction.atomic
-    def form_valid(self, form):
-        board = (
-            Board.objects
-            .select_for_update()
-            .get(
-                pk=self.get_board().pk,
-                workspace=self.get_workspace(),
-                is_archived=False,
-            )
+
+    def form_valid(
+        self,
+        form,
+    ):
+        (
+            self.object,
+            board,
+        ) = ColumnLifecycleService.create(
+            workspace=self.get_workspace(),
+            board=self.get_board(),
+            actor=self.request.user,
+            title=form.cleaned_data["title"],
         )
-        
-        self.object = form.save(
-            commit=False
-        )
-        
-        self.object.board = board
-        self.object.position = (
-            Column.objects.next_position(
-                board=board,
-            )
-        )
-        
-        self.object.created_by = self.request.user
-        
-        self.object.is_archived = False
-        
-        self.object.save()
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
+
         messages.success(
             self.request,
             (
-                f'ستون «{self.object.title}» '
-                'با موفقیت ساخته شد.'
+                f"ستون «{self.object.title}» "
+                "با موفقیت ساخته شد."
             ),
         )
-        
+
         return redirect(
-            'boards:detail',
+            "boards:detail",
             workspace_pk=board.workspace_id,
             board_pk=board.pk,
         )
+
 
 class ColumnUpdateView(
     ColumnObjectMixin,
@@ -116,60 +105,59 @@ class ColumnUpdateView(
 ):
     model = Column
     form_class = ColumnForm
-    template_name = 'columns/update.html'
-    context_object_name = 'column'
-    
+    template_name = "columns/update.html"
+    context_object_name = "column"
+
     def get_context_data(
         self,
         **kwargs,
     ):
-        context = super().get_context_data(**kwargs)
-        
+        context = super().get_context_data(
+            **kwargs
+        )
+
         context.update(
             {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'current_user_role': self.get_current_user_role(),
+                "workspace": (
+                    self.get_workspace()
+                ),
+                "board": self.get_board(),
+                "current_user_role": (
+                    self.get_current_user_role()
+                ),
             }
         )
-        
+
         return context
-    
-    @transaction.atomic
-    def form_valid(self, form):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
+
+    def form_valid(
+        self,
+        form,
+    ):
+        (
+            self.object,
+            board,
+        ) = ColumnLifecycleService.update(
             workspace=self.get_workspace(),
-            is_archived=False,
+            board=self.get_board(),
+            column=self.get_column(),
+            title=form.cleaned_data["title"],
         )
-        
-        response = super().form_valid(form)
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
+
         messages.success(
             self.request,
             (
-                f'ستون «{self.object.title}» '
+                f"ستون «{self.object.title}» "
                 "با موفقیت ویرایش شد."
             ),
         )
-        
-        return response
-    
-    def get_success_url(self):
-        return reverse(
-            'boards:detail',
-            kwargs={
-                'workspace_pk': self.get_workspace().pk,
-                'board_pk': self.get_board().pk,
-            },
+
+        return redirect(
+            "boards:detail",
+            workspace_pk=board.workspace_id,
+            board_pk=board.pk,
         )
+
 
 class ArchivedColumnListView(
     BoardObjectMixin,
@@ -177,171 +165,115 @@ class ArchivedColumnListView(
     ListView,
 ):
     model = Column
-    template_name = 'columns/archived_list.html'
-    context_object_name = 'columns'
+    template_name = (
+        "columns/archived_list.html"
+    )
+    context_object_name = "columns"
     paginate_by = 12
-    
+
     def get_queryset(self):
-        return (
-            Column.objects
-            .archived()
-            .for_board(
-                self.get_board()
-            )
-            .select_related(
-                'board',
-                'created_by',
-            )
-            .order_by(
-                '-updated_at',
-                '-pk',
-            )
+        return get_archived_columns(
+            board=self.get_board(),
         )
-    
+
     def get_context_data(
         self,
         **kwargs,
     ):
-        context = super().get_context_data(**kwargs)
-        
-        current_user_role = self.get_current_user_role()
-        
+        context = super().get_context_data(
+            **kwargs
+        )
+
+        current_user_role = (
+            self.get_current_user_role()
+        )
+
         context.update(
             {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'current_user_role': current_user_role,
-                'can_restore_columns': (
+                "workspace": (
+                    self.get_workspace()
+                ),
+                "board": self.get_board(),
+                "current_user_role": (
+                    current_user_role
+                ),
+                "can_restore_columns": (
                     current_user_role
                     in BOARD_WRITE_ROLES
                 ),
-                'can_delete_columns': (
+                "can_delete_columns": (
                     current_user_role
                     in BOARD_DELETE_ROLES
                 ),
             }
         )
-        
+
         return context
+
 
 class ColumnArchiveView(
     ColumnObjectMixin,
     BoardWriteRequiredMixin,
     View,
 ):
-    http_method_names = [
-        'post',
-    ]
-    
-    @transaction.atomic
+    http_method_names = ["post"]
+
     def post(
         self,
         request,
         *args,
         **kwargs,
     ):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
+        (
+            column,
+            board,
+        ) = ColumnLifecycleService.archive(
             workspace=self.get_workspace(),
-            is_archived=False,
+            board=self.get_board(),
+            column=self.get_column(),
         )
-        
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.kwargs['column_pk'],
-            board=board,
-            is_archived=False,
-        )
-        
-        column.is_archived = True
-        column.save(
-            update_fields=[
-                'is_archived',
-                'updated_at',
-            ]
-        )
-        
-        Column.objects.normalize_positions(
-            board=board,
-        )
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
+
         messages.success(
             request,
             (
-                f'ستون «{column.title}» '
+                f"ستون «{column.title}» "
                 "با موفقیت آرشیو شد."
             ),
         )
-        
+
         return redirect(
             "boards:detail",
             workspace_pk=board.workspace_id,
             board_pk=board.pk,
         )
 
+
 class ColumnRestoreView(
     ArchivedColumnObjectMixin,
     BoardWriteRequiredMixin,
     View,
 ):
-    http_method_names = [
-        'post',
-    ]
-    
-    @transaction.atomic
+    http_method_names = ["post"]
+
     def post(
         self,
         request,
         *args,
         **kwargs,
     ):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
+        (
+            column,
+            board,
+        ) = ColumnLifecycleService.restore(
             workspace=self.get_workspace(),
-            is_archived=False,
-        )
-        
-        column = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.kwargs['column_pk'],
-            board=board,
-            is_archived=True,
-        )
-        
-        column.position = (
-            Column.objects.next_position(
-                board=board,
-            )
-        )
-        
-        column.is_archived = False
-        
-        column.save(
-            update_fields=[
-                "position",
-                "is_archived",
-                "updated_at",
-            ]
-        )
-
-        board.save(
-            update_fields=[
-                "updated_at",
-            ]
+            board=self.get_board(),
+            column=self.get_column(),
         )
 
         messages.success(
             request,
             (
-                f'ستون «{column.title}» '
+                f"ستون «{column.title}» "
                 "با موفقیت بازیابی شد."
             ),
         )
@@ -352,74 +284,64 @@ class ColumnRestoreView(
             board_pk=board.pk,
         )
 
+
 class ColumnDeleteView(
     ArchivedColumnObjectMixin,
     BoardDeleteRequiredMixin,
     DeleteView,
 ):
     model = Column
-    template_name = 'columns/confirm_delete.html'
-    context_object_name = 'column'
+    template_name = (
+        "columns/confirm_delete.html"
+    )
+    context_object_name = "column"
 
     def get_context_data(
         self,
         **kwargs,
     ):
-        context = super().get_context_data(**kwargs)
-        
+        context = super().get_context_data(
+            **kwargs
+        )
+
         context.update(
             {
-                'workspace': self.get_workspace(),
-                'board': self.get_board(),
-                'current_user_role': self.get_current_user_role()
+                "workspace": (
+                    self.get_workspace()
+                ),
+                "board": self.get_board(),
+                "current_user_role": (
+                    self.get_current_user_role()
+                ),
             }
         )
-        
+
         return context
-    
-    @transaction.atomic
-    def form_valid(self, form):
-        board = get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=self.get_board().pk,
+
+    def form_valid(
+        self,
+        form,
+    ):
+        (
+            column_title,
+            workspace_id,
+            board_id,
+        ) = ColumnLifecycleService.delete(
             workspace=self.get_workspace(),
-            is_archived=False,
+            board=self.get_board(),
+            column=self.object,
         )
-        
-        self.object = get_object_or_404(
-            Column.objects.select_for_update(),
-            pk=self.object.pk,
-            board=board,
-            is_archived=True,
-        )
-        
-        column_title = self.object.title
-        
-        response = super().form_valid(form)
-        
-        board.save(
-            update_fields=[
-                'updated_at',
-            ]
-        )
-        
+
         messages.success(
             self.request,
             (
-                f'ستون «{column_title}» '
+                f"ستون «{column_title}» "
                 "برای همیشه حذف شد."
             ),
         )
-        
-        return response
-    
-    def get_success_url(self):
-        return reverse(
-            'columns:archived_list',
-            kwargs={
-                'workspace_pk': self.kwargs['workspace_pk'],
-                'board_pk': self.kwargs['board_pk'],
-            },
+
+        return redirect(
+            "columns:archived_list",
+            workspace_pk=workspace_id,
+            board_pk=board_id,
         )
-        
-        
