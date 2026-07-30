@@ -12,58 +12,15 @@ from django.utils import timezone
 from apps.boards.models import Board
 from apps.columns.models import Column
 
+from .services import (
+    TaskScopeService,
+    TaskTouchService,
+)
+
 from .models import Task
 
 class TaskReorderingService:
     TEMPORARY_POSITION_GAP = 1024
-    
-    @staticmethod
-    def _lock_board(
-        *,
-        workspace,
-        board_pk,
-    ):
-        return get_object_or_404(
-            Board.objects.select_for_update(),
-            pk=board_pk,
-            workspace=workspace,
-            is_archived=False,
-        )
-    
-    @staticmethod
-    def _lock_columns(
-        *,
-        board,
-        source_column_pk,
-        target_column_pk,
-    ):
-        requested_column_ids = {
-            source_column_pk,
-            target_column_pk,
-        }
-        
-        columns = {
-            column.pk: column
-            for column in (
-                Column.objects
-                .select_for_update()
-                .filter(
-                    board=board,
-                    is_archived=False,
-                    pk__in=requested_column_ids,
-                )
-                .order_by('pk')
-            )
-        }
-        
-        if (
-            set(columns)
-            != requested_column_ids
-        ):
-            raise Http404
-        
-        return columns
-    
     
     @staticmethod
     def _lock_active_tasks(
@@ -176,39 +133,7 @@ class TaskReorderingService:
                 "position",
                 "updated_at",
             ],
-        )    
-    
-    @staticmethod
-    def _touch_parents(
-        *,
-        board,
-        columns,
-    ):
-        now = timezone.now()
-        
-        unique_columns = {
-            column.pk: column
-            for column in columns
-        }
-        
-        Board.objects.filter(
-            pk=board.pk,
-        ).update(
-            updated_at=now,
         )
-        
-        Column.objects.filter(
-            pk__in=unique_columns,
-        ).update(
-            updated_at=now,
-        )
-        
-        board.updated_at = now
-        
-        for column in (
-            unique_columns.values()
-        ):
-            column.updated_at = now
     
     @staticmethod
     def _validate_target_position(
@@ -370,7 +295,7 @@ class TaskReorderingService:
             orders=final_orders,
         )
         
-        cls._touch_parents(
+        TaskTouchService.touch(
             board=board,
             columns=(
                 source_column,
@@ -397,15 +322,17 @@ class TaskReorderingService:
         task_pk,
         target_position,
     ):
-        board = cls._lock_board(
+        board = TaskScopeService.lock_board(
             workspace=workspace,
             board_pk=board_pk,
         )
-        
-        columns = cls._lock_columns(
+
+        columns = TaskScopeService.lock_columns(
             board=board,
-            source_column_pk=source_column_pk,
-            target_column_pk=target_column_pk,
+            column_ids=(
+                source_column_pk,
+                target_column_pk,
+            ),
         )
         
         locked_tasks = (
@@ -440,15 +367,14 @@ class TaskReorderingService:
                 "offset must be -1 or 1"
             )
             
-        board = cls._lock_board(
+        board = TaskScopeService.lock_board(
             workspace=workspace,
             board_pk=board_pk,
         )
-        
-        columns = cls._lock_columns(
+
+        columns = TaskScopeService.lock_columns(
             board=board,
-            source_column_pk=column_pk,
-            target_column_pk=column_pk,
+            column_ids=(column_pk,),
         )
         
         locked_tasks = cls._lock_active_tasks(column_ids=columns)
