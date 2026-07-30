@@ -45,6 +45,24 @@ class TaskObjectMixin(
         
         return self._task
 
+    def get_task_context(
+        self,
+        *,
+        task=None,
+    ):
+        if task is None:
+            task = self.get_task()
+        
+        return {
+            "workspace": self.get_workspace(),
+            "board": self.get_board(),
+            "column": self.get_column(),
+            "task": task,
+            "current_user_role": (
+                self.get_current_user_role()
+            ),
+        }
+
 
 class ArchivedTaskObjectMixin(
     TaskObjectMixin
