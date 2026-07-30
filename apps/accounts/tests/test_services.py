@@ -6,8 +6,12 @@ from django.test import (
     RequestFactory,
     override_settings,
 )
+from django.contrib.auth import (
+    get_user_model,
+)
 
 from apps.accounts.services import (
+    AccountLifecycleService,
     acquire_activation_email_lock,
     can_send_activation_email,
     mark_activation_email_send,
@@ -15,12 +19,14 @@ from apps.accounts.services import (
     send_activation_email,
     send_activation_email_with_cooldown,
 )
+
 from apps.core.cache_keys import (
     verification_resend_key,
 )
 
 from apps.accounts.tests.base import AccountsTestBase, TEST_CACHES
 
+User = get_user_model()
 
 @override_settings(
     EMAIL_BACKEND=(
@@ -208,4 +214,84 @@ class ActivationEmailServiceTests(
     ):
         release_activation_email_lock(
             self.inactive_user.pk
+        )
+
+class AccountLifecycleServiceTests(
+    AccountsTestBase
+):
+    def test_create_inactive_account(self):
+        user = User(
+            username="inactive-created-user",
+            email="CREATED-INACTIVE@EXAMPLE.COM",
+            first_name="Inactive",
+            last_name="User",
+            is_active=True,
+            email_verified=True,
+        )
+
+        user.set_password(
+            "StrongPassword123!"
+        )
+
+        created_user = (
+            AccountLifecycleService
+            .create_inactive(
+                user=user,
+            )
+        )
+
+        created_user.refresh_from_db()
+
+        self.assertFalse(
+            created_user.is_active
+        )
+        self.assertFalse(
+            created_user.email_verified
+        )
+        self.assertEqual(
+            created_user.email,
+            "created-inactive@example.com",
+        )
+        self.assertTrue(
+            created_user.check_password(
+                "StrongPassword123!"
+            )
+        )
+
+    def test_activate_account(self):
+        (
+            activated_user,
+            changed,
+        ) = AccountLifecycleService.activate(
+            user=self.inactive_user,
+        )
+
+        activated_user.refresh_from_db()
+
+        self.assertTrue(changed)
+        self.assertTrue(
+            activated_user.is_active
+        )
+        self.assertTrue(
+            activated_user.email_verified
+        )
+
+    def test_activate_is_idempotent(self):
+        AccountLifecycleService.activate(
+            user=self.inactive_user,
+        )
+
+        (
+            activated_user,
+            changed,
+        ) = AccountLifecycleService.activate(
+            user=self.inactive_user,
+        )
+
+        self.assertFalse(changed)
+        self.assertTrue(
+            activated_user.is_active
+        )
+        self.assertTrue(
+            activated_user.email_verified
         )
