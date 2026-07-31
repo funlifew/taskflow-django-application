@@ -1,23 +1,72 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.mail import EmailMultiAlternatives
+from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-
-from apps.core.cache_keys import verification_resend_key
+from apps.core.cache_keys import (
+    verification_resend_key,
+)
 
 from .tokens import account_activation_token
 
-from random import randint
-import os, logging
 
 logger = logging.getLogger(__name__)
+
 User = get_user_model()
+
 ACTIVATION_EMAIL_COOLDOWN = 120
+
+class AccountLifecycleService:
+    @staticmethod
+    @transaction.atomic
+    def create_inactive(
+        *,
+        user,
+    ):
+        user.is_active = False
+        user.email_verified = False
+        user.save()
+
+        return user
+
+    @staticmethod
+    @transaction.atomic
+    def activate(
+        *,
+        user,
+    ):
+        locked_user = (
+            User.objects
+            .select_for_update()
+            .get(pk=user.pk)
+        )
+
+        already_active = (
+            locked_user.is_active
+            and locked_user.email_verified
+        )
+
+        if already_active:
+            return locked_user, False
+
+        locked_user.is_active = True
+        locked_user.email_verified = True
+
+        locked_user.save(
+            update_fields=[
+                "is_active",
+                "email_verified",
+            ]
+        )
+
+        return locked_user, True
 
 def can_send_activation_email(user) -> bool:
     cache_key = verification_resend_key(user.id)

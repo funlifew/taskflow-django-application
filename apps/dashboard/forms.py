@@ -3,6 +3,19 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+ALLOWED_AVATAR_CONTENT_TYPES = frozenset(
+    {
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "image/webp",
+        "image/gif",
+    }
+)
+
+MAX_AVATAR_SIZE_BYTES = (
+    5 * 1024 * 1024
+)
 class ProfileUpdateForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
@@ -73,44 +86,67 @@ class ProfileUpdateForm(forms.ModelForm):
         
     
     def clean_username(self):
-        username = self.cleaned_data['username']
-        
-        duplicate_exists = User.objects.filter(
-            username__iexact=username,
-        ).exclude(
-            pk=self.instance.pk,
-        ).exists()
-        
+        username = (
+            self.cleaned_data[
+                "username"
+            ]
+            .strip()
+        )
+
+        duplicate_exists = (
+            User.objects
+            .filter(
+                username__iexact=username,
+            )
+            .exclude(
+                pk=self.instance.pk,
+            )
+            .exists()
+        )
+
         if duplicate_exists:
-            raise forms.ValidationError('این نام کاربری قبلا ثبت شده است.')
-        
+            raise forms.ValidationError(
+                (
+                    "این نام کاربری قبلاً "
+                    "ثبت شده است."
+                )
+            )
+
         return username
     
     
     def clean_avatar(self):
-        avatar = self.cleaned_data.get('avatar')
-        
-        if not avatar or not hasattr(avatar, 'content_type'):
+        avatar = self.cleaned_data.get(
+            "avatar"
+        )
+
+        if (
+            not avatar
+            or not hasattr(
+                avatar,
+                "content_type",
+            )
+        ):
             return avatar
-        
-        allowed_types = {
-            'image/jpeg',
-            'image/png',
-            'image/jpg',
-            'image/webp',
-            'image/gif',
-        }
-        
-        if avatar.content_type not in allowed_types:
+
+        if (
+            avatar.content_type
+            not in ALLOWED_AVATAR_CONTENT_TYPES
+        ):
             raise forms.ValidationError(
-                'فقط تصاویر JPG/JPEG/PNG/WEBP/GIF مجاز هستند.'
+                (
+                    "فقط تصاویر "
+                    "JPG/JPEG/PNG/WEBP/GIF "
+                    "مجاز هستند."
+                )
             )
-        
-        maximum_size = 5 * 1024 * 1024
-        
-        if avatar.size > maximum_size:
+
+        if avatar.size > MAX_AVATAR_SIZE_BYTES:
             raise forms.ValidationError(
-                'حجم تصویر نباید بیشتر از 5 مگابایت باشد.'
+                (
+                    "حجم تصویر نباید بیشتر "
+                    "از 5 مگابایت باشد."
+                )
             )
-        
+
         return avatar

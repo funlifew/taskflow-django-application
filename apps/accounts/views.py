@@ -1,27 +1,47 @@
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction, IntegrityError
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
-from django.utils.encoding import force_str
-from django.utils.http import urlsafe_base64_decode
-from django.views import View
-from django.views.generic import CreateView, FormView, TemplateView
-from django.contrib.auth import views as auth_views
-
-from apps.core.mixins import IfAuthenticatedRedirectDashboard
-
-
-from .forms import RegisterForm, ResendActivationEmailForm
-from .tokens import account_activation_token
-from .services import (
-    send_activation_email_with_cooldown,
-)
-
 import logging
 
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth import (
+    views as auth_views,
+)
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+)
+from django.db import IntegrityError
+from django.shortcuts import (
+    redirect,
+    render,
+)
+from django.urls import reverse_lazy
+from django.utils.encoding import force_str
+from django.utils.http import (
+    urlsafe_base64_decode,
+)
+from django.views import View
+from django.views.generic import (
+    CreateView,
+    FormView,
+    TemplateView,
+)
+
+from apps.core.mixins import (
+    IfAuthenticatedRedirectDashboard,
+)
+
+from .forms import (
+    RegisterForm,
+    ResendActivationEmailForm,
+)
+from .services import (
+    AccountLifecycleService,
+    send_activation_email_with_cooldown,
+)
+from .tokens import account_activation_token
+
+
 logger = logging.getLogger(__name__)
+
 User = get_user_model()
 # Create your views here.
 
@@ -58,73 +78,173 @@ class RegisterView(
         "accounts:verification_sent"
     )
 
-    def form_valid(self, form):
+    def form_valid(
+        self,
+        form,
+    ):
         try:
-            with transaction.atomic():
-                self.object = form.save(commit=False)
-                self.object.is_active = False
-                self.object.email_verified = False
-                self.object.save()
-        
+            user = form.save(
+                commit=False,
+            )
+
+            self.object = (
+                AccountLifecycleService
+                .create_inactive(
+                    user=user,
+                )
+            )
+
         except IntegrityError:
             form.add_error(
                 None,
-                'این نام کاربری یا ایمیل قبلا ثبت شده است.'
+                (
+                    "این نام کاربری یا ایمیل "
+                    "قبلاً ثبت شده است."
+                ),
             )
+
             return self.form_invalid(form)
-        
+
         try:
-            sent = send_activation_email_with_cooldown(
-                self.request,
-                self.object,
+            sent = (
+                send_activation_email_with_cooldown(
+                    self.request,
+                    self.object,
+                )
             )
+
         except Exception:
             logger.exception(
-                "Activation email could not sent for user %s",
+                (
+                    "Activation email could not "
+                    "be sent for user %s"
+                ),
                 self.object.pk,
             )
+
             messages.warning(
                 self.request,
-                'حساب ساخته شد، اما ارسال ایمیل فعال سازی موفق نبود'
-                'از بخش ارسال مجدد لینک استفاده کن.'
+                (
+                    "حساب ساخته شد، اما ارسال "
+                    "ایمیل فعال‌سازی موفق نبود. "
+                    "از بخش ارسال مجدد لینک "
+                    "استفاده کنید."
+                ),
             )
+
         else:
             if sent:
                 messages.success(
                     self.request,
-                    'حساب ساخته شد و لینک فعالسازی ارسال شد.'
+                    (
+                        "حساب ساخته شد و لینک "
+                        "فعال‌سازی ارسال شد."
+                    ),
                 )
-        
-        return redirect(self.success_url)
 
-class ActivationAccountView(IfAuthenticatedRedirectDashboard, View):
-    template_name = 'accounts/activation_invalid.html'
-    
-    def get(self, request, uidb64, token):
-        user = self.get_user(uidb64)
-        
-        if user is not None and account_activation_token.check_token(user, token):
-            if user.email_verified and user.is_active:
-                messages.info(request, 'اکانت شما قبلا فعال شده است.')
-                return redirect('accounts:login')
-            
-            user.is_active = True
-            user.email_verified = True
-            user.save(update_fields=['is_active', 'email_verified'])
-            
+        return redirect(
+            self.success_url
+        )
+
+class ActivationAccountView(
+    IfAuthenticatedRedirectDashboard,
+    View,
+):
+    template_name = (
+        "accounts/activation_invalid.html"
+    )
+
+    def get(
+        self,
+        request,
+        uidb64,
+        token,
+    ):
+        user = self.get_user(
+            uidb64
+        )
+
+        token_is_valid = (
+            user is not None
+            and account_activation_token
+            .check_token(
+                user,
+                token,
+            )
+        )
+
+        if not token_is_valid:
+            return render(
+                request,
+                self.template_name,
+            )
+
+        if (
+            user.is_active
+            and user.email_verified
+        ):
+            messages.info(
+                request,
+                (
+                    "اکانت شما قبلاً "
+                    "فعال شده است."
+                ),
+            )
+
+            return redirect(
+                "accounts:login"
+            )
+
+        (
+            user,
+            activated,
+        ) = AccountLifecycleService.activate(
+            user=user,
+        )
+
+        if activated:
             messages.success(
                 request,
-                'اکانت شما با موفقیت فعال شد. حالا میتوانید وارد شوید.'
+                (
+                    "اکانت شما با موفقیت "
+                    "فعال شد. حالا می‌توانید "
+                    "وارد شوید."
+                ),
             )
-            
-            return redirect('accounts:login')
-        return render(request, self.template_name)
-    
-    def get_user(self, uidb64):
+        else:
+            messages.info(
+                request,
+                (
+                    "اکانت شما قبلاً "
+                    "فعال شده است."
+                ),
+            )
+
+        return redirect(
+            "accounts:login"
+        )
+
+    @staticmethod
+    def get_user(
+        uidb64,
+    ):
         try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            return User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user_id = force_str(
+                urlsafe_base64_decode(
+                    uidb64
+                )
+            )
+
+            return User.objects.get(
+                pk=user_id
+            )
+
+        except (
+            TypeError,
+            ValueError,
+            OverflowError,
+            User.DoesNotExist,
+        ):
             return None
 
 class VerificationSentView(IfAuthenticatedRedirectDashboard, TemplateView):
@@ -135,34 +255,51 @@ class ResendActivationEmailView(IfAuthenticatedRedirectDashboard, FormView):
     form_class = ResendActivationEmailForm
     success_url = reverse_lazy('accounts:verification_sent')
     
-    def form_valid(self, form):
-        email = form.cleaned_data['email']
-        
-        user = User.objects.filter(
-            email__iexact=email,
-            email_verified=False,
-            is_active=False,
-        ).first()
-        
+    def form_valid(
+        self,
+        form,
+    ):
+        email = form.cleaned_data["email"]
+
+        user = (
+            User.objects
+            .filter(
+                email__iexact=email,
+                email_verified=False,
+                is_active=False,
+            )
+            .first()
+        )
+
         if user is not None:
             try:
                 send_activation_email_with_cooldown(
                     self.request,
                     user,
                 )
+
             except Exception:
                 logger.exception(
-                    'Resending activation email failed for user %s',
+                    (
+                        "Resending activation email "
+                        "failed for user %s"
+                    ),
                     user.pk,
                 )
-            
-        
+
         messages.info(
             self.request,
-            "اگر حساب تأییدنشده‌ای با این ایمیل وجود داشته باشد "
-            "و محدودیت زمانی اجازه بدهد، لینک فعال‌سازی ارسال می‌شود.",
+            (
+                "اگر حساب تأییدنشده‌ای با این "
+                "ایمیل وجود داشته باشد و محدودیت "
+                "زمانی اجازه بدهد، لینک فعال‌سازی "
+                "ارسال می‌شود."
+            ),
         )
-        return redirect(self.success_url)
+
+        return redirect(
+            self.success_url
+        )
     
 # Password Resets
 class PasswordResetView(auth_views.PasswordResetView):

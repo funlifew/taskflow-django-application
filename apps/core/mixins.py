@@ -35,14 +35,31 @@ class WorkspacePermissionMixin(LoginRequiredMixin):
     workspace_url_kwarg = 'pk'
     allowed_roles = ()
 
-    def get_workspace(self):
-        if not hasattr(self, "_workspace"):
-            self._workspace = get_object_or_404(
-                Workspace.objects.select_related('owner'),
-                pk=self.kwargs[self.workspace_url_kwarg],
+    def get_workspace_queryset(self):
+        return (
+            Workspace.objects
+            .filter(
                 is_archived=False,
             )
-        
+            .select_related(
+                "owner",
+            )
+        )
+    
+    def get_workspace(self):
+        if not hasattr(
+            self,
+            "_workspace",
+        ):
+            self._workspace = (
+                get_object_or_404(
+                    self.get_workspace_queryset(),
+                    pk=self.kwargs[
+                        self.workspace_url_kwarg
+                    ],
+                )
+            )
+
         return self._workspace
     
     def get_membership(self):
@@ -112,12 +129,12 @@ class WorkspacePermissionMixin(LoginRequiredMixin):
         )
 
 class WorkspaceAdminRequiredMixin(WorkspacePermissionMixin):
-    allowed_roles = [
+    allowed_roles = (
         WorkspaceMembership.Role.OWNER,
         WorkspaceMembership.Role.ADMIN,
-    ]
+    )
 
 class WorkspaceOwnerRequiredMixin(WorkspacePermissionMixin):
-    allowed_roles = [
+    allowed_roles = (
         WorkspaceMembership.Role.OWNER,
-    ]
+    )
