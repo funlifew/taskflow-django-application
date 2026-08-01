@@ -6,7 +6,10 @@ from django.utils import timezone
 from apps.boards.models import Board
 from apps.columns.models import Column
 
-from .models import Task
+from .models import (
+    Task,
+    TaskActivity,
+)
 
 
 class TaskScopeService:
@@ -179,6 +182,33 @@ class TaskTouchService:
             task.updated_at = now
 
 
+class TaskActivityService:
+    @staticmethod
+    def record(
+        *,
+        task,
+        actor,
+        action,
+        metadata=None,
+    ):
+        if metadata is None:
+            metadata = {}
+
+        activity = TaskActivity(
+            task=task,
+            actor=actor,
+            action=action,
+            metadata=metadata,
+        )
+
+        activity.full_clean()
+        activity.save(
+            force_insert=True,
+        )
+
+        return activity
+
+
 class TaskPositionService:
     @classmethod
     def _normalize_locked(
@@ -204,6 +234,7 @@ class TaskPositionService:
                 continue
 
             task.position = expected_position
+
             task.save(
                 update_fields=[
                     "position",
@@ -231,13 +262,14 @@ class TaskPositionService:
 
 
 class TaskLifecycleService:
-    EDITABLE_FIELDS = (
-        "title",
-        "description",
-        "priority",
-        "assignee",
-        "due_at",
-    )
+    @staticmethod
+    def _get_user_label(user):
+        if user is None:
+            return "بدون مسئول"
+
+        full_name = user.get_full_name().strip()
+
+        return full_name or user.username
 
     @classmethod
     @transaction.atomic
@@ -285,6 +317,21 @@ class TaskLifecycleService:
         task.full_clean()
         task.save()
 
+        TaskActivityService.record(
+            task=task,
+            actor=actor,
+            action=TaskActivity.Action.CREATED,
+            metadata={
+                "column_id": column.pk,
+                "column_title": column.title,
+                "assignee_id": task.assignee_id,
+                "status": task.status,
+                "status_label": str(
+                    task.get_status_display()
+                ),
+            },
+        )
+
         TaskTouchService.touch(
             board=board,
             columns=(column,),
@@ -306,6 +353,7 @@ class TaskLifecycleService:
         priority,
         assignee,
         due_at,
+        actor=None,
     ):
         (
             board,
@@ -318,19 +366,96 @@ class TaskLifecycleService:
             task_pk=task_pk,
         )
 
-        task.title = title
-        task.description = description
-        task.priority = priority
-        task.assignee = assignee
-        task.due_at = due_at
+        old_assignee = task.assignee
+        old_assignee_id = task.assignee_id
+        new_assignee_id = (
+            assignee.pk
+            if assignee is not None
+            else None
+        )
+
+        changed_fields = []
+        update_fields = []
+
+        if task.title != title:
+            task.title = title
+            changed_fields.append("title")
+            update_fields.append("title")
+
+        if task.description != description:
+            task.description = description
+            changed_fields.append("description")
+            update_fields.append("description")
+
+        if task.priority != priority:
+            task.priority = priority
+            changed_fields.append("priority")
+            update_fields.append("priority")
+
+        if task.due_at != due_at:
+            task.due_at = due_at
+            changed_fields.append("due_at")
+            update_fields.append("due_at")
+
+        assignee_changed = (
+            old_assignee_id
+            != new_assignee_id
+        )
+
+        if assignee_changed:
+            task.assignee = assignee
+            update_fields.append("assignee")
+
+        if not update_fields:
+            return task, board, column
 
         task.full_clean()
+
         task.save(
             update_fields=[
-                *cls.EDITABLE_FIELDS,
+                *update_fields,
                 "updated_at",
             ]
         )
+
+        if changed_fields:
+            TaskActivityService.record(
+                task=task,
+                actor=actor,
+                action=TaskActivity.Action.UPDATED,
+                metadata={
+                    "changed_fields": changed_fields,
+                },
+            )
+
+        if assignee_changed:
+            TaskActivityService.record(
+                task=task,
+                actor=actor,
+                action=(
+                    TaskActivity
+                    .Action
+                    .ASSIGNEE_CHANGED
+                ),
+                metadata={
+                    "old_assignee_id": (
+                        old_assignee_id
+                    ),
+                    "new_assignee_id": (
+                        task.assignee_id
+                    ),
+                    "old_assignee_label": (
+                        cls._get_user_label(
+                            old_assignee
+                        )
+                    ),
+                    "new_assignee_label": (
+                        cls._get_user_label(
+                            task.assignee
+                        )
+                    ),
+                },
+            )
 
         TaskTouchService.touch(
             board=board,
@@ -349,6 +474,7 @@ class TaskLifecycleService:
         column_pk,
         task_pk,
         status,
+        actor=None,
     ):
         (
             board,
@@ -361,13 +487,42 @@ class TaskLifecycleService:
             task_pk=task_pk,
         )
 
+        old_status = task.status
+
+        if old_status == status:
+            return task, board, column
+
         task.status = status
+
         task.full_clean()
+
         task.save(
             update_fields=[
                 "status",
                 "updated_at",
             ]
+        )
+
+        TaskActivityService.record(
+            task=task,
+            actor=actor,
+            action=(
+                TaskActivity
+                .Action
+                .STATUS_CHANGED
+            ),
+            metadata={
+                "old_status": old_status,
+                "new_status": task.status,
+                "old_status_label": str(
+                    Task.Status(
+                        old_status
+                    ).label
+                ),
+                "new_status_label": str(
+                    task.get_status_display()
+                ),
+            },
         )
 
         TaskTouchService.touch(
@@ -386,6 +541,7 @@ class TaskLifecycleService:
         board_pk,
         column_pk,
         task_pk,
+        actor=None,
     ):
         (
             board,
@@ -398,14 +554,28 @@ class TaskLifecycleService:
             task_pk=task_pk,
         )
 
+        old_position = task.position
+
         task.is_archived = True
         task.archived_at = timezone.now()
+
         task.save(
             update_fields=[
                 "is_archived",
                 "archived_at",
                 "updated_at",
             ]
+        )
+
+        TaskActivityService.record(
+            task=task,
+            actor=actor,
+            action=TaskActivity.Action.ARCHIVED,
+            metadata={
+                "column_id": column.pk,
+                "column_title": column.title,
+                "position": old_position,
+            },
         )
 
         TaskPositionService._normalize_locked(
@@ -428,6 +598,7 @@ class TaskLifecycleService:
         board_pk,
         column_pk,
         task_pk,
+        actor=None,
     ):
         (
             board,
@@ -458,6 +629,17 @@ class TaskLifecycleService:
             ]
         )
 
+        TaskActivityService.record(
+            task=task,
+            actor=actor,
+            action=TaskActivity.Action.RESTORED,
+            metadata={
+                "column_id": column.pk,
+                "column_title": column.title,
+                "position": task.position,
+            },
+        )
+
         TaskTouchService.touch(
             board=board,
             columns=(column,),
@@ -466,7 +648,6 @@ class TaskLifecycleService:
         return task, board, column
 
     @classmethod
-    @transaction.atomic
     def move(
         cls,
         *,
@@ -475,67 +656,32 @@ class TaskLifecycleService:
         source_column_pk,
         target_column_pk,
         task_pk,
+        actor=None,
     ):
-        if source_column_pk == target_column_pk:
-            raise Http404
+        """
+        Backward-compatible delegator.
 
-        board = TaskScopeService.lock_board(
-            workspace=workspace,
-            board_pk=board_pk,
-        )
-
-        columns = TaskScopeService.lock_columns(
-            board=board,
-            column_ids=(
-                source_column_pk,
-                target_column_pk,
-            ),
-        )
-
-        source_column = columns[
-            source_column_pk
-        ]
-        target_column = columns[
-            target_column_pk
-        ]
-
-        task = TaskScopeService.lock_task(
-            column=source_column,
-            task_pk=task_pk,
-        )
-
-        task.column = target_column
-        task.position = (
-            Task.objects.next_position(
-                column=target_column,
-            )
-        )
-
-        task.save(
-            update_fields=[
-                "column",
-                "position",
-                "updated_at",
-            ]
-        )
-
-        TaskPositionService._normalize_locked(
-            column=source_column,
-        )
-
-        TaskTouchService.touch(
-            board=board,
-            columns=(
-                source_column,
-                target_column,
-            ),
+        New code should call
+        TaskReorderingService.move_to_column().
+        """
+        from .reordering import (
+            TaskReorderingService,
         )
 
         return (
-            task,
-            board,
-            source_column,
-            target_column,
+            TaskReorderingService
+            .move_to_column(
+                workspace=workspace,
+                board_pk=board_pk,
+                source_column_pk=(
+                    source_column_pk
+                ),
+                target_column_pk=(
+                    target_column_pk
+                ),
+                task_pk=task_pk,
+                actor=actor,
+            )
         )
 
     @classmethod
@@ -561,6 +707,7 @@ class TaskLifecycleService:
         )
 
         task_title = task.title
+
         task.delete()
 
         TaskTouchService.touch(
