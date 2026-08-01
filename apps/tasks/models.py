@@ -307,7 +307,7 @@ class TaskComment(TimeStampedModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='deleted_task_ccomments'
+        related_name="deleted_task_comments",
     )
     
     objects = TaskCommentManager()
@@ -479,7 +479,8 @@ class TaskActivity(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='task_activities',
+        blank=True,
+        related_name="task_activities",
     )
     
     action = models.CharField(
