@@ -274,11 +274,11 @@ class TaskCommentCreateView(
                 task_pk=self.get_task().pk,
             )
         (
-            comment,
+            _comment,
             task,
             board,
             column,
-        ) = TaskCommentService.create(
+            ) = TaskCommentService.create(
             workspace=self.get_workspace(),
             board_pk=self.get_board().pk,
             column_pk=self.get_column().pk,
@@ -390,7 +390,7 @@ class TaskCommentDeleteView(
         **kwargs,
     ):
         (
-            comment,
+            _comment,
             task,
             board,
             column,
@@ -466,17 +466,12 @@ class TaskUpdateView(
             task_pk=self.get_task().pk,
             title=form.cleaned_data["title"],
             description=(
-                form.cleaned_data[
-                    "description"
-                ]
+                form.cleaned_data["description"]
             ),
-            priority=(
-                form.cleaned_data["priority"]
-            ),
-            assignee=(
-                form.cleaned_data["assignee"]
-            ),
+            priority=form.cleaned_data["priority"],
+            assignee=form.cleaned_data["assignee"],
             due_at=form.cleaned_data["due_at"],
+            actor=self.request.user,
         )
 
         messages.success(
@@ -544,9 +539,8 @@ class TaskStatusUpdateView(
             board_pk=self.get_board().pk,
             column_pk=self.get_column().pk,
             task_pk=scoped_task.pk,
-            status=(
-                form.cleaned_data["status"]
-            ),
+            status=form.cleaned_data["status"],
+            actor=request.user,
         )
 
         messages.success(
@@ -599,19 +593,26 @@ class TaskMoveView(
         return context
     
     def form_valid(self, form):
-        target_column = form.cleaned_data['target_column']
-        
+        selected_target_column = (
+            form.cleaned_data["target_column"]
+        )
+
         (
             task,
             board,
-            source_column,
+            _source_column,
             target_column,
-        ) = TaskLifecycleService.move(
+        ) = TaskReorderingService.move_to_column(
             workspace=self.get_workspace(),
             board_pk=self.get_board().pk,
-            source_column_pk=self.get_column().pk,
-            target_column_pk=target_column.pk,
-            task_pk=self.kwargs['task_pk'],
+            source_column_pk=(
+                self.get_column().pk
+            ),
+            target_column_pk=(
+                selected_target_column.pk
+            ),
+            task_pk=self.get_task().pk,
+            actor=self.request.user,
         )
         
         messages.success(
@@ -751,13 +752,14 @@ class TaskRelativeMoveView(
         (
             task,
             board,
-            source_column,
+            _source_column,
             target_column,
         ) = service_method(
             workspace=self.get_workspace(),
             board_pk=self.get_board().pk,
             column_pk=self.get_column().pk,
-            task_pk=self.kwargs['task_pk'],
+            task_pk=self.get_task().pk,
+            actor=request.user,
         )
         
         messages.success(
@@ -847,12 +849,13 @@ class TaskArchiveView(
         *args,
         **kwargs,
     ):
-        task, board, column = (
+        task, board, _column = (
             TaskLifecycleService.archive(
                 workspace=self.get_workspace(),
                 board_pk=self.get_board().pk,
                 column_pk=self.get_column().pk,
-                task_pk=self.kwargs['task_pk'],
+                task_pk=self.get_task().pk,
+                actor=request.user,
             )
         )
         
@@ -891,7 +894,8 @@ class TaskRestoreView(
                 workspace=self.get_workspace(),
                 board_pk=self.get_board().pk,
                 column_pk=self.get_column().pk,
-                task_pk=self.kwargs['task_pk'],
+                task_pk=self.get_task().pk,
+                actor=request.user,
             )
         )
         
@@ -1150,24 +1154,24 @@ class TaskDragReorderView(
                 board,
                 source_column,
                 target_column,
-            ) = (
-                TaskReorderingService
-                .reorder(
-                    workspace=self.get_workspace(),
-                    board_pk=board.pk,
-                    source_column_pk=source_column.pk,
-                    target_column_pk=selected_target_column.pk,
-                    task_pk=scoped_task.pk,
-                    target_position=target_position,
-                )
+            ) = TaskReorderingService.reorder(
+                workspace=self.get_workspace(),
+                board_pk=board.pk,
+                source_column_pk=(
+                    source_column.pk
+                ),
+                target_column_pk=(
+                    selected_target_column.pk
+                ),
+                task_pk=scoped_task.pk,
+                target_position=target_position,
+                actor=request.user,
             )
+
         except ValidationError as error:
             return self._error_response(
-                (
-                    self
-                    ._serialize_validation_error(
-                        error
-                    )
+                self._serialize_validation_error(
+                    error
                 ),
             )
         
