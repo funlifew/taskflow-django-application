@@ -2,36 +2,53 @@ from django.urls import path
 
 from . import views
 
-app_name = 'columns'
+
+app_name = "columns"
+
 
 urlpatterns = [
     path(
-        'archived/',
+        "archived/",
         views.ArchivedColumnListView.as_view(),
-        name='archived_list',
+        name="archived_list",
     ),
     path(
-        'create/',
+        "create/",
         views.ColumnCreateView.as_view(),
-        name='create',
+        name="create",
     ),
     path(
-        '<int:column_pk>/update/',
+        "<int:column_pk>/update/",
         views.ColumnUpdateView.as_view(),
-        name='update',
+        name="update",
     ),
     path(
-        '<int:column_pk>/archive/',
+        "<int:column_pk>/move-left/",
+        views.ColumnMoveLeftView.as_view(),
+        name="move_left",
+    ),
+    path(
+        "<int:column_pk>/move-right/",
+        views.ColumnMoveRightView.as_view(),
+        name="move_right",
+    ),
+    path(
+        "<int:column_pk>/drag-reorder/",
+        views.ColumnDragReorderView.as_view(),
+        name="drag_reorder",
+    ),
+    path(
+        "<int:column_pk>/archive/",
         views.ColumnArchiveView.as_view(),
-        name='archive',
+        name="archive",
     ),
     path(
-        '<int:column_pk>/restore/',
+        "<int:column_pk>/restore/",
         views.ColumnRestoreView.as_view(),
-        name='restore',
+        name="restore",
     ),
     path(
-        '<int:column_pk>/delete/',
+        "<int:column_pk>/delete/",
         views.ColumnDeleteView.as_view(),
         name="delete",
     ),

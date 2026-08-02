@@ -1,4 +1,10 @@
+import json
+
 from django.contrib import messages
+from django.core.exceptions import (
+    ValidationError,
+)
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import (
@@ -17,14 +23,21 @@ from apps.boards.mixins import (
     BoardWriteRequiredMixin,
 )
 
-from .forms import ColumnForm
+from .forms import (
+    ColumnDragReorderForm,
+    ColumnForm,
+)
 from .mixins import (
     ArchivedColumnObjectMixin,
     ColumnObjectMixin,
 )
 from .models import Column
+from .reordering import (
+    ColumnReorderingService,
+)
 from .selectors import (
     get_archived_columns,
+    serialize_board_columns,
 )
 from .services import (
     ColumnLifecycleService,
@@ -158,6 +171,301 @@ class ColumnUpdateView(
             board_pk=board.pk,
         )
 
+class ColumnRelativeMoveView(
+    ColumnObjectMixin,
+    BoardWriteRequiredMixin,
+    View,
+):
+    http_method_names = [
+        'post',
+    ]
+    
+    service_method_name = None
+    success_message = None
+    
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        service_method = getattr(
+            ColumnReorderingService,
+            self.service_method_name,
+        )
+        
+        (
+            column,
+            board,
+            changed,
+        ) = service_method(
+            workspace=self.get_workspace(),
+            board_pk=self.get_board().pk,
+            column_pk=self.get_column().pk,
+        )
+        
+        if changed:
+            messages.success(
+                request,
+                self.success_message.format(
+                    title=column.title,
+                ),
+            )
+        else:
+            messages.info(
+                request,
+                (
+                    f"ستون «{column.title}» "
+                    "در همین جایگاه باقی ماند."
+                ),
+            )
+        
+        return redirect(
+            "boards:detail",
+            workspace_pk=board.workspace_id,
+            board_pk=board.pk,
+        )
+
+class ColumnMoveLeftView(
+    ColumnRelativeMoveView,
+):
+    service_method_name = "move_left"
+
+    success_message = (
+        "ستون «{title}» یک جایگاه "
+        "به چپ منتقل شد."
+    )
+
+class ColumnMoveRightView(
+    ColumnRelativeMoveView,
+):
+    service_method_name = "move_right"
+
+    success_message = (
+        "ستون «{title}» یک جایگاه "
+        "به راست منتقل شد."
+    )
+
+class ColumnDragReorderView(
+    ColumnObjectMixin,
+    BoardWriteRequiredMixin,
+    View,
+):
+    http_method_names = [
+        "post",
+    ]
+
+    @staticmethod
+    def _error_response(
+        errors,
+        *,
+        status=400,
+    ):
+        return JsonResponse(
+            {
+                "ok": False,
+                "errors": errors,
+            },
+            status=status,
+        )
+
+    @classmethod
+    def _parse_payload(
+        cls,
+        request,
+    ):
+        try:
+            raw_body = (
+                request.body
+                .decode("utf-8")
+                .strip()
+            )
+
+        except UnicodeDecodeError:
+            return (
+                None,
+                {
+                    "__all__": [
+                        (
+                            "بدنه درخواست "
+                            "قابل خواندن نیست."
+                        ),
+                    ],
+                },
+            )
+
+        if not raw_body:
+            return {}, None
+
+        try:
+            payload = json.loads(
+                raw_body
+            )
+
+        except json.JSONDecodeError:
+            return (
+                None,
+                {
+                    "__all__": [
+                        (
+                            "ساختار JSON "
+                            "درخواست معتبر نیست."
+                        ),
+                    ],
+                },
+            )
+
+        if not isinstance(
+            payload,
+            dict,
+        ):
+            return (
+                None,
+                {
+                    "__all__": [
+                        (
+                            "بدنه درخواست باید "
+                            "یک JSON object باشد."
+                        ),
+                    ],
+                },
+            )
+
+        return payload, None
+
+    @staticmethod
+    def _serialize_form_errors(
+        form,
+    ):
+        return {
+            field_name: [
+                str(error)
+                for error in error_list
+            ]
+            for (
+                field_name,
+                error_list,
+            ) in form.errors.items()
+        }
+
+    @staticmethod
+    def _serialize_validation_error(
+        error,
+    ):
+        try:
+            message_dict = (
+                error.message_dict
+            )
+
+        except AttributeError:
+            return {
+                "__all__": [
+                    str(message)
+                    for message in (
+                        error.messages
+                    )
+                ],
+            }
+
+        return {
+            field_name: [
+                str(message)
+                for message in error_messages
+            ]
+            for (
+                field_name,
+                error_messages,
+            ) in message_dict.items()
+        }
+
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        board = self.get_board()
+        scoped_column = self.get_column()
+
+        (
+            payload,
+            payload_errors,
+        ) = self._parse_payload(
+            request
+        )
+
+        if payload_errors:
+            return self._error_response(
+                payload_errors,
+            )
+
+        form = ColumnDragReorderForm(
+            data=payload,
+        )
+
+        if not form.is_valid():
+            return self._error_response(
+                self._serialize_form_errors(
+                    form
+                ),
+            )
+
+        try:
+            (
+                column,
+                board,
+                changed,
+            ) = (
+                ColumnReorderingService
+                .reorder(
+                    workspace=(
+                        self.get_workspace()
+                    ),
+                    board_pk=board.pk,
+                    column_pk=(
+                        scoped_column.pk
+                    ),
+                    target_position=(
+                        form.cleaned_data[
+                            "target_position"
+                        ]
+                    ),
+                )
+            )
+
+        except ValidationError as error:
+            return self._error_response(
+                self._serialize_validation_error(
+                    error
+                ),
+            )
+
+        return JsonResponse(
+            {
+                "ok": True,
+                "changed": changed,
+                "message": (
+                    f"ستون «{column.title}» "
+                    "با موفقیت جابه‌جا شد."
+                    if changed
+                    else (
+                        f"ستون «{column.title}» "
+                        "در همین جایگاه باقی ماند."
+                    )
+                ),
+                "column": {
+                    "id": column.pk,
+                    "position": (
+                        column.position
+                    ),
+                },
+                "columns": (
+                    serialize_board_columns(
+                        board=board,
+                    )
+                ),
+            }
+        )
 
 class ArchivedColumnListView(
     BoardObjectMixin,
