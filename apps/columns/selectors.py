@@ -1,5 +1,6 @@
 from .models import Column
 
+
 def get_archived_columns(
     *,
     board,
@@ -17,3 +18,34 @@ def get_archived_columns(
             "-pk",
         )
     )
+
+
+def serialize_board_columns(
+    *,
+    board,
+):
+    columns = (
+        Column.objects
+        .active()
+        .for_board(board)
+        .order_by(
+            "position",
+            "pk",
+        )
+        .values(
+            "pk",
+            "title",
+            "position",
+        )
+    )
+
+    return [
+        {
+            "id": column["pk"],
+            "title": column["title"],
+            "position": column[
+                "position"
+            ],
+        }
+        for column in columns
+    ]
