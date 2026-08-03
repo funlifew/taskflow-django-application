@@ -641,6 +641,7 @@ class WorkspaceMembershipUpdateView(
                 new_role=(
                     form.cleaned_data["role"]
                 ),
+                actor=self.request.user,
             )
         )
 
@@ -710,6 +711,7 @@ class WorkspaceMembershipDeleteView(
                 requester_role=(
                     self.get_current_user_role()
                 ),
+                actor=self.request.user,
             )
         )
 

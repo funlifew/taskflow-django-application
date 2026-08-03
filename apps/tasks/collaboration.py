@@ -10,6 +10,9 @@ from django.utils import timezone
 from apps.workspaces.models import (
     WorkspaceMembership,
 )
+from apps.notifications.services import (
+    TaskNotificationService,
+)
 
 from .models import (
     TaskActivity,
@@ -105,6 +108,12 @@ class TaskCommentService:
             },
         )
 
+        TaskNotificationService.notify_comment(
+            task=task,
+            comment=comment,
+            actor=actor,
+        )
+        
         TaskTouchService.touch(
             board=board,
             columns=(column,),

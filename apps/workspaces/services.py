@@ -5,6 +5,10 @@ from django.db import transaction
 from django.utils import timezone
 from django.urls import reverse
 
+from apps.notifications.services import (
+    WorkspaceNotificationService,
+)
+
 from .models import(
     Workspace,
     WorkspaceInvitation,
@@ -63,6 +67,11 @@ def create_workspace_invitation(
         ),
     )
     
+    WorkspaceNotificationService.notify_invitation(
+        invitation=invitation,
+        actor=invited_by,
+    )
+    
     transaction.on_commit(
         lambda: send_workspace_invitation_email(
             request,
@@ -79,53 +88,87 @@ def update_workspace_membership_role(
     membership,
     requester_role,
     new_role,
+    actor=None,
 ):
     locked_membership = (
         WorkspaceMembership.objects
         .select_for_update()
         .select_related(
-            'user',
-            'workspace',
+            "user",
+            "workspace",
         )
         .get(
             pk=membership.pk,
             workspace=workspace,
         )
     )
-    
-    if locked_membership.role == WorkspaceMembership.Role.OWNER:
+
+    if (
+        locked_membership.role
+        == WorkspaceMembership.Role.OWNER
+    ):
         raise PermissionError(
-            "نقش مالک از این بخش قابل تغییر نیست."
+            "نقش مالک از این بخش "
+            "قابل تغییر نیست."
         )
 
-    if new_role == WorkspaceMembership.Role.OWNER:
+    if (
+        new_role
+        == WorkspaceMembership.Role.OWNER
+    ):
         raise PermissionError(
-            "انتقال مالکیت باید از بخش جداگانه انجام شود."
+            "انتقال مالکیت باید "
+            "از بخش جداگانه انجام شود."
         )
-    
-    if requester_role == WorkspaceMembership.Role.ADMIN:
-        if locked_membership.role == WorkspaceMembership.Role.ADMIN:
+
+    if (
+        requester_role
+        == WorkspaceMembership.Role.ADMIN
+    ):
+        if (
+            locked_membership.role
+            == WorkspaceMembership.Role.ADMIN
+        ):
             raise PermissionError(
-                "مدیر نمی‌تواند نقش مدیر دیگری را تغییر دهد."
+                "مدیر نمی‌تواند نقش "
+                "مدیر دیگری را تغییر دهد."
             )
-        
-        if new_role == WorkspaceMembership.Role.ADMIN:
+
+        if (
+            new_role
+            == WorkspaceMembership.Role.ADMIN
+        ):
             raise PermissionError(
-                "فقط مالک Workspace می‌تواند نقش مدیر بدهد."
+                "فقط مالک Workspace "
+                "می‌تواند نقش مدیر بدهد."
             )
-    
-    if locked_membership.role == new_role:
+
+    if (
+        locked_membership.role
+        == new_role
+    ):
         return locked_membership
-    
-    
+
+    old_role = locked_membership.role
+
     locked_membership.role = new_role
+
     locked_membership.save(
         update_fields=[
-            'role',
-            'updated_at',
+            "role",
+            "updated_at",
         ]
     )
-    
+
+    (
+        WorkspaceNotificationService
+        .notify_role_change(
+            membership=locked_membership,
+            actor=actor,
+            old_role=old_role,
+        )
+    )
+
     return locked_membership
 
 @transaction.atomic
@@ -134,39 +177,59 @@ def remove_workspace_membership(
     workspace,
     membership,
     requester_role,
+    actor=None,
 ):
     locked_membership = (
         WorkspaceMembership.objects
         .select_for_update()
         .select_related(
-            'user',
-            'workspace',
+            "user",
+            "workspace",
         )
         .get(
             pk=membership.pk,
             workspace=workspace,
         )
     )
-    
-    if locked_membership.role == WorkspaceMembership.Role.OWNER:
+
+    if (
+        locked_membership.role
+        == WorkspaceMembership.Role.OWNER
+    ):
         raise PermissionError(
             "مالک Workspace قابل حذف نیست."
         )
-    
+
     if (
-        requester_role == WorkspaceMembership.Role.ADMIN
+        requester_role
+        == WorkspaceMembership.Role.ADMIN
         and locked_membership.role
         == WorkspaceMembership.Role.ADMIN
     ):
         raise PermissionError(
-            "مدیر نمی‌تواند مدیر دیگری را حذف کند."
+            "مدیر نمی‌تواند "
+            "مدیر دیگری را حذف کند."
         )
-    
+
+    recipient = locked_membership.user
+    old_role = locked_membership.role
+
     member_name = (
-        locked_membership.user.get_full_name()
-        or locked_membership.user.username
+        recipient.get_full_name()
+        or recipient.username
     )
+
     locked_membership.delete()
+
+    (
+        WorkspaceNotificationService
+        .notify_removal(
+            recipient=recipient,
+            workspace=workspace,
+            actor=actor,
+            old_role=old_role,
+        )
+    )
 
     return member_name
 

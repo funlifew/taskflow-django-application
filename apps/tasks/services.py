@@ -5,6 +5,9 @@ from django.utils import timezone
 
 from apps.boards.models import Board
 from apps.columns.models import Column
+from apps.notifications.services import (
+    TaskNotificationService,
+)
 
 from .models import (
     Task,
@@ -205,7 +208,6 @@ class TaskActivityService:
         activity.save(
             force_insert=True,
         )
-
         return activity
 
 
@@ -330,6 +332,12 @@ class TaskLifecycleService:
                     task.get_status_display()
                 ),
             },
+        )
+        
+        TaskNotificationService.notify_assignment(
+            task=task,
+            actor=actor,
+            previous_assignee=None,
         )
 
         TaskTouchService.touch(
@@ -457,6 +465,14 @@ class TaskLifecycleService:
                 },
             )
 
+            TaskNotificationService.notify_assignment(
+                task=task,
+                actor=actor,
+                previous_assignee=(
+                    old_assignee
+                ),
+            )
+        
         TaskTouchService.touch(
             board=board,
             columns=(column,),
@@ -525,6 +541,20 @@ class TaskLifecycleService:
             },
         )
 
+        TaskNotificationService.notify_status_change(
+            task=task,
+            actor=actor,
+            old_status=old_status,
+            old_status_label=str(
+                Task.Status(
+                    old_status
+                ).label
+            ),
+            new_status_label=str(
+                task.get_status_display()
+            ),
+        )
+        
         TaskTouchService.touch(
             board=board,
             columns=(column,),
@@ -578,6 +608,12 @@ class TaskLifecycleService:
             },
         )
 
+        TaskNotificationService.notify_assignment(
+            task=task,
+            actor=actor,
+            previous_assignee=None,
+        )
+        
         TaskPositionService._normalize_locked(
             column=column,
         )
@@ -640,6 +676,12 @@ class TaskLifecycleService:
             },
         )
 
+        TaskNotificationService.notify_assignment(
+            task=task,
+            actor=actor,
+            previous_assignee=None,
+        )
+        
         TaskTouchService.touch(
             board=board,
             columns=(column,),
