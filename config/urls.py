@@ -22,14 +22,84 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("", include('apps.accounts.urls', namespace='accounts')),
-    path('dashboard/', include('apps.dashboard.urls', namespace='dashboard')),
-    path('workspaces/<int:workspace_pk>/boards/<int:board_pk>/columns/<int:column_pk>/tasks/', include('apps.tasks.urls', namespace='tasks')),
-    path('workspaces/<int:workspace_pk>/boards/<int:board_pk>/columns/', include('apps.columns.urls', namespace='columns')),
-    path('workspaces/<int:workspace_pk>/boards/', include('apps.boards.urls', namespace='boards')),
-    path('workspaces/', include('apps.workspaces.urls', namespace='workspaces')),
-    path("", TemplateView.as_view(template_name="landing.html"), name="landing"),
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
+    path(
+        "",
+        include(
+            "apps.accounts.urls",
+            namespace="accounts",
+        ),
+    ),
+    path(
+        "dashboard/",
+        include(
+            "apps.dashboard.urls",
+            namespace="dashboard",
+        ),
+    ),
+    path(
+        "notifications/",
+        include(
+            "apps.notifications.urls",
+            namespace="notifications",
+        ),
+    ),
+    path(
+        (
+            "workspaces/"
+            "<int:workspace_pk>/"
+            "boards/"
+            "<int:board_pk>/"
+            "columns/"
+            "<int:column_pk>/"
+            "tasks/"
+        ),
+        include(
+            "apps.tasks.urls",
+            namespace="tasks",
+        ),
+    ),
+    path(
+        (
+            "workspaces/"
+            "<int:workspace_pk>/"
+            "boards/"
+            "<int:board_pk>/"
+            "columns/"
+        ),
+        include(
+            "apps.columns.urls",
+            namespace="columns",
+        ),
+    ),
+    path(
+        (
+            "workspaces/"
+            "<int:workspace_pk>/"
+            "boards/"
+        ),
+        include(
+            "apps.boards.urls",
+            namespace="boards",
+        ),
+    ),
+    path(
+        "workspaces/",
+        include(
+            "apps.workspaces.urls",
+            namespace="workspaces",
+        ),
+    ),
+    path(
+        "",
+        TemplateView.as_view(
+            template_name="landing.html"
+        ),
+        name="landing",
+    ),
 ]
 
 if settings.DEBUG:

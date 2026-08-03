@@ -9,6 +9,8 @@
         <strong>
           {% if request.resolver_match.namespace == 'workspaces' %}
             Workspaceها
+          {% elif request.resolver_match.namespace == 'notifications' %}
+            اعلان‌ها
           {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
             پروفایل
           {% elif request.resolver_match.url_name == 'change_password' %}
@@ -20,6 +22,8 @@
         <div class="muted topbar__subtitle">
           {% if request.resolver_match.namespace == 'workspaces' %}
             مدیریت فضاهای کاری، اعضا و دسترسی‌ها
+          {% elif request.resolver_match.namespace == 'notifications' %}
+            رویدادها و تغییرات مهم حساب شما
           {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
             تنظیم اطلاعات و ظاهر حساب کاربری
           {% elif request.resolver_match.url_name == 'change_password' %}
