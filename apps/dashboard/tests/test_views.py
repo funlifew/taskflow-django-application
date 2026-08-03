@@ -9,6 +9,13 @@ from django.test import override_settings
 from django.urls import reverse
 from PIL import Image
 
+from apps.notifications.models import (
+    Notification,
+)
+from apps.tasks.tests.base import (
+    TaskTestBase,
+)
+
 from apps.dashboard.tests.base import DashboardTestBase
 
 
@@ -338,4 +345,120 @@ class ProfileAvatarUploadTests(
         self.assertIn(
             "avatar",
             response.context["form"].errors,
+        )
+
+class DashboardMetricsContextTests(
+    TaskTestBase
+):
+    def setUp(self):
+        super().setUp()
+
+        self.client.force_login(
+            self.member
+        )
+
+    def test_dashboard_contains_metrics_context(
+        self,
+    ):
+        Notification.objects.create(
+            recipient=self.member,
+            actor=self.owner,
+            notification_type=(
+                Notification.Type
+                .TASK_ASSIGNED
+            ),
+            title="Assigned",
+            is_read=False,
+            read_at=None,
+        )
+
+        response = self.client.get(
+            reverse(
+                "dashboard:dashboard"
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        required_keys = {
+            "summary",
+            "user_progress",
+            "assigned_tasks",
+            "overdue_tasks",
+            "due_soon_tasks",
+            "workspace_summaries",
+            "board_summaries",
+            "recent_activities",
+            "recent_notifications",
+        }
+
+        self.assertTrue(
+            required_keys.issubset(
+                response.context.keys()
+            )
+        )
+
+        self.assertEqual(
+            response.context[
+                "summary"
+            ][
+                "assigned_tasks_count"
+            ],
+            1,
+        )
+
+        self.assertEqual(
+            response.context[
+                "summary"
+            ][
+                "unread_notifications_count"
+            ],
+            1,
+        )
+
+        self.assertIn(
+            self.task,
+            list(
+                response.context[
+                    "assigned_tasks"
+                ]
+            ),
+        )
+
+    def test_dashboard_workspace_summaries_are_scoped(
+        self,
+    ):
+        other_workspace = (
+            self.workspace.__class__
+            .objects.create(
+                name="Private",
+                owner=self.outsider,
+            )
+        )
+
+        response = self.client.get(
+            reverse(
+                "dashboard:dashboard"
+            )
+        )
+
+        workspace_ids = {
+            item["workspace"].pk
+            for item in (
+                response.context[
+                    "workspace_summaries"
+                ]
+            )
+        }
+
+        self.assertIn(
+            self.workspace.pk,
+            workspace_ids,
+        )
+        self.assertNotIn(
+            other_workspace.pk,
+            workspace_ids,
         )
