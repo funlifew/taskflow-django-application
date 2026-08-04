@@ -1,0 +1,224 @@
+<article
+  class="workspace-card column-card"
+  data-column-card
+  data-column-id="{{ column.pk }}"
+  data-column-title="{{ column.title }}"
+  data-position="{{ column.position }}"
+  {% if can_drag_columns %}
+    data-reorder-url="{% url 'columns:drag_reorder' workspace.pk board.pk column.pk %}"
+  {% endif %}
+  data-reveal
+  {% if not can_drag_columns %}
+    data-tilt
+  {% endif %}
+>
+  <div class="workspace-card__main">
+    <div class="workspace-card__top">
+      <div class="column-card__identity">
+        {% if can_drag_columns %}
+          <button
+            class="column-drag-handle"
+            type="button"
+            data-column-drag-handle
+            aria-label="جابه‌جایی ستون {{ column.title }}"
+            title="برای جابه‌جایی ستون بکشید"
+          >
+            <svg
+              class="tf-icon"
+              aria-hidden="true"
+            >
+              <use href="#icon-menu"></use>
+            </svg>
+          </button>
+        {% endif %}
+
+        <div
+          class="workspace-card__mark"
+          data-column-order-number
+          aria-hidden="true"
+        >
+          {{ column_number }}
+        </div>
+      </div>
+
+      <div class="workspace-card__badges">
+        <span class="badge badge-success">
+          فعال
+        </span>
+
+        <span
+          class="badge badge-info"
+          data-column-position-label
+        >
+          جایگاه
+          {{ column.position|add:"1" }}
+        </span>
+      </div>
+    </div>
+
+    <div class="workspace-card__content">
+      <h3>
+        {{ column.title }}
+      </h3>
+
+      {% include "tasks/includes/_task_list.html" with tasks=column.active_tasks can_drag_tasks=can_drag_tasks %}
+    </div>
+
+    <div class="workspace-card__meta">
+      <span>
+        <svg class="tf-icon">
+          <use href="#icon-user"></use>
+        </svg>
+
+        {% if column.created_by %}
+          {{ column.created_by.username }}
+        {% else %}
+          حساب حذف‌شده
+        {% endif %}
+      </span>
+
+      <span>
+        <svg class="tf-icon">
+          <use href="#icon-clock"></use>
+        </svg>
+
+        {{ column.created_at|timesince }}
+        پیش
+      </span>
+    </div>
+  </div>
+
+  <footer class="workspace-card__footer column-card__footer">
+    <div class="column-card__footer-summary">
+      <span
+        class="badge"
+        data-column-task-count="{{ column.pk }}"
+      >
+        {{ column.active_tasks|length }}
+        Task
+      </span>
+
+      {% if can_reorder_columns %}
+        <div
+          class="column-order-controls"
+          aria-label="تغییر جایگاه ستون {{ column.title }}"
+        >
+          <form
+            method="post"
+            action="{% url 'columns:move_left' workspace.pk board.pk column.pk %}"
+          >
+            {% csrf_token %}
+
+            <button
+              class="btn btn-ghost column-order-control"
+              type="submit"
+              data-column-move-previous
+              {% if is_first %}
+                disabled
+                aria-disabled="true"
+              {% endif %}
+              title="انتقال به جایگاه قبلی"
+            >
+              <svg
+                class="tf-icon"
+                aria-hidden="true"
+              >
+                <use href="#icon-chevron-right"></use>
+              </svg>
+
+              قبلی
+            </button>
+          </form>
+
+          <form
+            method="post"
+            action="{% url 'columns:move_right' workspace.pk board.pk column.pk %}"
+          >
+            {% csrf_token %}
+
+            <button
+              class="btn btn-ghost column-order-control"
+              type="submit"
+              data-column-move-next
+              {% if is_last %}
+                disabled
+                aria-disabled="true"
+              {% endif %}
+              title="انتقال به جایگاه بعدی"
+            >
+              بعدی
+
+              <svg
+                class="tf-icon"
+                aria-hidden="true"
+              >
+                <use href="#icon-chevron-left"></use>
+              </svg>
+            </button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if can_create_tasks or can_update_columns or can_archive_columns %}
+      <div class="actions">
+        {% if can_create_tasks %}
+          <a
+            class="btn btn-primary"
+            href="{% url 'tasks:create' workspace.pk board.pk column.pk %}"
+          >
+            <svg class="tf-icon">
+              <use href="#icon-plus"></use>
+            </svg>
+
+            Task جدید
+          </a>
+        {% endif %}
+
+        {% if can_update_columns %}
+          <a
+            class="btn btn-ghost"
+            href="{% url 'columns:update' workspace.pk board.pk column.pk %}"
+          >
+            <svg class="tf-icon">
+              <use href="#icon-edit"></use>
+            </svg>
+
+            ویرایش
+          </a>
+        {% endif %}
+
+        {% if can_archive_columns %}
+          <form
+            method="post"
+            action="{% url 'columns:archive' workspace.pk board.pk column.pk %}"
+          >
+            {% csrf_token %}
+
+            <button
+              class="btn btn-soft"
+              type="submit"
+            >
+              <svg class="tf-icon">
+                <use href="#icon-archive"></use>
+              </svg>
+
+              آرشیو
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    {% else %}
+      <span class="badge badge-info">
+        مشاهده
+      </span>
+    {% endif %}
+
+    <a
+      class="btn btn-ghost"
+      href="{% url 'tasks:archived_list' workspace.pk board.pk column.pk %}"
+    >
+      آرشیو Taskها
+    </a>
+  </footer>
+</article>

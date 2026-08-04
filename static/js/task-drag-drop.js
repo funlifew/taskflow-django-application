@@ -9,6 +9,13 @@
     return;
   }
 
+  const interactionRoot = (
+  board.closest(
+    "[data-board-interactions]"
+  )
+  || board
+);
+
   const showMessage = (
     message,
     type = "info"
@@ -81,10 +88,10 @@
   );
 
   const statusElement = (
-    board.querySelector(
-      "[data-drag-status]"
-    )
-  );
+  interactionRoot.querySelector(
+    "[data-task-drag-status]"
+  )
+);
 
   const sortables = [];
   let isSaving = false;
@@ -245,6 +252,12 @@
 
   const setSaving = (saving) => {
     isSaving = saving;
+
+    board.dataset.taskSaving = (
+  saving
+  ? "true"
+  : "false"
+);
 
     board.classList.toggle(
       "task-board-is-saving",
@@ -708,8 +721,14 @@
             scrollSpeed: 12,
 
             onMove() {
-              return !isSaving;
-            },
+            return (
+              !isSaving
+              && (
+                board.dataset.columnSaving
+                !== "true"
+              )
+            );
+          },
 
             onStart() {
               board.classList.add(
