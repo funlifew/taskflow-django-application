@@ -1,0 +1,55 @@
+<span
+  class="notification-menu__item-icon"
+  aria-hidden="true"
+>
+  <svg class="tf-icon">
+    {% if notification.notification_type == "task_assigned" or notification.notification_type == "task_reassigned" %}
+      <use href="#icon-user-plus"></use>
+    {% elif notification.notification_type == "task_status_changed" %}
+      <use href="#icon-refresh"></use>
+    {% elif notification.notification_type == "task_commented" %}
+      <use href="#icon-message-circle"></use>
+    {% elif notification.notification_type == "workspace_invited" %}
+      <use href="#icon-mail"></use>
+    {% elif notification.notification_type == "workspace_role_changed" %}
+      <use href="#icon-shield-check"></use>
+    {% elif notification.notification_type == "workspace_removed" %}
+      <use href="#icon-user-minus"></use>
+    {% else %}
+      <use href="#icon-bell"></use>
+    {% endif %}
+  </svg>
+</span>
+
+<span class="notification-menu__item-copy">
+  <strong>
+    {{ notification.title }}
+  </strong>
+
+  {% if notification.message %}
+    <span class="notification-menu__item-message">
+      {{ notification.message|truncatechars:105 }}
+    </span>
+  {% endif %}
+
+  <span class="notification-menu__item-meta">
+    {% if notification.actor %}
+      {{ notification.actor.get_full_name|default:notification.actor.username }}
+    {% else %}
+      سیستم
+    {% endif %}
+
+    <span aria-hidden="true">·</span>
+
+    {{ notification.created_at|timesince }}
+    پیش
+  </span>
+</span>
+
+{% if not notification.is_read %}
+  <span
+    class="notification-menu__unread-dot"
+    title="خوانده‌نشده"
+    aria-label="خوانده‌نشده"
+  ></span>
+{% endif %}

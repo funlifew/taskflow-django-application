@@ -1,0 +1,175 @@
+{% if request.user.is_authenticated %}
+  <div
+    class="notification-menu"
+    data-notification-menu
+  >
+    <a
+      class="icon-btn notification-menu__toggle"
+      href="{% url 'notifications:list' %}"
+      data-notification-toggle
+      aria-label="
+        اعلان‌ها
+        {% if unread_notifications_count %}
+          ، {{ unread_notifications_count }} اعلان خوانده‌نشده
+        {% endif %}
+      "
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-controls="header-notification-panel"
+    >
+      <svg
+        class="tf-icon"
+        aria-hidden="true"
+      >
+        <use href="#icon-bell"></use>
+      </svg>
+
+      {% if unread_notifications_count %}
+        <span
+          class="notification-menu__count"
+          data-notification-count="{{ unread_notifications_count }}"
+          aria-hidden="true"
+        >
+          {% if unread_notifications_count > 99 %}
+            99+
+          {% else %}
+            {{ unread_notifications_count }}
+          {% endif %}
+        </span>
+      {% endif %}
+    </a>
+
+    <section
+      class="notification-menu__panel"
+      id="header-notification-panel"
+      data-notification-panel
+      aria-label="اعلان‌های اخیر"
+      hidden
+    >
+      <header class="notification-menu__header">
+        <div>
+          <strong>
+            اعلان‌ها
+          </strong>
+
+          <span>
+            {% if unread_notifications_count %}
+              {{ unread_notifications_count }}
+              خوانده‌نشده
+            {% else %}
+              همه اعلان‌ها خوانده شده‌اند
+            {% endif %}
+          </span>
+        </div>
+
+        {% if unread_notifications_count %}
+          <form
+            method="post"
+            action="{% url 'notifications:mark_all_read' %}"
+            data-notification-action-form
+          >
+            {% csrf_token %}
+
+            <input
+              type="hidden"
+              name="next"
+              value="{{ request.get_full_path }}"
+            >
+
+            <button
+              class="notification-menu__mark-all"
+              type="submit"
+            >
+              <svg
+                class="tf-icon"
+                aria-hidden="true"
+              >
+                <use href="#icon-check"></use>
+              </svg>
+
+              خواندن همه
+            </button>
+          </form>
+        {% endif %}
+      </header>
+
+      {% if header_notifications %}
+        <div
+          class="notification-menu__list"
+          role="list"
+        >
+          {% for notification in header_notifications %}
+            {% if notification.is_read %}
+              <a
+                class="notification-menu__item"
+                href="{% if notification.target_url %}{{ notification.target_url }}{% else %}{% url 'notifications:list' %}{% endif %}"
+                role="listitem"
+              >
+                {% include "notifications/includes/_header_notification_content.html" with notification=notification %}
+              </a>
+            {% else %}
+              <form
+                class="notification-menu__item-form"
+                method="post"
+                action="{% url 'notifications:mark_read' notification.pk %}"
+                data-notification-action-form
+                role="listitem"
+              >
+                {% csrf_token %}
+
+                <input
+                  type="hidden"
+                  name="next"
+                  value="{% if notification.target_url %}{{ notification.target_url }}{% else %}{{ request.get_full_path }}{% endif %}"
+                >
+
+                <button
+                  class="notification-menu__item notification-menu__item--unread"
+                  type="submit"
+                  aria-label="خواندن اعلان: {{ notification.title }}"
+                >
+                  {% include "notifications/includes/_header_notification_content.html" with notification=notification %}
+                </button>
+              </form>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="notification-menu__empty">
+          <span
+            class="notification-menu__empty-icon"
+            aria-hidden="true"
+          >
+            <svg class="tf-icon">
+              <use href="#icon-bell"></use>
+            </svg>
+          </span>
+
+          <strong>
+            هنوز اعلانی وجود ندارد
+          </strong>
+
+          <p>
+            رویدادهای مهم Taskها و Workspaceها
+            در این بخش ظاهر می‌شوند.
+          </p>
+        </div>
+      {% endif %}
+
+      <footer class="notification-menu__footer">
+        <a
+          href="{% url 'notifications:list' %}"
+        >
+          مشاهده همه اعلان‌ها
+
+          <svg
+            class="tf-icon"
+            aria-hidden="true"
+          >
+            <use href="#icon-chevron-left"></use>
+          </svg>
+        </a>
+      </footer>
+    </section>
+  </div>
+{% endif %}
