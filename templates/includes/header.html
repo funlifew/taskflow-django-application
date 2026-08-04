@@ -1,8 +1,18 @@
 <header class="topbar glass-panel">
   <div class="topbar-inner">
     <div class="topbar__title-group">
-      <button class="icon-btn menu-btn" type="button" data-drawer-open aria-label="باز کردن منو">
-        <svg class="tf-icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+      <button
+        class="icon-btn menu-btn"
+        type="button"
+        data-drawer-open
+        aria-label="باز کردن منو"
+      >
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
+          <use href="#icon-menu"></use>
+        </svg>
       </button>
 
       <div class="topbar__copy">
@@ -11,6 +21,12 @@
             Workspaceها
           {% elif request.resolver_match.namespace == 'notifications' %}
             اعلان‌ها
+          {% elif request.resolver_match.namespace == 'boards' %}
+            Boardها
+          {% elif request.resolver_match.namespace == 'columns' %}
+            ستون‌ها
+          {% elif request.resolver_match.namespace == 'tasks' %}
+            Taskها
           {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
             پروفایل
           {% elif request.resolver_match.url_name == 'change_password' %}
@@ -19,38 +35,76 @@
             داشبورد
           {% endif %}
         </strong>
+
         <div class="muted topbar__subtitle">
           {% if request.resolver_match.namespace == 'workspaces' %}
             مدیریت فضاهای کاری، اعضا و دسترسی‌ها
           {% elif request.resolver_match.namespace == 'notifications' %}
             رویدادها و تغییرات مهم حساب شما
+          {% elif request.resolver_match.namespace == 'boards' %}
+            مدیریت Boardها، ستون‌ها و جریان کار
+          {% elif request.resolver_match.namespace == 'columns' %}
+            مدیریت ساختار و ترتیب ستون‌ها
+          {% elif request.resolver_match.namespace == 'tasks' %}
+            مدیریت Task، وضعیت، مسئول و همکاری
           {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
             تنظیم اطلاعات و ظاهر حساب کاربری
           {% elif request.resolver_match.url_name == 'change_password' %}
             مدیریت رمز عبور و امنیت ورود
           {% else %}
-            نمای یکپارچه‌ی پروژه‌ها و کارها
+            نمای یکپارچه پروژه‌ها و کارها
           {% endif %}
         </div>
       </div>
     </div>
 
     <div class="topbar__actions">
-      <a class="icon-btn topbar__workspace-shortcut" href="{% url 'workspaces:create' %}" aria-label="ساخت Workspace">
-        <svg class="tf-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+      <a
+        class="icon-btn topbar__workspace-shortcut"
+        href="{% url 'workspaces:create' %}"
+        aria-label="ساخت Workspace"
+      >
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
+          <use href="#icon-plus"></use>
+        </svg>
       </a>
 
-      <button class="icon-btn" type="button" data-theme-toggle aria-label="تغییر تم">
-        <svg class="tf-icon" aria-hidden="true">
-          <use data-theme-use href="#icon-moon"></use>
+      {% include "notifications/includes/_header_dropdown.html" %}
+
+      <button
+        class="icon-btn"
+        type="button"
+        data-theme-toggle
+        aria-label="تغییر تم"
+      >
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
+          <use
+            data-theme-use
+            href="#icon-moon"
+          ></use>
         </svg>
       </button>
 
-      <a class="profile-avatar-sm" href="{% url 'dashboard:profile' %}" aria-label="پروفایل">
+      <a
+        class="profile-avatar-sm"
+        href="{% url 'dashboard:profile' %}"
+        aria-label="پروفایل"
+      >
         {% if request.user.avatar %}
-          <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
+          <img
+            src="{{ request.user.avatar.url }}"
+            alt="{{ request.user.get_full_name|default:request.user.username }}"
+          >
         {% else %}
-          <span class="avatar-initials">{{ request.user.first_name|default:request.user.username|slice:':1' }}</span>
+          <span class="avatar-initials">
+            {{ request.user.first_name|default:request.user.username|slice:':1' }}
+          </span>
         {% endif %}
       </a>
     </div>
