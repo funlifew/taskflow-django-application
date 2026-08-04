@@ -232,9 +232,10 @@ class ColumnMoveLeftView(
     service_method_name = "move_left"
 
     success_message = (
-        "ستون «{title}» یک جایگاه "
-        "به چپ منتقل شد."
+        "ستون «{title}» به جایگاه "
+        "قبلی منتقل شد."
     )
+
 
 class ColumnMoveRightView(
     ColumnRelativeMoveView,
@@ -242,8 +243,8 @@ class ColumnMoveRightView(
     service_method_name = "move_right"
 
     success_message = (
-        "ستون «{title}» یک جایگاه "
-        "به راست منتقل شد."
+        "ستون «{title}» به جایگاه "
+        "بعدی منتقل شد."
     )
 
 class ColumnDragReorderView(

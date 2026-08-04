@@ -9,6 +9,15 @@
   TaskFlow | {{ board.title }}
 {% endblock title %}
 
+{% block extra_css %}
+  {{ block.super }}
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/column-drag-drop.css' %}"
+  >
+{% endblock extra_css %}
+
 {% block content %}
 <section
   class="workspace-detail-hero animated-border"
@@ -26,7 +35,10 @@
       {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
 
       <span class="badge badge-success">
-        <svg class="tf-icon">
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
           <use href="#icon-check"></use>
         </svg>
 
@@ -34,7 +46,10 @@
       </span>
 
       <span class="badge badge-info">
-        <svg class="tf-icon">
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
           <use href="#icon-workspace"></use>
         </svg>
 
@@ -61,14 +76,17 @@
         class="btn btn-primary"
         href="{% url 'boards:update' workspace.pk board.pk %}"
       >
-        <svg class="tf-icon">
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
           <use href="#icon-edit"></use>
         </svg>
 
         ویرایش Board
       </a>
     {% endif %}
-    
+
     {% if can_archive_board %}
       <form
         method="post"
@@ -80,7 +98,10 @@
           class="btn btn-soft"
           type="submit"
         >
-          <svg class="tf-icon">
+          <svg
+            class="tf-icon"
+            aria-hidden="true"
+          >
             <use href="#icon-archive"></use>
           </svg>
 
@@ -93,7 +114,10 @@
       class="btn btn-ghost"
       href="{% url 'boards:list' workspace.pk %}"
     >
-      <svg class="tf-icon">
+      <svg
+        class="tf-icon"
+        aria-hidden="true"
+      >
         <use href="#icon-arrow-right"></use>
       </svg>
 
@@ -109,7 +133,10 @@
     data-tilt
   >
     <span class="stat-card__icon">
-      <svg class="tf-icon">
+      <svg
+        class="tf-icon"
+        aria-hidden="true"
+      >
         <use href="#icon-columns"></use>
       </svg>
     </span>
@@ -131,7 +158,10 @@
     data-tilt
   >
     <span class="stat-card__icon">
-      <svg class="tf-icon">
+      <svg
+        class="tf-icon"
+        aria-hidden="true"
+      >
         <use href="#icon-user"></use>
       </svg>
     </span>
@@ -157,7 +187,10 @@
     data-tilt
   >
     <span class="stat-card__icon">
-      <svg class="tf-icon">
+      <svg
+        class="tf-icon"
+        aria-hidden="true"
+      >
         <use href="#icon-calendar"></use>
       </svg>
     </span>
@@ -179,7 +212,10 @@
     data-tilt
   >
     <span class="stat-card__icon">
-      <svg class="tf-icon">
+      <svg
+        class="tf-icon"
+        aria-hidden="true"
+      >
         <use href="#icon-clock"></use>
       </svg>
     </span>
@@ -201,206 +237,103 @@
   data-reveal
 >
   <div class="spread workspace-section-head">
-  <div>
-    <h2 class="card-title">
-      <svg class="tf-icon title-icon">
-        <use href="#icon-columns"></use>
-      </svg>
-
-      ستون‌های Board
-    </h2>
-
-    <p class="card-text">
-      ستون‌ها جریان انجام کارها را در این
-      Board مشخص می‌کنند.
-    </p>
-  </div>
-
-  <div class="actions">
-    <a
-      class="btn btn-ghost"
-      href="{% url 'columns:archived_list' workspace.pk board.pk %}"
-    >
-      <svg class="tf-icon">
-        <use href="#icon-archive"></use>
-      </svg>
-
-      آرشیو ستون‌ها
-
-      {% if archived_columns_count %}
-        <span class="badge">
-          {{ archived_columns_count }}
-        </span>
-      {% endif %}
-    </a>
-
-    {% if can_create_column %}
-      <a
-        class="btn btn-primary"
-        href="{% url 'columns:create' workspace.pk board.pk %}"
-      >
-        <svg class="tf-icon">
-          <use href="#icon-plus"></use>
+    <div>
+      <h2 class="card-title">
+        <svg
+          class="tf-icon title-icon"
+          aria-hidden="true"
+        >
+          <use href="#icon-columns"></use>
         </svg>
 
-        ساخت ستون
-      </a>
-    {% else %}
-      <span class="badge badge-info">
-        فقط قابل مشاهده
-      </span>
-    {% endif %}
-  </div>
-</div>
+        ستون‌های Board
+      </h2>
 
-  {% if columns %}
-  <p
-      class="task-drag-status"
-      data-drag-status
-      aria-live="polite"
-    ></p>
-    <div
-      class="workspace-grid"
-      data-task-board
-      data-board-id="{{ board.pk }}"
-      data-drag-enabled="{{ can_drag_tasks|yesno:'true,false' }}"
-    >
-      {% for column in columns %}
-        <article
-          class="workspace-card"
-          data-reveal
-          data-tilt
-        >
-          <div class="workspace-card__main">
-            <div class="workspace-card__top">
-              <div
-                class="workspace-card__mark"
-                aria-hidden="true"
-              >
-                {{ forloop.counter }}
-              </div>
+      <p class="card-text">
+        ستون‌ها جریان انجام کارها را در این
+        Board مشخص می‌کنند.
+      </p>
+    </div>
 
-              <div class="workspace-card__badges">
-                <span class="badge badge-success">
-                  فعال
-                </span>
-
-                <span class="badge badge-info">
-                  جایگاه
-                  {{ column.position|add:"1" }}
-                </span>
-              </div>
-            </div>
-
-            <div class="workspace-card__content">
-              <h3>
-                {{ column.title }}
-              </h3>
-
-              {% include "tasks/includes/_task_list.html" with tasks=column.active_tasks can_drag_tasks=can_drag_tasks %}
-            </div>
-
-            <div class="workspace-card__meta">
-              <span>
-                <svg class="tf-icon">
-                  <use href="#icon-user"></use>
-                </svg>
-
-                {% if column.created_by %}
-                  {{ column.created_by.username }}
-                {% else %}
-                  حساب حذف‌شده
-                {% endif %}
-              </span>
-
-              <span>
-                <svg class="tf-icon">
-                  <use href="#icon-clock"></use>
-                </svg>
-
-                {{ column.created_at|timesince }}
-                پیش
-              </span>
-            </div>
-          </div>
-
-<footer class="workspace-card__footer">
-  <span
-    class="badge"
-    data-column-task-count="{{ column.pk }}"
-  >
-    {{ column.active_tasks|length }}
-    Task
-  </span>
-
-  {% if can_create_tasks or can_update_columns or can_archive_columns %}
     <div class="actions">
-      {% if can_create_tasks %}
+      <a
+        class="btn btn-ghost"
+        href="{% url 'columns:archived_list' workspace.pk board.pk %}"
+      >
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
+          <use href="#icon-archive"></use>
+        </svg>
+
+        آرشیو ستون‌ها
+
+        {% if archived_columns_count %}
+          <span class="badge">
+            {{ archived_columns_count }}
+          </span>
+        {% endif %}
+      </a>
+
+      {% if can_create_column %}
         <a
           class="btn btn-primary"
-          href="{% url 'tasks:create' workspace.pk board.pk column.pk %}"
+          href="{% url 'columns:create' workspace.pk board.pk %}"
         >
-          <svg class="tf-icon">
+          <svg
+            class="tf-icon"
+            aria-hidden="true"
+          >
             <use href="#icon-plus"></use>
           </svg>
 
-          Task جدید
+          ساخت ستون
         </a>
-      {% endif %}
-
-      {% if can_update_columns %}
-        <a
-          class="btn btn-ghost"
-          href="{% url 'columns:update' workspace.pk board.pk column.pk %}"
-        >
-          <svg class="tf-icon">
-            <use href="#icon-edit"></use>
-          </svg>
-
-          ویرایش
-        </a>
-      {% endif %}
-
-      {% if can_archive_columns %}
-        <form
-          method="post"
-          action="{% url 'columns:archive' workspace.pk board.pk column.pk %}"
-        >
-          {% csrf_token %}
-
-          <button
-            class="btn btn-soft"
-            type="submit"
-          >
-            <svg class="tf-icon">
-              <use href="#icon-archive"></use>
-            </svg>
-
-            آرشیو
-          </button>
-        </form>
+      {% else %}
+        <span class="badge badge-info">
+          فقط قابل مشاهده
+        </span>
       {% endif %}
     </div>
-  {% else %}
-    <span class="badge badge-info">
-      مشاهده
-    </span>
-  {% endif %}
+  </div>
 
-  <a
-  class="btn btn-ghost"
-  href="{% url 'tasks:archived_list' workspace.pk board.pk column.pk %}"
->
-  آرشیو Taskها
-</a>
-</footer>
-        </article>
-      {% endfor %}
+  {% if columns %}
+    <div
+      class="column-board-shell"
+      data-board-interactions
+    >
+      <p
+        class="task-drag-status column-drag-status"
+        data-drag-status
+        data-task-drag-status
+        data-column-drag-status
+        aria-live="polite"
+        aria-atomic="true"
+      ></p>
+
+      <div
+        class="workspace-grid column-board"
+        data-task-board
+        data-column-board
+        data-board-id="{{ board.pk }}"
+        data-drag-enabled="{{ can_drag_tasks|yesno:'true,false' }}"
+        data-column-drag-enabled="{{ can_drag_columns|yesno:'true,false' }}"
+        data-column-count="{{ columns_count }}"
+        aria-label="ستون‌های Board {{ board.title }}"
+      >
+        {% for column in columns %}
+          {% include "columns/includes/_board_column_card.html" with column=column column_number=forloop.counter is_first=forloop.first is_last=forloop.last %}
+        {% endfor %}
+      </div>
     </div>
   {% else %}
     <div class="empty-state workspace-compact-empty">
       <div class="empty-icon">
-        <svg class="tf-icon">
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+        >
           <use href="#icon-columns"></use>
         </svg>
       </div>
@@ -420,7 +353,10 @@
           class="btn btn-primary"
           href="{% url 'columns:create' workspace.pk board.pk %}"
         >
-          <svg class="tf-icon">
+          <svg
+            class="tf-icon"
+            aria-hidden="true"
+          >
             <use href="#icon-plus"></use>
           </svg>
 
@@ -442,7 +378,10 @@
   <div class="spread workspace-section-head">
     <div>
       <h2 class="card-title">
-        <svg class="tf-icon title-icon">
+        <svg
+          class="tf-icon title-icon"
+          aria-hidden="true"
+        >
           <use href="#icon-info"></use>
         </svg>
 
@@ -457,7 +396,9 @@
 
   <div class="info-list">
     <div class="info-row">
-      <span>Workspace</span>
+      <span>
+        Workspace
+      </span>
 
       <strong>
         {{ workspace.name }}
@@ -465,7 +406,9 @@
     </div>
 
     <div class="info-row">
-      <span>وضعیت</span>
+      <span>
+        وضعیت
+      </span>
 
       <strong>
         فعال
@@ -473,7 +416,9 @@
     </div>
 
     <div class="info-row">
-      <span>نقش فعلی تو</span>
+      <span>
+        نقش فعلی تو
+      </span>
 
       <strong>
         {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
@@ -481,7 +426,9 @@
     </div>
 
     <div class="info-row">
-      <span>آخرین به‌روزرسانی</span>
+      <span>
+        آخرین به‌روزرسانی
+      </span>
 
       <strong>
         {{ board.updated_at|timesince }}
@@ -495,8 +442,15 @@
 {% block extra_js %}
   {{ block.super }}
 
-  {% if can_drag_tasks %}
+  {% if can_drag_tasks or can_drag_columns %}
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"></script>
+  {% endif %}
+
+  {% if can_drag_tasks %}
     <script src="{% static 'js/task-drag-drop.js' %}"></script>
+  {% endif %}
+
+  {% if can_drag_columns %}
+    <script src="{% static 'js/column-drag-drop.js' %}"></script>
   {% endif %}
 {% endblock extra_js %}
