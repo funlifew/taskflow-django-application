@@ -7,6 +7,20 @@
   <meta name="theme-color" content="#070916">
   <meta name="color-scheme" content="dark light">
   <title>{% block title %}TaskFlow{% endblock title %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("taskflow-theme");
+        document.documentElement.dataset.theme = saved === "dark" || saved === "light"
+          ? saved
+          : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      } catch {
+        document.documentElement.dataset.theme = "dark";
+      }
+    })();
+  </script>
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css">
@@ -18,39 +32,6 @@
 
   <a class="skip-link" href="#main-content">رفتن به فرم</a>
 
-  <div class="auth-scene" aria-hidden="true">
-    <canvas class="auth-space-canvas" data-auth-space></canvas>
-
-    <div class="auth-nebula auth-nebula--one"></div>
-    <div class="auth-nebula auth-nebula--two"></div>
-    <div class="auth-nebula auth-nebula--three"></div>
-
-    <div class="auth-orbit-system" data-depth="0.7">
-      <span class="auth-orbit-ring auth-orbit-ring--one"></span>
-      <span class="auth-orbit-ring auth-orbit-ring--two"></span>
-      <span class="auth-orbit-ring auth-orbit-ring--three"></span>
-      <span class="auth-planet">
-        <i class="auth-planet__shine"></i>
-      </span>
-      <span class="auth-moon auth-moon--one"></span>
-      <span class="auth-moon auth-moon--two"></span>
-    </div>
-
-    <div class="auth-polyhedron auth-polyhedron--one" data-depth="1.15">
-      <i></i><i></i><i></i><i></i><i></i><i></i>
-    </div>
-
-    <div class="auth-polyhedron auth-polyhedron--two" data-depth="0.85">
-      <i></i><i></i><i></i><i></i><i></i><i></i>
-    </div>
-
-    <div class="auth-grid-plane"></div>
-    <div class="auth-scanline"></div>
-    <div class="auth-noise"></div>
-  </div>
-
-  <div class="auth-cursor-light" data-auth-cursor-light aria-hidden="true"></div>
-
   {% include 'includes/messages.html' %}
 
   <header class="auth-topbar">
@@ -60,7 +41,7 @@
       </span>
       <span>
         <strong>TaskFlow</strong>
-        <small>Workspace OS</small>
+        <small>سامانه مدیریت کار</small>
       </span>
     </a>
 
@@ -73,72 +54,33 @@
 
   <main class="auth-shell" id="main-content">
     <section class="auth-visual" aria-label="معرفی TaskFlow">
-      <div class="auth-visual__badge" data-reveal-auth>
-        <svg class="tf-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
-        <span>تمرکز بیشتر، آشفتگی کمتر</span>
-      </div>
-
       <div class="auth-visual__copy" data-reveal-auth>
+        <span class="auth-visual__badge">تمرکز بیشتر، آشفتگی کمتر</span>
         <h1>
-          کارهایت را از دل<br>
-          <span>یک فضای زنده</span>
-          مدیریت کن.
+          کارهایت را<br>
+          <span>روشن و یکپارچه</span>
+          پیش ببر.
         </h1>
         <p>
-          پروژه، تیم، برد و تسک‌ها در یک تجربه‌ی سریع، شفاف،
-          سه‌بعدی و کاملاً واکنش‌گرا.
+          پروژه، تیم، برد و کارها را در محیطی سریع، شفاف و
+          سازگار با هر اندازه صفحه مدیریت کن.
         </p>
-      </div>
-
-      <div class="auth-feature-cloud" aria-hidden="true">
-        <div class="auth-feature-card auth-feature-card--one" data-depth="0.9">
-          <svg class="tf-icon"><use href="#icon-zap"></use></svg>
-          <span>سریع و روان</span>
-        </div>
-        <div class="auth-feature-card auth-feature-card--two" data-depth="1.25">
-          <svg class="tf-icon"><use href="#icon-layers"></use></svg>
-          <span>همه‌چیز یکجا</span>
-        </div>
-        <div class="auth-feature-card auth-feature-card--three" data-depth="0.7">
-          <svg class="tf-icon"><use href="#icon-shield-check"></use></svg>
-          <span>امن و قابل اعتماد</span>
-        </div>
-        <div class="auth-feature-card auth-feature-card--four" data-depth="1.45">
-          <svg class="tf-icon"><use href="#icon-orbit"></use></svg>
-          <span>رابط زنده و سه‌بعدی</span>
-        </div>
-      </div>
-
-      <div class="auth-visual__stats" data-reveal-auth>
-        <span>
-          <svg class="tf-icon"><use href="#icon-smartphone"></use></svg>
-          <strong>Mobile-first</strong>
-          <small>طراحی‌شده برای هر صفحه</small>
-        </span>
-        <span>
-          <svg class="tf-icon"><use href="#icon-focus"></use></svg>
-          <strong>Zero clutter</strong>
-          <small>تمرکز روی کار مهم</small>
-        </span>
       </div>
     </section>
 
     <section class="auth-card-zone">
-      <div class="auth-card-halo" aria-hidden="true"></div>
-      <article class="auth-card" data-tilt-card data-reveal-auth>
-        <div class="auth-card__shine" aria-hidden="true"></div>
+      <article class="auth-card" data-reveal-auth>
         {% block content %}{% endblock content %}
       </article>
 
       <p class="auth-security-note">
         <svg class="tf-icon" aria-hidden="true"><use href="#icon-shield-check"></use></svg>
-        <span>ارتباط امن و محافظت‌شده با استانداردهای Django</span>
+        <span>ارتباط امن و محافظت‌شده برای حساب شما</span>
       </p>
     </section>
   </main>
 
-  <script src="{% static 'js/messages.js' %}"></script>
-  <script src="{% static 'js/space-scene.js' %}"></script>
-  <script src="{% static 'js/auth.js' %}"></script>
+  <script defer src="{% static 'js/messages.js' %}"></script>
+  <script defer src="{% static 'js/auth.js' %}"></script>
 </body>
 </html>

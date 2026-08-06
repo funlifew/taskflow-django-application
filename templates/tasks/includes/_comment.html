@@ -24,7 +24,7 @@
     </div>
 
     {% if not comment.is_deleted %}
-      <div class="actions">
+      <div class="actions" role="group" aria-label="اقدامات دیدگاه">
         {% if comment.author_id == request.user.id %}
           <a
             class="btn btn-ghost"
@@ -42,7 +42,7 @@
             {% csrf_token %}
 
             <button
-              class="btn btn-soft"
+              class="btn btn-danger"
               type="submit"
             >
               حذف

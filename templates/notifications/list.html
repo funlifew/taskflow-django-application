@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
-{% block data_page %}
-  notifications
-{% endblock data_page %}
+{% block data_page %}notifications{% endblock data_page %}
 
 {% block title %}
   TaskFlow | اعلان‌ها
@@ -10,7 +8,7 @@
 
 {% block content %}
 <section
-  class="workspace-hero animated-border"
+  class="workspace-hero"
   data-reveal
 >
   <div class="workspace-hero__content">
@@ -41,9 +39,8 @@
       </h1>
 
       <p class="page-subtitle">
-        تغییرات مهم Taskها و Workspaceهای
-        مرتبط با شما در این بخش نمایش داده
-        می‌شوند.
+        تغییرات مهم کارها و فضاهای کاری مرتبط
+        با شما در این بخش نمایش داده می‌شوند.
       </p>
     </div>
 
@@ -77,7 +74,6 @@
   <div class="workspace-summary">
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -96,7 +92,6 @@
 
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -142,7 +137,6 @@
         <article
           class="workspace-card"
           data-reveal
-          data-tilt
         >
           <div class="workspace-card__main">
             <div class="workspace-card__top">
@@ -157,7 +151,23 @@
 
               <div class="workspace-card__badges">
                 <span class="badge badge-info">
-                  {{ notification.get_notification_type_display }}
+                  {% if notification.notification_type == "task_assigned" %}
+                    واگذاری کار
+                  {% elif notification.notification_type == "task_reassigned" %}
+                    تغییر مسئول کار
+                  {% elif notification.notification_type == "task_status_changed" %}
+                    تغییر وضعیت کار
+                  {% elif notification.notification_type == "task_commented" %}
+                    دیدگاه جدید
+                  {% elif notification.notification_type == "workspace_invited" %}
+                    دعوت به فضای کاری
+                  {% elif notification.notification_type == "workspace_role_changed" %}
+                    تغییر نقش
+                  {% elif notification.notification_type == "workspace_removed" %}
+                    حذف دسترسی
+                  {% else %}
+                    اعلان
+                  {% endif %}
                 </span>
 
                 {% if notification.is_read %}
@@ -173,11 +183,11 @@
             </div>
 
             <div class="workspace-card__content">
-              <h3>
+              <h3 data-localize-product-copy>
                 {{ notification.title }}
               </h3>
 
-              <p>
+              <p data-localize-product-copy>
                 {{ notification.message }}
               </p>
             </div>
@@ -291,7 +301,7 @@
       </h2>
 
       <p>
-        رویدادهای مهم Taskها و Workspaceها
+        رویدادهای مهم کارها و فضاهای کاری
         در اینجا ظاهر می‌شوند.
       </p>
     </div>

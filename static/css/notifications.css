@@ -68,7 +68,7 @@
     --tf-line,
     var(--line, #e4e8f1)
   );
-  border-radius: 24px;
+  border-radius: 20px;
 
   color: var(
     --tf-text,
@@ -89,13 +89,12 @@
       )
     );
 
-  box-shadow: var(
-    --tf-shadow-strong,
-    0 30px 90px rgba(16, 20, 38, .24)
-  );
+  box-shadow:
+    0 20px 56px
+    rgba(16, 20, 38, .18);
 
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(16px) saturate(116%);
+  -webkit-backdrop-filter: blur(16px) saturate(116%);
 
   transform-origin: top left;
 }
@@ -472,13 +471,21 @@
 
     inset-block-start:
       calc(var(--topbar, 64px) + 8px);
-    inset-inline: 12px;
+    right: max(10px, env(safe-area-inset-right, 0px));
+    left: max(10px, env(safe-area-inset-left, 0px));
 
     width: auto;
     max-height:
-      calc(100vh - var(--topbar, 64px) - 24px);
+      calc(
+        100dvh
+        - var(--topbar, 64px)
+        - max(24px, env(safe-area-inset-bottom, 0px))
+      );
 
-    border-radius: 22px;
+    border-radius: 18px;
+
+    backdrop-filter: blur(10px) saturate(110%);
+    -webkit-backdrop-filter: blur(10px) saturate(110%);
   }
 
   .notification-menu__header {

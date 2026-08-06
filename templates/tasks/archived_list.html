@@ -5,12 +5,12 @@
 {% endblock data_page %}
 
 {% block title %}
-  TaskFlow | آرشیو Taskهای {{ column.title }}
+  TaskFlow | آرشیو کارهای {{ column.title }}
 {% endblock title %}
 
 {% block content %}
 <section
-  class="workspace-hero animated-border"
+  class="workspace-hero"
   data-reveal
 >
   <div class="workspace-hero__content">
@@ -21,20 +21,20 @@
             <use href="#icon-archive"></use>
           </svg>
 
-          آرشیو Taskها
+          آرشیو کارها
         </span>
 
         {% include "workspaces/includes/_role_badge.html" with role=current_user_role %}
       </div>
 
       <h1 class="page-title">
-        Taskهای آرشیوشده
+        کارهای آرشیوشده
       </h1>
 
       <p class="page-subtitle">
-        Taskهای آرشیوشده ستون
+        کارهای آرشیوشده ستون
         «{{ column.title }}»
-        از Board
+        از برد
         «{{ board.title }}»
         در این بخش قرار دارند.
       </p>
@@ -49,7 +49,7 @@
           <use href="#icon-arrow-right"></use>
         </svg>
 
-        بازگشت به Board
+        بازگشت به برد
       </a>
     </div>
   </div>
@@ -57,7 +57,6 @@
   <div class="workspace-summary">
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -66,7 +65,7 @@
       </span>
 
       <span class="workspace-summary__label">
-        Taskهای آرشیوشده
+        کارهای آرشیوشده
       </span>
 
       <strong class="workspace-summary__value">
@@ -76,7 +75,6 @@
 
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -95,7 +93,6 @@
 
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -104,7 +101,7 @@
       </span>
 
       <span class="workspace-summary__label">
-        Board
+        برد
       </span>
 
       <strong class="workspace-summary__value">
@@ -125,12 +122,19 @@
           <use href="#icon-archive"></use>
         </svg>
 
-        فهرست Taskهای آرشیوشده
+        فهرست کارهای آرشیوشده
       </h2>
 
       <p class="card-text">
-        Taskها را بازیابی کن یا، در صورت داشتن
-        دسترسی، برای همیشه حذف کن.
+        {% if can_restore_tasks and can_delete_tasks %}
+          کار را بازیابی کن یا برای حذف دائمی به صفحه تأیید برو.
+        {% elif can_restore_tasks %}
+          کار موردنظر را به ستون برگردان.
+        {% elif can_delete_tasks %}
+          برای حذف دائمی کار به صفحه تأیید برو.
+        {% else %}
+          کارهای آرشیوشده این ستون را می‌توانی مشاهده کنی.
+        {% endif %}
       </p>
     </div>
 
@@ -147,7 +151,6 @@
         <article
           class="workspace-card"
           data-reveal
-          data-tilt
         >
           <div class="workspace-card__main">
             <div class="workspace-card__top">
@@ -196,7 +199,7 @@
                 {% if task.description %}
                   {{ task.description|truncatechars:140 }}
                 {% else %}
-                  توضیحی برای این Task ثبت نشده است.
+                  توضیحی برای این کار ثبت نشده است.
                 {% endif %}
               </p>
             </div>
@@ -312,7 +315,7 @@
     {% if is_paginated %}
       <nav
         class="workspace-pagination"
-        aria-label="صفحه‌بندی Taskهای آرشیوشده"
+        aria-label="صفحه‌بندی کارهای آرشیوشده"
         data-reveal
       >
         {% if page_obj.has_previous %}
@@ -359,11 +362,11 @@
       </div>
 
       <h2>
-        آرشیو Taskها خالی است
+        آرشیو کارها خالی است
       </h2>
 
       <p class="page-subtitle">
-        هنوز هیچ Taskی از ستون
+        هنوز هیچ کاری از ستون
         «{{ column.title }}»
         آرشیو نشده است.
       </p>
@@ -376,7 +379,7 @@
           <use href="#icon-arrow-right"></use>
         </svg>
 
-        بازگشت به Board
+        بازگشت به برد
       </a>
     </section>
   {% endif %}

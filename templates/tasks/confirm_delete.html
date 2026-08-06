@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 
+{% block data_page %}workspaces{% endblock data_page %}
+
 {% block title %}
   TaskFlow | حذف {{ task.title }}
 {% endblock title %}
 
 {% block content %}
-<section class="form-card animated-border">
+<section class="form-card danger-zone">
   <span class="badge badge-danger">
     حذف دائمی
   </span>
 
   <h1 class="page-title">
-    Task «{{ task.title }}» حذف شود؟
+    کار «{{ task.title }}» حذف شود؟
   </h1>
 
   <p class="page-subtitle">

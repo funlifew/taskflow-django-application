@@ -5,12 +5,12 @@
 {% endblock data_page %}
 
 {% block title %}
-  TaskFlow | آرشیو Boardهای {{ workspace.name }}
+  TaskFlow | آرشیو بردهای {{ workspace.name }}
 {% endblock title %}
 
 {% block content %}
 <section
-  class="workspace-hero animated-border"
+  class="workspace-hero"
   data-reveal
 >
   <div class="workspace-hero__content">
@@ -20,15 +20,15 @@
           <use href="#icon-archive"></use>
         </svg>
 
-        آرشیو Boardها
+        آرشیو بردها
       </span>
 
       <h1 class="page-title">
-        Boardهای آرشیوشده
+        بردهای آرشیوشده
       </h1>
 
       <p class="page-subtitle">
-        Boardهای آرشیوشده Workspace
+        بردهای آرشیوشده فضای کاری
         «{{ workspace.name }}»
         در این بخش قرار دارند.
       </p>
@@ -42,14 +42,13 @@
         <use href="#icon-arrow-right"></use>
       </svg>
 
-      Boardهای فعال
+      بردهای فعال
     </a>
   </div>
 
   <div class="workspace-summary">
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -68,7 +67,6 @@
 
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -98,13 +96,27 @@
           <use href="#icon-archive"></use>
         </svg>
 
-        Boardهای آرشیوشده
+        بردهای آرشیوشده
       </h2>
 
       <p class="card-text">
-        Board را بازیابی یا برای همیشه حذف کن.
+        {% if can_restore_boards and can_delete_boards %}
+          برد را بازیابی کن یا برای حذف دائمی به صفحه تأیید برو.
+        {% elif can_restore_boards %}
+          برد موردنظر را به فهرست بردهای فعال برگردان.
+        {% elif can_delete_boards %}
+          برای حذف دائمی برد به صفحه تأیید برو.
+        {% else %}
+          بردهای آرشیوشده این فضای کاری را می‌توانی مشاهده کنی.
+        {% endif %}
       </p>
     </div>
+
+    {% if not can_restore_boards and not can_delete_boards %}
+      <span class="badge badge-info">
+        دسترسی فقط‌خواندنی
+      </span>
+    {% endif %}
   </div>
 
   {% if boards %}
@@ -113,7 +125,6 @@
         <article
           class="workspace-card"
           data-reveal
-          data-tilt
         >
           <div class="workspace-card__main">
             <div class="workspace-card__top">
@@ -140,7 +151,7 @@
                 {% if board.description %}
                   {{ board.description|truncatechars:125 }}
                 {% else %}
-                  توضیحی برای این Board ثبت نشده است.
+                  توضیحی برای این برد ثبت نشده است.
                 {% endif %}
               </p>
             </div>
@@ -205,7 +216,7 @@
               {% endif %}
             </div>
 
-            {% if not can_restore_boards %}
+            {% if not can_restore_boards and not can_delete_boards %}
               <span class="badge badge-info">
                 فقط قابل مشاهده
               </span>
@@ -265,14 +276,14 @@
       </h2>
 
       <p class="page-subtitle">
-        هنوز هیچ Boardی آرشیو نشده است.
+        هنوز هیچ بردی آرشیو نشده است.
       </p>
 
       <a
         class="btn btn-primary"
         href="{% url 'boards:list' workspace.pk %}"
       >
-        بازگشت به Boardهای فعال
+        بازگشت به بردهای فعال
       </a>
     </section>
   {% endif %}

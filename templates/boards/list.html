@@ -5,12 +5,12 @@
 {% endblock data_page %}
 
 {% block title %}
-  TaskFlow | Boardهای {{ workspace.name }}
+  TaskFlow | بردهای {{ workspace.name }}
 {% endblock title %}
 
 {% block content %}
 <section
-  class="workspace-hero animated-border"
+  class="workspace-hero"
   data-reveal
 >
   <div class="workspace-hero__content">
@@ -20,7 +20,7 @@
           <use href="#icon-board"></use>
         </svg>
 
-        Boardهای Workspace
+        بردهای فضای کاری
       </span>
 
       <h1 class="page-title">
@@ -28,7 +28,7 @@
       </h1>
 
       <p class="page-subtitle">
-        Boardهای فعال این Workspace را
+        بردهای فعال این فضای کاری را
         از اینجا مدیریت کن.
       </p>
     </div>
@@ -43,7 +43,7 @@
             <use href="#icon-plus"></use>
           </svg>
 
-          ساخت Board
+          ساخت برد
         </a>
       {% endif %}
 
@@ -55,7 +55,7 @@
           <use href="#icon-arrow-right"></use>
         </svg>
 
-        بازگشت به Workspace
+        بازگشت به فضای کاری
       </a> 
 
         <a
@@ -79,7 +79,6 @@
   <div class="workspace-summary">
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -88,7 +87,7 @@
       </span>
 
       <span class="workspace-summary__label">
-        Boardهای فعال
+        بردهای فعال
       </span>
 
       <strong class="workspace-summary__value">
@@ -98,7 +97,6 @@
 
     <article
       class="workspace-summary__item"
-      data-tilt
     >
       <span class="workspace-summary__icon">
         <svg class="tf-icon">
@@ -128,11 +126,11 @@
           <use href="#icon-grid"></use>
         </svg>
 
-        Boardهای فعال
+        بردهای فعال
       </h2>
 
       <p class="card-text">
-        Boardهای آرشیوشده در این صفحه
+        بردهای آرشیوشده در این صفحه
         نمایش داده نمی‌شوند.
       </p>
     </div>
@@ -151,7 +149,6 @@
         <article
           class="workspace-card"
           data-reveal
-          data-tilt
         >
           <a
             class="workspace-card__main"
@@ -181,7 +178,7 @@
                 {% if board.description %}
                   {{ board.description|truncatechars:125 }}
                 {% else %}
-                  برای این Board هنوز توضیحی
+                  برای این برد هنوز توضیحی
                   ثبت نشده است.
                 {% endif %}
               </p>
@@ -197,13 +194,6 @@
                 پیش
               </span>
 
-              <span>
-                <svg class="tf-icon">
-                  <use href="#icon-board"></use>
-                </svg>
-
-                بدون ستون
-              </span>
             </div>
           </a>
 
@@ -303,12 +293,12 @@
       </div>
 
       <h2>
-        هنوز Boardی ساخته نشده
+        هنوز بردی ساخته نشده
       </h2>
 
       <p class="page-subtitle">
-        Board اولین سطح سازمان‌دهی کارها
-        داخل Workspace است.
+        برد نخستین سطح سازمان‌دهی کارها
+        داخل فضای کاری است.
       </p>
 
       {% if can_create_board %}
@@ -320,11 +310,11 @@
             <use href="#icon-plus"></use>
           </svg>
 
-          ساخت اولین Board
+          ساخت اولین برد
         </a>
       {% else %}
         <span class="badge badge-info">
-          نقش Viewer اجازه ساخت Board ندارد
+          نقش مشاهده‌گر اجازه ساخت برد ندارد
         </span>
       {% endif %}
     </section>

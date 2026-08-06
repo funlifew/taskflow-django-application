@@ -14,7 +14,7 @@
         {% endif %}
       "
       aria-haspopup="true"
-      aria-expanded="false"
+      aria-expanded='false'
       aria-controls="header-notification-panel"
     >
       <svg
@@ -126,7 +126,7 @@
                 <button
                   class="notification-menu__item notification-menu__item--unread"
                   type="submit"
-                  aria-label="خواندن اعلان: {{ notification.title }}"
+                  aria-label="خواندن این اعلان"
                 >
                   {% include "notifications/includes/_header_notification_content.html" with notification=notification %}
                 </button>
@@ -150,7 +150,7 @@
           </strong>
 
           <p>
-            رویدادهای مهم Taskها و Workspaceها
+            رویدادهای مهم کارها و فضاهای کاری
             در این بخش ظاهر می‌شوند.
           </p>
         </div>

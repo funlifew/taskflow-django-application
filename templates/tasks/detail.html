@@ -10,7 +10,7 @@
 
 {% block content %}
 <section
-  class="workspace-detail-hero animated-border"
+  class="workspace-detail-hero"
   data-reveal
 >
   <div
@@ -43,95 +43,94 @@
       {% if task.description %}
         {{ task.description }}
       {% else %}
-        برای این Task توضیحی ثبت نشده است.
+        برای این کار توضیحی ثبت نشده است.
       {% endif %}
     </p>
   </div>
 
-  <div class="actions">
-    <div class="actions">
-  {% if can_update_task %}
-    <a
-      class="btn btn-primary"
-      href="{% url 'tasks:update' workspace.pk board.pk column.pk task.pk %}"
-    >
-      ویرایش
-    </a>
-  {% endif %}
+  <div class="actions" role="group" aria-label="اقدامات کار">
+    {% if can_update_task %}
+      <a
+        class="btn btn-primary"
+        href="{% url 'tasks:update' workspace.pk board.pk column.pk task.pk %}"
+      >
+        ویرایش
+      </a>
+    {% endif %}
 
-  {% if can_reorder_task %}
+    {% if can_reorder_task %}
+      <a
+        class="btn btn-ghost"
+        href="{% url 'tasks:reorder' workspace.pk board.pk column.pk task.pk %}"
+      >
+        تغییر جایگاه
+      </a>
+    {% endif %}
+
+    {% if can_move_up %}
+      <form
+        method="post"
+        action="{% url 'tasks:move_up' workspace.pk board.pk column.pk task.pk %}"
+      >
+        {% csrf_token %}
+
+        <button
+          class="btn btn-ghost"
+          type="submit"
+        >
+          جابه‌جایی به جایگاه قبلی
+        </button>
+      </form>
+    {% endif %}
+
+    {% if can_move_down %}
+      <form
+        method="post"
+        action="{% url 'tasks:move_down' workspace.pk board.pk column.pk task.pk %}"
+      >
+        {% csrf_token %}
+
+        <button
+          class="btn btn-ghost"
+          type="submit"
+        >
+          جابه‌جایی به جایگاه بعدی
+        </button>
+      </form>
+    {% endif %}
+
+    {% if can_move_task %}
+      <a
+        class="btn btn-ghost"
+        href="{% url 'tasks:move' workspace.pk board.pk column.pk task.pk %}"
+      >
+        جابه‌جایی به ستون دیگر
+      </a>
+    {% endif %}
+
+    {% if can_archive_task %}
+      <form
+        method="post"
+        action="{% url 'tasks:archive' workspace.pk board.pk column.pk task.pk %}"
+      >
+        {% csrf_token %}
+
+        <button
+          class="btn btn-soft"
+          type="submit"
+        >
+          آرشیو
+        </button>
+      </form>
+    {% endif %}
+
     <a
       class="btn btn-ghost"
-      href="{% url 'tasks:reorder' workspace.pk board.pk column.pk task.pk %}"
+      href="{% url 'boards:detail' workspace.pk board.pk %}"
     >
-      تغییر جایگاه
+      بازگشت به برد
     </a>
-  {% endif %}
-
-  {% if can_move_up %}
-    <form
-      method="post"
-      action="{% url 'tasks:move_up' workspace.pk board.pk column.pk task.pk %}"
-    >
-      {% csrf_token %}
-
-      <button
-        class="btn btn-ghost"
-        type="submit"
-      >
-        انتقال به بالا
-      </button>
-    </form>
-  {% endif %}
-
-  {% if can_move_down %}
-    <form
-      method="post"
-      action="{% url 'tasks:move_down' workspace.pk board.pk column.pk task.pk %}"
-    >
-      {% csrf_token %}
-
-      <button
-        class="btn btn-ghost"
-        type="submit"
-      >
-        انتقال به پایین
-      </button>
-    </form>
-  {% endif %}
-
-  {% if can_move_task %}
-    <a
-      class="btn btn-ghost"
-      href="{% url 'tasks:move' workspace.pk board.pk column.pk task.pk %}"
-    >
-      انتقال سریع به ستون دیگر
-    </a>
-  {% endif %}
-
-  {% if can_archive_task %}
-    <form
-      method="post"
-      action="{% url 'tasks:archive' workspace.pk board.pk column.pk task.pk %}"
-    >
-      {% csrf_token %}
-
-      <button
-        class="btn btn-soft"
-        type="submit"
-      >
-        آرشیو
-      </button>
-    </form>
-  {% endif %}
-
-  <a
-    class="btn btn-ghost"
-    href="{% url 'boards:detail' workspace.pk board.pk %}"
-  >
-    بازگشت به Board
-  </a>
-</div>
+  </div>
 </section>
 
 <section class="workspace-detail-stats">
@@ -174,30 +173,53 @@
   </article>
 </section>
 
-{% if can_update_task %}
 <section class="panel" data-reveal>
   <h2 class="card-title">
-    تغییر وضعیت
+    {% if can_update_task %}
+      تغییر وضعیت
+    {% else %}
+      دسترسی فقط‌خواندنی
+    {% endif %}
   </h2>
 
-  <form
-    method="post"
-    class="form-actions"
-    action="{% url 'tasks:status' workspace.pk board.pk column.pk task.pk %}"
-  >
-    {% csrf_token %}
-
-    {{ status_form.status }}
-
-    <button
-      class="btn btn-primary"
-      type="submit"
+  {% if can_update_task %}
+    <form
+      method="post"
+      class="form-grid"
+      action="{% url 'tasks:status' workspace.pk board.pk column.pk task.pk %}"
     >
-      ذخیره وضعیت
-    </button>
-  </form>
+      {% csrf_token %}
+
+      <div class="field">
+        <label for="{{ status_form.status.id_for_label }}">
+          وضعیت جدید
+        </label>
+
+        {{ status_form.status }}
+
+        {% for error in status_form.status.errors %}
+          <p class="error-text">
+            {{ error }}
+          </p>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          ذخیره وضعیت
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <p class="card-text">
+      می‌توانی جزئیات، دیدگاه‌ها و تاریخچه این کار را ببینی؛
+      ویرایش و جابه‌جایی آن برای نقش مشاهده‌گر در دسترس نیست.
+    </p>
+  {% endif %}
 </section>
-{% endif %}
 
 <section class="task-collaboration-grid">
   <section
@@ -222,12 +244,22 @@
         method="post"
         class="stack"
         action="{% url 'tasks:comment_create' workspace.pk board.pk column.pk task.pk %}"
+        novalidate
       >
         {% csrf_token %}
 
         <div class="field">
-          {{ comment_form.body.label_tag }}
+          <label for="{{ comment_form.body.id_for_label }}">
+            متن دیدگاه
+          </label>
+
           {{ comment_form.body }}
+
+          {% for error in comment_form.body.errors %}
+            <p class="error-text">
+              {{ error }}
+            </p>
+          {% endfor %}
         </div>
 
         <div class="form-actions">
@@ -253,8 +285,11 @@
           </h3>
 
           <p class="page-subtitle">
-            اولین گفتگو درباره این Task
-            را شروع کنید.
+            {% if can_comment %}
+              نخستین گفتگو درباره این کار را شروع کنید.
+            {% else %}
+              هنوز گفتگویی برای نمایش وجود ندارد.
+            {% endif %}
           </p>
         </div>
       {% endfor %}
@@ -271,7 +306,7 @@
       </h2>
 
       <p class="card-text">
-        ۵۰ فعالیت اخیر این Task
+        آخرین فعالیت‌های ثبت‌شده برای این کار
       </p>
     </div>
 

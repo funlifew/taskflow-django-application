@@ -14,7 +14,9 @@
         {% endif %}
       </strong>
 
-      {{ activity.get_action_display }}
+      <span data-localize-product-copy>
+        {{ activity.get_action_display }}
+      </span>
     </p>
 
     {% if activity.action == "moved" %}

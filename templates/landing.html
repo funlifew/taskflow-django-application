@@ -1,56 +1,87 @@
 {% load static %}
 <!doctype html>
 <html lang="fa" dir="rtl" data-theme="light">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-        <title>TaskFlow</title>
-        <link rel="stylesheet" href="{% static "css/app.css" %}">
-    </head>
-    <body data-page="landing">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <title>TaskFlow | مدیریت روشن کارها</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("taskflow-theme");
+        document.documentElement.dataset.theme = saved === "dark" || saved === "light"
+          ? saved
+          : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      } catch {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body data-page="landing">
+  <a class="skip-link" href="#main-content">رفتن به محتوای اصلی</a>
 
-    <nav class="landing-nav">
+  <nav class="landing-nav" aria-label="ناوبری اصلی">
     <div class="container landing-nav-inner">
-        <a class="brand" href="{% url "landing" %}"><span class="brand-mark">T</span><span>TaskFlow</span></a>
-        <div class="inline">
-            <button class="icon-btn" data-theme-toggle><span data-theme-icon>🌙</span></button>
-            {% if request.user.is_authenticated %}
-                <a class="btn btn-ghost hide-sm" href="{% url "dashboard:dashboard" %}">داشبورد</a>
-            {% else %}
-                <a class="btn btn-ghost hide-sm" href="{% url "accounts:login" %}">ورود</a>
-            {% endif %}
-        </div>
-    </div>
-    </nav>
-    <main class="container hero page">
-        <div class="hero-grid">
-            <section class="stack-lg">
-            <h1>پروژه ی TsakFlow</h1>
-            <p>پروژه ای برای Manage کردن Task ها مناسب شرکت ها و تیم های حرفه ای</p>
-            <div class="actions">
-                {% if request.user.is_authenticated %}
-                    <a class="btn btn-primary" href="{% url 'dashboard:dashboard' %}">ورود به داشبورد</a>
-                {% else %}
-                    <a class="btn btn-primary" href="{% url "accounts:register" %}">ثبت نام</a>
-                    <a class="btn" href="{% url "accounts:login" %}">ورود</a>
-                {% endif %}
-            </div>
-            </section>
-            <section class="hero-preview">
-            <div class="preview-phone">
-                <div class="spread"><span class="badge badge-primary">Mobile-first</span><span>☰</span></div>
-                <div class="stat-grid">
-                <div class="stat-card"><div class="stat-label">تسک‌ها</div><div class="stat-value">۲۴</div></div>
-                <div class="stat-card"><div class="stat-label">بردها</div><div class="stat-value">۶</div></div>
-                </div>
-                <article class="task-card"><span class="badge badge-warning">Doing</span><h3>پیاده‌سازی فرم ساخت تسک</h3><div class="progress"><span style="width:64%"></span></div></article>
-                <article class="task-card"><span class="badge badge-success">Done</span><h3>صفحه Login و Register</h3></article>
-            </div>
-            </section>
-        </div>
-    </main>
+      <a class="brand" href="{% url 'landing' %}" aria-label="صفحه اصلی TaskFlow">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <span>TaskFlow</span>
+      </a>
 
-    <div class="toast-wrap"></div>
-    <script src="{% static "js/app.js" %}"></script>
-    </body>
+      <div class="inline">
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="تغییر پوسته رنگی">
+          <span data-theme-icon aria-hidden="true">🌙</span>
+        </button>
+
+        {% if request.user.is_authenticated %}
+          <a class="btn btn-ghost" href="{% url 'dashboard:dashboard' %}">رفتن به داشبورد</a>
+        {% else %}
+          <a class="btn btn-ghost" href="{% url 'accounts:login' %}">ورود</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="container hero page" id="main-content">
+    <div class="hero-grid">
+      <section class="stack-lg">
+        <span class="badge badge-primary">مدیریت کار تیمی، بدون آشفتگی</span>
+        <h1>کارها، بردها و تیم خود را یکپارچه پیش ببر.</h1>
+        <p>
+          TaskFlow فضای آرام و روشنی برای برنامه‌ریزی پروژه‌ها، تقسیم مسئولیت‌ها
+          و دنبال‌کردن پیشرفت فراهم می‌کند.
+        </p>
+
+        <div class="actions">
+          {% if request.user.is_authenticated %}
+            <a class="btn btn-primary" href="{% url 'dashboard:dashboard' %}">باز کردن داشبورد</a>
+            <a class="btn" href="{% url 'workspaces:list' %}">فضاهای کاری من</a>
+          {% else %}
+            <a class="btn btn-primary" href="{% url 'accounts:register' %}">ساخت حساب</a>
+            <a class="btn" href="{% url 'accounts:login' %}">ورود به حساب</a>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="hero-preview panel" aria-label="امکانات اصلی TaskFlow">
+        <div class="stack">
+          <div>
+            <h2 class="card-title">از تصویر کلی تا کار بعدی</h2>
+            <p class="card-text">ساختار فضای کاری، برد، ستون و کار کمک می‌کند مسیر هر پروژه روشن بماند.</p>
+          </div>
+          <div class="info-list">
+            <div class="info-row"><span>همکاری</span><strong>نقش‌ها و دسترسی‌های روشن</strong></div>
+            <div class="info-row"><span>پیگیری</span><strong>مهلت، مسئول و اولویت</strong></div>
+            <div class="info-row"><span>تمرکز</span><strong>اعلان‌های مرتبط و به‌موقع</strong></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script defer src="{% static 'js/app.js' %}"></script>
+</body>
 </html>

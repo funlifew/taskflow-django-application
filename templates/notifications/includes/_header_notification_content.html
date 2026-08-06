@@ -22,12 +22,12 @@
 </span>
 
 <span class="notification-menu__item-copy">
-  <strong>
+  <strong data-localize-product-copy>
     {{ notification.title }}
   </strong>
 
   {% if notification.message %}
-    <span class="notification-menu__item-message">
+    <span class="notification-menu__item-message" data-localize-product-copy>
       {{ notification.message|truncatechars:105 }}
     </span>
   {% endif %}

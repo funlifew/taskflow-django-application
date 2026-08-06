@@ -1,72 +1,98 @@
-<aside class="sidebar glass-panel" aria-label="منوی اصلی">
+<aside
+  class="sidebar glass-panel"
+  aria-label="منوی اصلی"
+>
   <div class="sidebar__head">
-    <a class="brand" href="{% url 'dashboard:dashboard' %}" aria-label="TaskFlow">
-      <span class="brand-mark" aria-hidden="true">
-        <svg class="tf-icon"><use href="#icon-logo"></use></svg>
+    <a
+      class="brand"
+      href="{% url 'dashboard:dashboard' %}"
+      aria-label="TaskFlow"
+    >
+      <span
+        class="brand-mark"
+        aria-hidden="true"
+      >
+        <svg class="tf-icon" focusable="false">
+          <use href="#icon-logo"></use>
+        </svg>
       </span>
+
       <span class="brand-copy">
-        <strong>TaskFlow</strong>
-        <small>Workspace OS</small>
+        <strong>
+          TaskFlow
+        </strong>
+
+        <small>
+          سامان‌دهی کارها
+        </small>
       </span>
     </a>
-
-    <button class="icon-btn" type="button" data-theme-toggle aria-label="تغییر تم">
-      <svg class="tf-icon" aria-hidden="true">
-        <use data-theme-use href="#icon-moon"></use>
-      </svg>
-    </button>
   </div>
 
-  <nav class="nav-list" aria-label="بخش‌های TaskFlow">
-    <a class="nav-link" data-nav="dashboard" href="{% url 'dashboard:dashboard' %}">
-      <svg class="tf-icon" aria-hidden="true"><use href="#icon-home"></use></svg>
-      <span>داشبورد</span>
-    </a>
-
-    <a class="nav-link" data-nav="workspaces" href="{% url 'workspaces:list' %}">
-      <svg class="tf-icon" aria-hidden="true"><use href="#icon-workspace"></use></svg>
-      <span>ورک‌اسپیس‌ها</span>
-    </a>
-
-    <span class="nav-link nav-link--disabled" data-nav="boards" aria-disabled="true" title="این بخش هنوز route فعال ندارد">
-      <svg class="tf-icon" aria-hidden="true"><use href="#icon-board"></use></svg>
-      <span>بردها</span>
-      <small class="nav-soon">به‌زودی</small>
-    </span>
-
-    <span class="nav-link nav-link--disabled" data-nav="tasks" aria-disabled="true" title="این بخش هنوز route فعال ندارد">
-      <svg class="tf-icon" aria-hidden="true"><use href="#icon-check-square"></use></svg>
-      <span>تسک‌ها</span>
-      <small class="nav-soon">به‌زودی</small>
-    </span>
-
-    <a class="nav-link" data-nav="profile" href="{% url 'dashboard:profile' %}">
-      <svg class="tf-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
-      <span>پروفایل</span>
-    </a>
-  </nav>
+  <div class="sidebar__navigation">
+    {% include "includes/_primary_navigation.html" with navigation_label="بخش‌های اصلی TaskFlow" %}
+  </div>
 
   <div class="sidebar__footer">
-    <a class="sidebar-user" href="{% url 'dashboard:profile' %}" aria-label="مشاهده پروفایل">
+    <a
+      class="sidebar-user"
+      href="{% url 'dashboard:profile' %}"
+      aria-label="مشاهده پروفایل"
+    >
       <span class="profile-avatar-sm">
         {% if request.user.avatar %}
-          <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
+          <img
+            src="{{ request.user.avatar.url }}"
+            alt="{{ request.user.get_full_name|default:request.user.username }}"
+          >
         {% else %}
-          <span class="avatar-initials">{{ request.user.first_name|default:request.user.username|slice:':1' }}</span>
+          <span class="avatar-initials">
+            {{ request.user.first_name|default:request.user.username|slice:":1" }}
+          </span>
         {% endif %}
       </span>
+
       <span class="sidebar-user__copy">
-        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
-        <small>@{{ request.user.username }}</small>
+        <strong>
+          {{ request.user.get_full_name|default:request.user.username }}
+        </strong>
+
+        <small>
+          @{{ request.user.username }}
+        </small>
       </span>
-      <svg class="tf-icon sidebar-user__arrow" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg>
+
+      <svg
+        class="tf-icon sidebar-user__arrow"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <use href="#icon-arrow-up-right"></use>
+      </svg>
     </a>
 
-    <form class="nav-logout-form" method="post" action="{% url 'accounts:logout' %}">
+    <form
+      class="nav-logout-form"
+      method="post"
+      action="{% url 'accounts:logout' %}"
+    >
       {% csrf_token %}
-      <button class="nav-link nav-logout" type="submit">
-        <svg class="tf-icon" aria-hidden="true"><use href="#icon-logout"></use></svg>
-        <span>خروج از حساب</span>
+
+      <button
+        class="nav-link nav-logout"
+        type="submit"
+      >
+        <svg
+          class="tf-icon"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <use href="#icon-logout"></use>
+        </svg>
+
+        <span>
+          خروج از حساب
+        </span>
       </button>
     </form>
   </div>

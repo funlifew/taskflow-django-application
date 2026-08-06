@@ -1,68 +1,168 @@
 {% load static %}
 <!doctype html>
-<html lang="fa" dir="rtl" data-theme="light">
+
+<html
+  lang="fa"
+  dir="rtl"
+  data-theme="light"
+>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1020">
-  <meta name="color-scheme" content="dark light">
-  <title>{% block title %}TaskFlow | Dashboard{% endblock title %}</title>
 
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css">
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
-  <link rel="stylesheet" href="{% static 'css/glass-ui.css' %}">
-  <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f4f6ff"
+  >
+
+  <meta
+    name="color-scheme"
+    content="dark light"
+  >
+
+  <title>
+    {% block title %}
+      TaskFlow
+    {% endblock title %}
+  </title>
+
+  <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+
+  <script>
+    (() => {
+      try {
+        const storedTheme = localStorage.getItem("taskflow-theme");
+        const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+        const theme = storedTheme === "dark" || storedTheme === "light"
+          ? storedTheme
+          : preferredTheme;
+
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]')?.setAttribute(
+          "content",
+          theme === "dark" ? "#0b1020" : "#f4f6ff",
+        );
+      } catch {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
+
+  <link
+    rel="preconnect"
+    href="https://cdn.jsdelivr.net"
+    crossorigin
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/sahel-font@3.4.0/dist/font-face.min.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/app.css' %}"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/glass-ui.css' %}"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/messages.css' %}"
+  >
+
   <link
     rel="stylesheet"
     href="{% static 'css/notifications.css' %}"
   >
-  {% block extra_css %}{% endblock extra_css %}
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/ui-stabilization.css' %}"
+  >
+
+  {% block extra_css %}
+  {% endblock extra_css %}
 </head>
-<body data-page="{% block data_page %}{% endblock data_page %}">
-  {% include 'includes/icon_sprite.html' %}
 
-  <a class="skip-link" href="#main-content">رفتن به محتوای اصلی</a>
+<body
+  data-page="{% block data_page %}{% endblock data_page %}"
+>
+  {% include "includes/icon_sprite.html" %}
 
-  <div class="app-space-scene" aria-hidden="true">
-    <canvas class="app-space-canvas" data-app-space></canvas>
-    <span class="app-nebula app-nebula--violet"></span>
-    <span class="app-nebula app-nebula--cyan"></span>
-    <span class="app-nebula app-nebula--pink"></span>
-    <span class="app-space-grid"></span>
+  <a
+    class="skip-link"
+    href="#main-content"
+  >
+    رفتن به محتوای اصلی
+  </a>
 
-    <span class="app-orbit app-orbit--one">
-      <i class="app-orbit__planet"></i>
-    </span>
-    <span class="app-orbit app-orbit--two">
-      <i class="app-orbit__planet"></i>
-    </span>
+  {% include "includes/messages.html" %}
 
-    <span class="app-wire-cube app-wire-cube--one">
-      <i></i><i></i><i></i><i></i><i></i><i></i>
-    </span>
+  <div
+    class="app-background"
+    aria-hidden="true"
+  >
+    <canvas
+      class="app-background__canvas"
+      data-three-background
+    ></canvas>
+    <span class="app-background__mesh"></span>
+    <span class="app-background__orb app-background__orb--primary"></span>
+    <span class="app-background__orb app-background__orb--cyan"></span>
+    <span class="app-background__orb app-background__orb--pink"></span>
   </div>
 
-  <div class="pointer-glow" data-pointer-glow aria-hidden="true"></div>
+  {# Drawer عمداً بیرون app-shell قرار دارد. #}
+  {% include "includes/mobile_drawer.html" %}
 
-  {% include 'includes/messages.html' %}
+  <div
+    class="app-shell"
+    data-app-shell
+  >
+    {% include "includes/sidebar.html" %}
+    {% include "includes/header.html" %}
 
-  <div class="app-shell page" data-app-shell>
-    {% include 'includes/sidebar.html' %}
-    {% include 'includes/mobile_drawer.html' %}
-    {% include 'includes/header.html' %}
-
-    <main class="page-content" id="main-content" data-reveal-scope>
-      {% block content %}{% endblock content %}
+    <main
+      class="page-content"
+      id="main-content"
+      data-reveal-scope
+    >
+      {% block content %}
+      {% endblock content %}
     </main>
 
-    {% include 'includes/footer.html' %}
+    {% include "includes/footer.html" %}
   </div>
 
-  <script src="{% static 'js/messages.js' %}"></script>
-  <script src="{% static 'js/space-scene.js' %}"></script>
-  <script src="{% static 'js/app.js' %}"></script>
-  <script src="{% static 'js/notification-menu.js' %}"></script>
-  {% block extra_js %}{% endblock extra_js %}
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"
+    integrity="sha384-RRHfJ6w1mTlKUBMYT/hvnRiOzEB/vyRV3DrQOseb6oYfvaZSfdd0byS4bHps0k2R"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"
+    integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt"
+    crossorigin="anonymous"
+  ></script>
+  <script defer src="{% static 'js/messages.js' %}"></script>
+  <script defer src="{% static 'js/app.js' %}"></script>
+  <script defer src="{% static 'js/three-background.js' %}"></script>
+  <script defer src="{% static 'js/motion.js' %}"></script>
+  <script defer src="{% static 'js/notification-menu.js' %}"></script>
+
+  {% block extra_js %}
+  {% endblock extra_js %}
 </body>
 </html>

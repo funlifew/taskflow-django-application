@@ -8,9 +8,6 @@
     data-reorder-url="{% url 'columns:drag_reorder' workspace.pk board.pk column.pk %}"
   {% endif %}
   data-reveal
-  {% if not can_drag_columns %}
-    data-tilt
-  {% endif %}
 >
   <div class="workspace-card__main">
     <div class="workspace-card__top">
@@ -26,6 +23,7 @@
             <svg
               class="tf-icon"
               aria-hidden="true"
+              focusable="false"
             >
               <use href="#icon-menu"></use>
             </svg>
@@ -42,12 +40,8 @@
       </div>
 
       <div class="workspace-card__badges">
-        <span class="badge badge-success">
-          فعال
-        </span>
-
         <span
-          class="badge badge-info"
+          class="badge"
           data-column-position-label
         >
           جایگاه
@@ -64,28 +58,6 @@
       {% include "tasks/includes/_task_list.html" with tasks=column.active_tasks can_drag_tasks=can_drag_tasks %}
     </div>
 
-    <div class="workspace-card__meta">
-      <span>
-        <svg class="tf-icon">
-          <use href="#icon-user"></use>
-        </svg>
-
-        {% if column.created_by %}
-          {{ column.created_by.username }}
-        {% else %}
-          حساب حذف‌شده
-        {% endif %}
-      </span>
-
-      <span>
-        <svg class="tf-icon">
-          <use href="#icon-clock"></use>
-        </svg>
-
-        {{ column.created_at|timesince }}
-        پیش
-      </span>
-    </div>
   </div>
 
   <footer class="workspace-card__footer column-card__footer">
@@ -95,12 +67,13 @@
         data-column-task-count="{{ column.pk }}"
       >
         {{ column.active_tasks|length }}
-        Task
+        کار
       </span>
 
       {% if can_reorder_columns %}
         <div
           class="column-order-controls"
+          role="group"
           aria-label="تغییر جایگاه ستون {{ column.title }}"
         >
           <form
@@ -122,6 +95,7 @@
               <svg
                 class="tf-icon"
                 aria-hidden="true"
+                focusable="false"
               >
                 <use href="#icon-chevron-right"></use>
               </svg>
@@ -151,6 +125,7 @@
               <svg
                 class="tf-icon"
                 aria-hidden="true"
+                focusable="false"
               >
                 <use href="#icon-chevron-left"></use>
               </svg>
@@ -167,11 +142,11 @@
             class="btn btn-primary"
             href="{% url 'tasks:create' workspace.pk board.pk column.pk %}"
           >
-            <svg class="tf-icon">
+            <svg class="tf-icon" aria-hidden="true" focusable="false">
               <use href="#icon-plus"></use>
             </svg>
 
-            Task جدید
+            کار جدید
           </a>
         {% endif %}
 
@@ -180,7 +155,7 @@
             class="btn btn-ghost"
             href="{% url 'columns:update' workspace.pk board.pk column.pk %}"
           >
-            <svg class="tf-icon">
+            <svg class="tf-icon" aria-hidden="true" focusable="false">
               <use href="#icon-edit"></use>
             </svg>
 
@@ -199,7 +174,7 @@
               class="btn btn-soft"
               type="submit"
             >
-              <svg class="tf-icon">
+              <svg class="tf-icon" aria-hidden="true" focusable="false">
                 <use href="#icon-archive"></use>
               </svg>
 
@@ -210,7 +185,7 @@
       </div>
     {% else %}
       <span class="badge badge-info">
-        مشاهده
+        فقط قابل مشاهده
       </span>
     {% endif %}
 
@@ -218,7 +193,7 @@
       class="btn btn-ghost"
       href="{% url 'tasks:archived_list' workspace.pk board.pk column.pk %}"
     >
-      آرشیو Taskها
+      آرشیو کارها
     </a>
   </footer>
 </article>

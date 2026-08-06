@@ -5,12 +5,12 @@
 {% endblock data_page %}
 
 {% block title %}
-  TaskFlow | ساخت Board
+  TaskFlow | ساخت برد
 {% endblock title %}
 
 {% block content %}
 <section
-  class="page-head page-head--animated"
+  class="page-head"
   data-reveal
 >
   <div>
@@ -19,15 +19,15 @@
         <use href="#icon-board"></use>
       </svg>
 
-      Board جدید
+      برد جدید
     </span>
 
     <h1 class="page-title">
-      یک Board تازه بساز
+      یک برد تازه بساز
     </h1>
 
     <p class="page-subtitle">
-      Board جدید داخل Workspace
+      برد جدید داخل فضای کاری
       «{{ workspace.name }}»
       ساخته می‌شود.
     </p>
@@ -36,8 +36,7 @@
 
 <div class="workspace-form-layout">
   <section
-    class="form-card animated-border"
-    data-tilt-surface
+    class="form-card"
     data-reveal
   >
     <form
@@ -62,7 +61,7 @@
           </svg>
 
           <span>
-            ساخت Board
+            ساخت برد
           </span>
         </button>
 
@@ -93,7 +92,7 @@
     </div>
 
     <span class="badge badge-info">
-      داخل Workspace
+      داخل فضای کاری
     </span>
 
     <h2 class="card-title">
@@ -101,7 +100,7 @@
     </h2>
 
     <p class="card-text">
-      این Board فقط برای اعضای همین Workspace
+      این برد فقط برای اعضای همین فضای کاری
       قابل مشاهده خواهد بود.
     </p>
 
