@@ -5,12 +5,12 @@
 {% endblock data_page %}
 
 {% block title %}
-  TaskFlow | ساخت Task
+  TaskFlow | ساخت کار
 {% endblock title %}
 
 {% block content %}
 <section
-  class="page-head page-head--animated"
+  class="page-head"
   data-reveal
 >
   <div>
@@ -19,15 +19,15 @@
         <use href="#icon-check"></use>
       </svg>
 
-      Task جدید
+      کار جدید
     </span>
 
     <h1 class="page-title">
-      یک Task تازه بساز
+      یک کار تازه بساز
     </h1>
 
     <p class="page-subtitle">
-      Task جدید داخل ستون
+      کار جدید داخل ستون
       «{{ column.title }}»
       ساخته می‌شود.
     </p>
@@ -36,8 +36,7 @@
 
 <div class="workspace-form-layout">
   <section
-    class="form-card animated-border"
-    data-tilt-surface
+    class="form-card"
     data-reveal
   >
     <form
@@ -61,7 +60,7 @@
             <use href="#icon-plus"></use>
           </svg>
 
-          ساخت Task
+          ساخت کار
         </button>
 
         <a
@@ -97,13 +96,13 @@
     </h2>
 
     <p class="card-text">
-      Task جدید در انتهای Taskهای فعال
+      کار جدید در انتهای کارهای فعال
       این ستون قرار می‌گیرد.
     </p>
 
     <div class="info-list">
       <div class="info-row">
-        <span>Workspace</span>
+        <span>فضای کاری</span>
 
         <strong>
           {{ workspace.name }}
@@ -111,7 +110,7 @@
       </div>
 
       <div class="info-row">
-        <span>Board</span>
+        <span>برد</span>
 
         <strong>
           {{ board.title }}

@@ -6,10 +6,13 @@
         type="button"
         data-drawer-open
         aria-label="باز کردن منو"
+        aria-controls="mobile-navigation-drawer"
+        aria-expanded="false"
       >
         <svg
           class="tf-icon"
           aria-hidden="true"
+          focusable="false"
         >
           <use href="#icon-menu"></use>
         </svg>
@@ -17,19 +20,19 @@
 
       <div class="topbar__copy">
         <strong>
-          {% if request.resolver_match.namespace == 'workspaces' %}
-            Workspaceها
-          {% elif request.resolver_match.namespace == 'notifications' %}
+          {% if request.resolver_match.namespace == "workspaces" %}
+            فضاهای کاری
+          {% elif request.resolver_match.namespace == "notifications" %}
             اعلان‌ها
-          {% elif request.resolver_match.namespace == 'boards' %}
-            Boardها
-          {% elif request.resolver_match.namespace == 'columns' %}
+          {% elif request.resolver_match.namespace == "boards" %}
+            بردها
+          {% elif request.resolver_match.namespace == "columns" %}
             ستون‌ها
-          {% elif request.resolver_match.namespace == 'tasks' %}
-            Taskها
-          {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
+          {% elif request.resolver_match.namespace == "tasks" %}
+            کارها
+          {% elif request.resolver_match.url_name == "profile" or request.resolver_match.url_name == "profile_update" %}
             پروفایل
-          {% elif request.resolver_match.url_name == 'change_password' %}
+          {% elif request.resolver_match.url_name == "change_password" %}
             امنیت حساب
           {% else %}
             داشبورد
@@ -37,22 +40,22 @@
         </strong>
 
         <div class="muted topbar__subtitle">
-          {% if request.resolver_match.namespace == 'workspaces' %}
-            مدیریت فضاهای کاری، اعضا و دسترسی‌ها
-          {% elif request.resolver_match.namespace == 'notifications' %}
-            رویدادها و تغییرات مهم حساب شما
-          {% elif request.resolver_match.namespace == 'boards' %}
-            مدیریت Boardها، ستون‌ها و جریان کار
-          {% elif request.resolver_match.namespace == 'columns' %}
-            مدیریت ساختار و ترتیب ستون‌ها
-          {% elif request.resolver_match.namespace == 'tasks' %}
-            مدیریت Task، وضعیت، مسئول و همکاری
-          {% elif request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}
-            تنظیم اطلاعات و ظاهر حساب کاربری
-          {% elif request.resolver_match.url_name == 'change_password' %}
-            مدیریت رمز عبور و امنیت ورود
+          {% if request.resolver_match.namespace == "workspaces" %}
+            مدیریت فضاهای کاری و اعضا
+          {% elif request.resolver_match.namespace == "notifications" %}
+            رویدادها و تغییرات اخیر
+          {% elif request.resolver_match.namespace == "boards" %}
+            ستون‌ها و جریان انجام کار
+          {% elif request.resolver_match.namespace == "columns" %}
+            مدیریت ساختار برد
+          {% elif request.resolver_match.namespace == "tasks" %}
+            مدیریت کار و همکاری
+          {% elif request.resolver_match.url_name == "profile" or request.resolver_match.url_name == "profile_update" %}
+            اطلاعات حساب کاربری
+          {% elif request.resolver_match.url_name == "change_password" %}
+            رمز عبور و امنیت
           {% else %}
-            نمای یکپارچه پروژه‌ها و کارها
+            خلاصه وضعیت کارها
           {% endif %}
         </div>
       </div>
@@ -62,11 +65,12 @@
       <a
         class="icon-btn topbar__workspace-shortcut"
         href="{% url 'workspaces:create' %}"
-        aria-label="ساخت Workspace"
+        aria-label="ساخت فضای کاری"
       >
         <svg
           class="tf-icon"
           aria-hidden="true"
+          focusable="false"
         >
           <use href="#icon-plus"></use>
         </svg>
@@ -75,7 +79,7 @@
       {% include "notifications/includes/_header_dropdown.html" %}
 
       <button
-        class="icon-btn"
+        class="icon-btn topbar__theme-toggle"
         type="button"
         data-theme-toggle
         aria-label="تغییر تم"
@@ -83,6 +87,7 @@
         <svg
           class="tf-icon"
           aria-hidden="true"
+          focusable="false"
         >
           <use
             data-theme-use
@@ -92,7 +97,7 @@
       </button>
 
       <a
-        class="profile-avatar-sm"
+        class="profile-avatar-sm topbar__profile"
         href="{% url 'dashboard:profile' %}"
         aria-label="پروفایل"
       >
@@ -103,7 +108,7 @@
           >
         {% else %}
           <span class="avatar-initials">
-            {{ request.user.first_name|default:request.user.username|slice:':1' }}
+            {{ request.user.first_name|default:request.user.username|slice:":1" }}
           </span>
         {% endif %}
       </a>

@@ -4,7 +4,7 @@
 {% block title %}TaskFlow | {{ workspace.name }}{% endblock title %}
 
 {% block content %}
-<section class="workspace-detail-hero animated-border" data-reveal>
+<section class="workspace-detail-hero" data-reveal>
   <div class="workspace-detail-hero__mark" aria-hidden="true">{{ workspace.name|slice:":1"|upper }}</div>
 
   <div class="workspace-detail-hero__body">
@@ -22,7 +22,7 @@
       {% if workspace.description %}
         {{ workspace.description }}
       {% else %}
-        توضیحی برای این Workspace ثبت نشده است.
+        توضیحی برای این فضای کاری ثبت نشده است.
       {% endif %}
     </p>
   </div>
@@ -56,12 +56,12 @@
 </section>
 
 <section class="workspace-detail-stats">
-  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+  <article class="stat-card stat-card--icon" data-reveal>
     <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-users"></use></svg></span>
     <div><div class="stat-label">اعضا</div><div class="stat-value">{{ members_count|default:workspace.memberships.count }}</div></div>
   </article>
 
-  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+  <article class="stat-card stat-card--icon" data-reveal>
     <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-inbox"></use></svg></span>
     <div><div class="stat-label">دعوت‌های در انتظار</div><div class="stat-value">{{ pending_invitations_count|default:0 }}</div></div>
   </article>
@@ -69,7 +69,6 @@
   <article
   class="stat-card stat-card--icon"
   data-reveal
-  data-tilt
 >
   <span class="stat-card__icon">
     <svg class="tf-icon">
@@ -88,7 +87,7 @@
   </div>
 </article>
 
-  <article class="stat-card stat-card--icon" data-reveal data-tilt>
+  <article class="stat-card stat-card--icon" data-reveal>
     <span class="stat-card__icon"><svg class="tf-icon"><use href="#icon-clock"></use></svg></span>
     <div><div class="stat-label">آخرین تغییر</div><div class="stat-value workspace-stat-date">{{ workspace.updated_at|date:"Y/m/d" }}</div></div>
   </article>
@@ -103,11 +102,11 @@
           <use href="#icon-board"></use>
         </svg>
 
-        بردهای Workspace
+        بردهای فضای کاری
       </h2>
 
       <p class="card-text">
-        Boardهای فعال این فضای کاری.
+        بردهای فعال این فضای کاری.
       </p>
     </div>
 
@@ -132,7 +131,7 @@
             <use href="#icon-plus"></use>
           </svg>
 
-          ساخت Board
+          ساخت برد
         </a>
       {% endif %}
     </div>
@@ -180,7 +179,7 @@
       </div>
 
       <h3>
-        هنوز Boardی ساخته نشده
+        هنوز بردی ساخته نشده
       </h3>
 
       {% if can_create_board %}
@@ -188,11 +187,11 @@
           class="btn btn-primary"
           href="{% url 'boards:create' workspace.pk %}"
         >
-          ساخت اولین Board
+          ساخت اولین برد
         </a>
       {% else %}
         <p class="page-subtitle">
-          برای ساخت Board به نقش Member
+          برای ساخت برد به نقش عضو
           یا بالاتر نیاز داری.
         </p>
       {% endif %}

@@ -3,7 +3,7 @@
 {% block data_page %}profile{% endblock data_page %}
 
 {% block content %}
-<section class="profile-hero glass-panel animated-border" data-reveal>
+<section class="profile-hero glass-panel" data-reveal>
   <a class="profile-avatar-lg profile-avatar-lg--interactive" href="{% url 'dashboard:profile_update' %}" title="ویرایش آواتار">
     {% if request.user.avatar %}
       <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
@@ -78,7 +78,7 @@
 
     <div class="stat-grid">
       <article class="stat-card">
-        <div class="stat-label">Workspace مالکیت‌شده</div>
+        <div class="stat-label">فضاهای کاری تحت مالکیت</div>
         <div class="stat-value">{{ request.user.owned_workspaces.count }}</div>
       </article>
       <article class="stat-card">

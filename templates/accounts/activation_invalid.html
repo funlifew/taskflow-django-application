@@ -3,9 +3,8 @@
 {% block auth_view %}status{% endblock auth_view %}
 {% block content %}
   <div class="auth-status auth-status--danger">
-    <div class="auth-status__rings" aria-hidden="true"><span></span><span></span><span></span></div>
     <span class="auth-status__icon"><svg class="tf-icon"><use href="#icon-alert"></use></svg></span>
-    <span class="auth-kicker">TaskFlow Security</span>
+    <span class="auth-kicker">امنیت حساب</span>
     <h2>لینک معتبر نیست</h2>
     <p>این لینک اشتباه، منقضی یا قبلاً استفاده شده است. یک لینک تازه درخواست کن.</p>
     <a class="auth-submit auth-submit--link" href="{% url 'accounts:resend_verification' %}"><span>درخواست لینک تازه</span><svg class="tf-icon"><use href="#icon-arrow-left"></use></svg></a>

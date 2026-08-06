@@ -3,11 +3,10 @@
 {% block auth_view %}status{% endblock auth_view %}
 {% block content %}
   <div class="auth-status auth-status--success">
-    <div class="auth-status__rings" aria-hidden="true"><span></span><span></span><span></span></div>
     <span class="auth-status__icon"><svg class="tf-icon"><use href="#icon-send"></use></svg></span>
-    <span class="auth-kicker">TaskFlow Security</span>
+    <span class="auth-kicker">امنیت حساب</span>
     <h2>ایمیل فعال‌سازی ارسال شد</h2>
-    <p>لینک فعال‌سازی را به ایمیلت فرستادیم. پوشه‌ی Spam را هم بررسی کن.</p>
+    <p>لینک فعال‌سازی را به ایمیلت فرستادیم. پوشه هرزنامه را هم بررسی کن.</p>
     <a class="auth-submit auth-submit--link" href="{% url 'accounts:resend_verification' %}"><span>ارسال مجدد لینک</span><svg class="tf-icon"><use href="#icon-arrow-left"></use></svg></a>
     <a class="auth-status__secondary" href="{% url 'landing' %}">بازگشت به صفحه اصلی</a>
   </div>

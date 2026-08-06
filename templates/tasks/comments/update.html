@@ -19,7 +19,7 @@
     </h1>
 
     <p class="page-subtitle">
-      دیدگاه مربوط به Task
+      دیدگاه مربوط به کار
       «{{ task.title }}»
     </p>
   </div>
@@ -27,19 +27,28 @@
   <form
     method="post"
     class="stack"
+    novalidate
   >
     {% csrf_token %}
 
     {% if form.non_field_errors %}
-      <div class="form-errors">
+      <div class="form-errors" role="alert" data-localize-product-copy>
         {{ form.non_field_errors }}
       </div>
     {% endif %}
 
     <div class="field">
-      {{ form.body.label_tag }}
+      <label for="{{ form.body.id_for_label }}">
+        متن دیدگاه
+      </label>
+
       {{ form.body }}
-      {{ form.body.errors }}
+
+      {% if form.body.errors %}
+        <div class="form-errors" role="alert" data-localize-product-copy>
+          {{ form.body.errors }}
+        </div>
+      {% endif %}
     </div>
 
     <div class="form-actions">

@@ -10,7 +10,7 @@
 
 {% block content %}
 <section
-  class="page-head page-head--animated"
+  class="page-head"
   data-reveal
 >
   <div>
@@ -19,7 +19,7 @@
         <use href="#icon-check"></use>
       </svg>
 
-      ویرایش Task
+      ویرایش کار
     </span>
 
     <h1 class="page-title">
@@ -27,7 +27,7 @@
     </h1>
 
     <p class="page-subtitle">
-      اطلاعات Task
+      اطلاعات کار
       «{{ task.title }}»
       را ویرایش کن.
     </p>
@@ -36,8 +36,7 @@
 
 <div class="workspace-form-layout">
   <section
-    class="form-card animated-border"
-    data-tilt-surface
+    class="form-card"
     data-reveal
   >
     <form
@@ -89,13 +88,13 @@
     </h2>
 
     <p class="card-text">
-      Task جدید در انتهای Taskهای فعال
-      این ستون قرار می‌گیرد.
+      این کار در ستون «{{ column.title }}»
+      ویرایش می‌شود و جایگاه فعلی آن حفظ خواهد شد.
     </p>
 
     <div class="info-list">
       <div class="info-row">
-        <span>Workspace</span>
+        <span>فضای کاری</span>
 
         <strong>
           {{ workspace.name }}
@@ -103,7 +102,7 @@
       </div>
 
       <div class="info-row">
-        <span>Board</span>
+        <span>برد</span>
 
         <strong>
           {{ board.title }}

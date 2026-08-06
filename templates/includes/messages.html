@@ -9,7 +9,7 @@
       >
         <div class="flash-message__glow" aria-hidden="true"></div>
         <span class="flash-message__icon" aria-hidden="true">
-          <svg class="tf-icon">
+          <svg class="tf-icon" focusable="false">
             {% if 'success' in message.tags %}
               <use href="#icon-check"></use>
             {% elif 'error' in message.tags or 'warning' in message.tags %}
@@ -23,10 +23,10 @@
           <strong>
             {% if 'success' in message.tags %}عملیات موفق{% elif 'error' in message.tags %}خطا{% elif 'warning' in message.tags %}توجه{% else %}TaskFlow{% endif %}
           </strong>
-          <p>{{ message }}</p>
+          <p data-localize-product-copy>{{ message }}</p>
         </div>
         <button class="flash-message__close" type="button" data-flash-close aria-label="بستن پیام">
-          <svg class="tf-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+          <svg class="tf-icon" aria-hidden="true" focusable="false"><use href="#icon-x"></use></svg>
         </button>
         <span class="flash-message__progress" data-flash-progress aria-hidden="true"></span>
       </article>

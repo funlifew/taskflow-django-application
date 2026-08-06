@@ -10,7 +10,7 @@
 
 {% block content %}
 <section
-  class="workspace-hero animated-border"
+  class="workspace-hero"
   data-reveal
 >
   <div class="workspace-hero__content">
@@ -28,7 +28,7 @@
       </h1>
 
       <p class="page-subtitle">
-        ستون‌های آرشیوشده Board
+        ستون‌های آرشیوشده برد
         «{{ board.title }}»
         در این بخش قرار دارند.
       </p>
@@ -42,7 +42,7 @@
         <use href="#icon-arrow-right"></use>
       </svg>
 
-      بازگشت به Board
+      بازگشت به برد
     </a>
   </div>
 </section>
@@ -55,15 +55,30 @@
       </h2>
 
       <p class="card-text">
-        ستون‌ها را بازیابی یا برای همیشه
-        حذف کن.
+        {% if can_restore_columns and can_delete_columns %}
+          ستون را بازیابی کن یا برای حذف دائمی به صفحه تأیید برو.
+        {% elif can_restore_columns %}
+          ستون موردنظر را به برد برگردان.
+        {% elif can_delete_columns %}
+          برای حذف دائمی ستون به صفحه تأیید برو.
+        {% else %}
+          ستون‌های آرشیوشده این برد را می‌توانی مشاهده کنی.
+        {% endif %}
       </p>
     </div>
 
-    <span class="badge badge-warning">
-      {{ page_obj.paginator.count }}
-      ستون
-    </span>
+    <div class="meta-row">
+      <span class="badge badge-warning">
+        {{ page_obj.paginator.count }}
+        ستون
+      </span>
+
+      {% if not can_restore_columns and not can_delete_columns %}
+        <span class="badge badge-info">
+          دسترسی فقط‌خواندنی
+        </span>
+      {% endif %}
+    </div>
   </div>
 
   {% if columns %}
@@ -72,7 +87,6 @@
         <article
           class="workspace-card"
           data-reveal
-          data-tilt
         >
           <div class="workspace-card__main">
             <div class="workspace-card__top">
@@ -149,7 +163,7 @@
               </a>
             {% endif %}
 
-            {% if not can_restore_columns %}
+            {% if not can_restore_columns and not can_delete_columns %}
               <span class="badge badge-info">
                 فقط قابل مشاهده
               </span>
@@ -174,7 +188,7 @@
       </h2>
 
       <p class="page-subtitle">
-        هنوز هیچ ستونی از این Board
+        هنوز هیچ ستونی از این برد
         آرشیو نشده است.
       </p>
 
@@ -182,7 +196,7 @@
         class="btn btn-primary"
         href="{% url 'boards:detail' workspace.pk board.pk %}"
       >
-        بازگشت به Board
+        بازگشت به برد
       </a>
     </section>
   {% endif %}

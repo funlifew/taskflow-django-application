@@ -2,17 +2,16 @@
   class="task-dropzone{% if not tasks %} is-empty{% endif %}"
   data-task-list
   data-column-id="{{ column.pk }}"
-  aria-label="Taskهای ستون {{ column.title }}"
+  aria-label="کارهای ستون {{ column.title }}"
 >
   {% for task in tasks %}
     {% include "tasks/includes/_task_card.html" with task=task can_drag_tasks=can_drag_tasks %}
+  {% empty %}
+    <p
+      class="task-list-empty"
+      data-task-empty
+    >
+      هنوز کاری در این ستون ثبت نشده است.
+    </p>
   {% endfor %}
-
-  <p
-    class="card-text task-list-empty"
-    data-task-empty
-    {% if tasks %}hidden{% endif %}
-  >
-    هنوز Task فعالی در این ستون وجود ندارد.
-  </p>
 </div>

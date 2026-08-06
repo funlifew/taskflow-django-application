@@ -10,7 +10,7 @@
 
 {% block content %}
 <section
-  class="page-head page-head--animated"
+  class="page-head"
   data-reveal
 >
   <div>
@@ -19,7 +19,7 @@
         <use href="#icon-edit"></use>
       </svg>
 
-      ویرایش Board
+      ویرایش برد
     </span>
 
     <h1 class="page-title">
@@ -27,16 +27,15 @@
     </h1>
 
     <p class="page-subtitle">
-      عنوان و توضیحات Board را تغییر بده.
-      Workspace و سازنده قابل تغییر نیستند.
+      عنوان و توضیحات برد را تغییر بده.
+      فضای کاری و سازنده قابل تغییر نیستند.
     </p>
   </div>
 </section>
 
 <div class="workspace-form-layout">
   <section
-    class="form-card animated-border"
-    data-tilt-surface
+    class="form-card"
     data-reveal
   >
     <form
@@ -100,13 +99,13 @@
     </h2>
 
     <p class="card-text">
-      ویرایش Board باعث تغییر Workspace،
+      ویرایش برد باعث تغییر فضای کاری،
       سازنده یا وضعیت آرشیو آن نمی‌شود.
     </p>
 
     <div class="info-list">
       <div class="info-row">
-        <span>Workspace</span>
+        <span>فضای کاری</span>
 
         <strong>
           {{ workspace.name }}

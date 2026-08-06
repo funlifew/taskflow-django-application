@@ -15,7 +15,7 @@
 <div class="field" data-reveal>
   <div class="label-row">
     <label for="{{ form.title.id_for_label }}">
-      عنوان Board
+      عنوان برد
     </label>
 
     <span class="help">
@@ -27,18 +27,34 @@
     <svg
       class="tf-icon"
       aria-hidden="true"
+      focusable="false"
     >
       <use href="#icon-board"></use>
     </svg>
 
-    {{ form.title }}
+    <input
+      class="input"
+      type="text"
+      name="{{ form.title.html_name }}"
+      value="{{ form.title.value|default_if_none:'' }}"
+      id="{{ form.title.id_for_label }}"
+      maxlength="150"
+      autocomplete="off"
+      placeholder="مثلاً برنامه‌ریزی توسعه محصول"
+      required
+      {% if form.title.errors %}aria-invalid="true" aria-describedby="{{ form.title.id_for_label }}-errors"{% endif %}
+    >
   </div>
 
-  {% for error in form.title.errors %}
-    <p class="error-text">
-      {{ error }}
-    </p>
-  {% endfor %}
+  {% if form.title.errors %}
+    <div id="{{ form.title.id_for_label }}-errors" data-localize-product-copy>
+      {% for error in form.title.errors %}
+        <p class="error-text">
+          {{ error }}
+        </p>
+      {% endfor %}
+    </div>
+  {% endif %}
 </div>
 
 <div class="field" data-reveal>
@@ -61,16 +77,28 @@
     <svg
       class="tf-icon"
       aria-hidden="true"
+      focusable="false"
     >
       <use href="#icon-edit"></use>
     </svg>
 
-    {{ form.description }}
+    <textarea
+      class="textarea"
+      name="{{ form.description.html_name }}"
+      id="{{ form.description.id_for_label }}"
+      rows="5"
+      placeholder="توضیح کوتاهی درباره هدف این برد"
+      {% if form.description.errors %}aria-invalid="true" aria-describedby="{{ form.description.id_for_label }}-errors"{% endif %}
+    >{{ form.description.value|default_if_none:'' }}</textarea>
   </div>
 
-  {% for error in form.description.errors %}
-    <p class="error-text">
-      {{ error }}
-    </p>
-  {% endfor %}
+  {% if form.description.errors %}
+    <div id="{{ form.description.id_for_label }}-errors" data-localize-product-copy>
+      {% for error in form.description.errors %}
+        <p class="error-text">
+          {{ error }}
+        </p>
+      {% endfor %}
+    </div>
+  {% endif %}
 </div>

@@ -1,0 +1,101 @@
+<nav
+  class="nav-list"
+  aria-label="{{ navigation_label|default:'بخش‌های TaskFlow' }}"
+>
+  <a
+    class="nav-link{% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
+    data-nav="dashboard"
+    href="{% url 'dashboard:dashboard' %}"
+    {% if request.resolver_match.namespace == "dashboard" and request.resolver_match.url_name == "dashboard" %}
+      aria-current="page"
+    {% endif %}
+  >
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <use href="#icon-home"></use>
+    </svg>
+
+    <span>
+      داشبورد
+    </span>
+  </a>
+
+  <a
+    class="nav-link{% if request.resolver_match.namespace == 'workspaces' or request.resolver_match.namespace == 'boards' or request.resolver_match.namespace == 'columns' or request.resolver_match.namespace == 'tasks' %} active{% endif %}"
+    data-nav="workspaces"
+    href="{% url 'workspaces:list' %}"
+    {% if request.resolver_match.namespace == "workspaces" or request.resolver_match.namespace == "boards" or request.resolver_match.namespace == "columns" or request.resolver_match.namespace == "tasks" %}
+      aria-current="page"
+    {% endif %}
+  >
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <use href="#icon-workspace"></use>
+    </svg>
+
+    <span>
+      فضاهای کاری
+    </span>
+  </a>
+
+  <a
+    class="nav-link{% if request.resolver_match.namespace == 'notifications' %} active{% endif %}"
+    data-nav="notifications"
+    href="{% url 'notifications:list' %}"
+    {% if request.resolver_match.namespace == "notifications" %}
+      aria-current="page"
+    {% endif %}
+  >
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <use href="#icon-bell"></use>
+    </svg>
+
+    <span>
+      اعلان‌ها
+    </span>
+
+    {% if unread_notifications_count %}
+      <span
+        class="nav-link__count"
+        aria-label="{{ unread_notifications_count }} اعلان خوانده‌نشده"
+      >
+        {% if unread_notifications_count > 99 %}
+          99+
+        {% else %}
+          {{ unread_notifications_count }}
+        {% endif %}
+      </span>
+    {% endif %}
+  </a>
+
+  <a
+    class="nav-link{% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name != 'dashboard' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'change_password' %} active{% endif %}"
+    data-nav="profile"
+    href="{% url 'dashboard:profile' %}"
+    {% if request.resolver_match.namespace == "dashboard" and request.resolver_match.url_name != "dashboard" or request.resolver_match.namespace == "accounts" and request.resolver_match.url_name == "change_password" %}
+      aria-current="page"
+    {% endif %}
+  >
+    <svg
+      class="tf-icon"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <use href="#icon-user"></use>
+    </svg>
+
+    <span>
+      پروفایل
+    </span>
+  </a>
+</nav>

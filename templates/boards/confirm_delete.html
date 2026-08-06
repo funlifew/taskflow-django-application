@@ -10,7 +10,7 @@
 
 {% block content %}
 <section
-  class="page-head page-head--animated"
+  class="page-head"
   data-reveal
 >
   <div>
@@ -23,7 +23,7 @@
     </span>
 
     <h1 class="page-title">
-      حذف Board
+      حذف برد
     </h1>
 
     <p class="page-subtitle">
@@ -34,7 +34,7 @@
 
 <div class="workspace-form-layout">
   <section
-    class="form-card animated-border"
+    class="form-card danger-zone"
     data-reveal
   >
     <div class="form-grid">
@@ -45,9 +45,8 @@
         </h2>
 
         <p class="card-text">
-          این Board برای همیشه حذف خواهد شد.
-          در آینده تمام ستون‌ها و Taskهای داخل
-          آن نیز همراه Board حذف می‌شوند.
+          این برد و همه ستون‌ها و کارهای وابسته
+          به آن برای همیشه حذف می‌شوند.
         </p>
       </div>
 
@@ -61,7 +60,7 @@
           class="btn btn-danger"
           type="submit"
         >
-          <svg class="tf-icon">
+          <svg class="tf-icon" aria-hidden="true" focusable="false">
             <use href="#icon-trash"></use>
           </svg>
 
@@ -83,7 +82,7 @@
     data-reveal
   >
     <div class="page-head__icon">
-      <svg class="tf-icon">
+      <svg class="tf-icon" aria-hidden="true" focusable="false">
         <use href="#icon-warning"></use>
       </svg>
     </div>
@@ -98,12 +97,12 @@
 
     <div class="info-list">
       <div class="info-row">
-        <span>Board</span>
+        <span>برد</span>
         <strong>{{ board.title }}</strong>
       </div>
 
       <div class="info-row">
-        <span>Workspace</span>
+        <span>فضای کاری</span>
         <strong>{{ workspace.name }}</strong>
       </div>
 

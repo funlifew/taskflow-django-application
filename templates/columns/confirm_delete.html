@@ -10,7 +10,7 @@
 
 {% block content %}
 <section
-  class="form-card animated-border"
+  class="form-card danger-zone"
   data-reveal
 >
   <span class="badge badge-danger eyebrow">
@@ -23,8 +23,8 @@
 
   <p class="page-subtitle">
     این عملیات قابل بازگشت نیست.
-    در مراحل بعدی، Taskهای متعلق به این
-    ستون نیز تحت تأثیر قرار خواهند گرفت.
+    این ستون و همه کارهای متعلق به آن
+    برای همیشه حذف خواهند شد.
   </p>
 
   <form
@@ -37,7 +37,7 @@
       class="btn btn-danger"
       type="submit"
     >
-      <svg class="tf-icon">
+      <svg class="tf-icon" aria-hidden="true" focusable="false">
         <use href="#icon-trash"></use>
       </svg>
 

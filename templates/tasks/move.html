@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 
+{% block data_page %}workspaces{% endblock data_page %}
+
 {% block title %}
-  TaskFlow | انتقال {{ task.title }}
+  TaskFlow | جابه‌جایی {{ task.title }}
 {% endblock title %}
 
 {% block content %}
-<section class="form-card animated-border">
+<section class="form-card">
   <span class="badge badge-info">
-    انتقال Task
+    جابه‌جایی کار
   </span>
 
   <h1 class="page-title">
-    انتقال «{{ task.title }}»
+    جابه‌جایی «{{ task.title }}»
   </h1>
 
   <p class="page-subtitle">
@@ -45,7 +47,7 @@
         class="btn btn-primary"
         type="submit"
       >
-        انتقال Task
+        جابه‌جایی کار
       </button>
 
       <a

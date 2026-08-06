@@ -1,46 +1,46 @@
 {% extends "base.html" %}
 
 {% block data_page %}workspaces{% endblock data_page %}
-{% block title %}TaskFlow | Workspaceها{% endblock title %}
+{% block title %}TaskFlow | فضاهای کاری{% endblock title %}
 
 {% block content %}
-<section class="workspace-hero animated-border" data-reveal>
+<section class="workspace-hero" data-reveal>
   <div class="workspace-hero__content">
     <div>
       <span class="badge badge-primary eyebrow">
         <svg class="tf-icon" aria-hidden="true"><use href="#icon-workspace"></use></svg>
         فضاهای کاری من
       </span>
-      <h1 class="page-title">Workspaceها</h1>
+      <h1 class="page-title">فضاهای کاری</h1>
       <p class="page-subtitle">پروژه‌های شخصی و تیمی خودت را از یک نقطه مدیریت کن.</p>
     </div>
 
     <a class="btn btn-primary" href="{% url 'workspaces:create' %}">
       <svg class="tf-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
-      ساخت Workspace
+      ساخت فضای کاری
     </a>
   </div>
 
-  <div class="workspace-summary" aria-label="خلاصه Workspaceها">
-    <article class="workspace-summary__item" data-tilt>
+  <div class="workspace-summary" aria-label="خلاصه فضاهای کاری">
+    <article class="workspace-summary__item">
       <span class="workspace-summary__icon"><svg class="tf-icon"><use href="#icon-grid"></use></svg></span>
       <span class="workspace-summary__label">در دسترس</span>
       <strong class="workspace-summary__value">{{ total_workspaces|default:page_obj.paginator.count|default:0 }}</strong>
     </article>
 
-    <article class="workspace-summary__item" data-tilt>
+    <article class="workspace-summary__item">
       <span class="workspace-summary__icon"><svg class="tf-icon"><use href="#icon-crown"></use></svg></span>
       <span class="workspace-summary__label">مالک آن‌ها هستی</span>
       <strong class="workspace-summary__value">{{ owned_workspaces_count|default:0 }}</strong>
     </article>
 
-    <article class="workspace-summary__item" data-tilt>
+    <article class="workspace-summary__item">
       <span class="workspace-summary__icon"><svg class="tf-icon"><use href="#icon-users"></use></svg></span>
       <span class="workspace-summary__label">به‌عنوان عضو</span>
       <strong class="workspace-summary__value">{{ joined_workspaces_count|default:0 }}</strong>
     </article>
 
-    <article class="workspace-summary__item" data-tilt>
+    <article class="workspace-summary__item">
       <span class="workspace-summary__icon"><svg class="tf-icon"><use href="#icon-inbox"></use></svg></span>
       <span class="workspace-summary__label">دعوت در انتظار</span>
       <strong class="workspace-summary__value">{{ pending_invitations_count|default:0 }}</strong>
@@ -81,7 +81,7 @@
 </section>
 {% endif %}
 
-<section class="workspace-toolbar panel" aria-label="جست‌وجو و فیلتر Workspaceها" data-reveal>
+<section class="workspace-toolbar panel" aria-label="جست‌وجو و فیلتر فضاهای کاری" data-reveal>
   <form class="workspace-toolbar__form" method="get">
     <div class="workspace-search">
       <svg class="tf-icon workspace-search__icon" aria-hidden="true"><use href="#icon-search"></use></svg>
@@ -91,7 +91,7 @@
         name="q"
         value="{{ search_query }}"
         placeholder="جست‌وجو در نام، توضیحات یا مالک..."
-        aria-label="جست‌وجوی Workspace"
+        aria-label="جست‌وجوی فضای کاری"
       >
     </div>
 
@@ -124,9 +124,9 @@
     <div>
       <h2 class="card-title">
         <svg class="tf-icon title-icon"><use href="#icon-folder"></use></svg>
-        Workspaceهای قابل دسترسی
+        فضاهای کاری قابل دسترسی
       </h2>
-      <p class="card-text">Workspaceهایی که مالک یا عضو آن‌ها هستی.</p>
+      <p class="card-text">فضاهایی که مالک یا عضو آن‌ها هستی.</p>
     </div>
 
     {% if workspaces %}
@@ -137,7 +137,7 @@
   {% if workspaces %}
     <div class="workspace-grid">
       {% for workspace in workspaces %}
-        <article class="workspace-card" data-reveal data-tilt>
+        <article class="workspace-card" data-reveal>
           <a class="workspace-card__main" href="{% url 'workspaces:detail' workspace.pk %}">
             <div class="workspace-card__top">
               <div class="workspace-card__mark" aria-hidden="true">{{ workspace.name|slice:":1"|upper }}</div>
@@ -159,7 +159,7 @@
                 {% if workspace.description %}
                   {{ workspace.description|truncatechars:125 }}
                 {% else %}
-                  برای این Workspace هنوز توضیحی ثبت نشده است.
+                  برای این فضای کاری هنوز توضیحی ثبت نشده است.
                 {% endif %}
               </p>
             </div>
@@ -193,7 +193,7 @@
 
               {% if workspace.owner_id == request.user.id %}
                 <a class="icon-btn" href="{% url 'workspaces:update' workspace.pk %}" aria-label="ویرایش {{ workspace.name }}">
-                  <svg class="tf-icon"><use href="#icon-edit"></use></svg>
+                  <svg class="tf-icon" aria-hidden="true" focusable="false"><use href="#icon-edit"></use></svg>
                 </a>
               {% endif %}
             </div>
@@ -237,11 +237,11 @@
           نمایش همه
         </a>
       {% else %}
-        <h2>هنوز Workspace نداری</h2>
+        <h2>هنوز فضای کاری نداری</h2>
         <p class="page-subtitle">اولین فضای کاری خودت را بساز و بعد اعضا و بردها را به آن اضافه کن.</p>
         <a class="btn btn-primary" href="{% url 'workspaces:create' %}">
           <svg class="tf-icon"><use href="#icon-plus"></use></svg>
-          ساخت اولین Workspace
+          ساخت اولین فضای کاری
         </a>
       {% endif %}
     </section>

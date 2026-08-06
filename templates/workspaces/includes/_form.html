@@ -6,14 +6,29 @@
 
 <div class="field" data-reveal>
   <div class="label-row">
-    <label for="{{ form.name.id_for_label }}">نام Workspace</label>
+    <label for="{{ form.name.id_for_label }}">نام فضای کاری</label>
     <span class="help">حداقل ۳ کاراکتر</span>
   </div>
   <div class="input-with-icon">
-    <svg class="tf-icon" aria-hidden="true"><use href="#icon-workspace"></use></svg>
-    {{ form.name }}
+    <svg class="tf-icon" aria-hidden="true" focusable="false"><use href="#icon-workspace"></use></svg>
+    <input
+      class="input"
+      type="text"
+      name="{{ form.name.html_name }}"
+      value="{{ form.name.value|default_if_none:'' }}"
+      id="{{ form.name.id_for_label }}"
+      maxlength="150"
+      autocomplete="off"
+      placeholder="مثلاً پروژه تیم طراحی"
+      required
+      {% if form.name.errors %}aria-invalid="true" aria-describedby="{{ form.name.id_for_label }}-errors"{% endif %}
+    >
   </div>
-  {% for error in form.name.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+  {% if form.name.errors %}
+    <div id="{{ form.name.id_for_label }}-errors" data-localize-product-copy>
+      {% for error in form.name.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
 </div>
 
 <div class="field" data-reveal>
@@ -22,8 +37,18 @@
     <span class="help">اختیاری</span>
   </div>
   <div class="input-with-icon input-with-icon--textarea">
-    <svg class="tf-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
-    {{ form.description }}
+    <svg class="tf-icon" aria-hidden="true" focusable="false"><use href="#icon-edit"></use></svg>
+    <textarea
+      class="textarea"
+      name="{{ form.description.html_name }}"
+      id="{{ form.description.id_for_label }}"
+      placeholder="توضیح کوتاهی درباره این فضای کاری"
+      {% if form.description.errors %}aria-invalid="true" aria-describedby="{{ form.description.id_for_label }}-errors"{% endif %}
+    >{{ form.description.value|default_if_none:'' }}</textarea>
   </div>
-  {% for error in form.description.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+  {% if form.description.errors %}
+    <div id="{{ form.description.id_for_label }}-errors" data-localize-product-copy>
+      {% for error in form.description.errors %}<p class="error-text">{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
 </div>

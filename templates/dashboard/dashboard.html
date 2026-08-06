@@ -1,18 +1,10 @@
 {% extends "base.html" %}
 
-{% block data_page %}
-  dashboard
-{% endblock data_page %}
-
-{% block title %}
-  TaskFlow | داشبورد
-{% endblock title %}
+{% block data_page %}dashboard{% endblock data_page %}
+{% block title %}TaskFlow | داشبورد{% endblock title %}
 
 {% block content %}
-<section
-  class="dashboard-welcome glass-panel animated-border"
-  data-reveal
->
+<section class="dashboard-welcome glass-panel" data-reveal>
   <div class="dashboard-welcome__identity">
     <a
       class="profile-avatar-lg profile-avatar-lg--interactive"
@@ -20,69 +12,24 @@
       aria-label="مشاهده پروفایل"
     >
       {% if request.user.avatar %}
-        <img
-          src="{{ request.user.avatar.url }}"
-          alt="{{ request.user.get_full_name|default:request.user.username }}"
-        >
+        <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}">
       {% else %}
-        <span class="avatar-initials">
-          {{ request.user.first_name|default:request.user.username|slice:":1" }}
-        </span>
+        <span class="avatar-initials">{{ request.user.first_name|default:request.user.username|slice:":1" }}</span>
       {% endif %}
-
-      <span
-        class="profile-avatar-lg__status"
-        title="حساب فعال"
-      ></span>
+      <span class="profile-avatar-lg__status" aria-hidden="true"></span>
     </a>
 
     <div class="dashboard-welcome__copy">
-      <span class="badge badge-primary">
-        <svg class="tf-icon">
-          <use href="#icon-sparkles"></use>
-        </svg>
-
-        خوش برگشتی
-      </span>
-
-      <h1>
-        {{ request.user.first_name|default:request.user.username }}،
-        نمای امروز کارهایت آماده است.
-      </h1>
-
-      <p>
-        Taskهای واگذارشده، موعدهای نزدیک،
-        پیشرفت Boardها و آخرین رویدادهای
-        Workspaceهای تو در این صفحه نمایش
-        داده می‌شوند.
-      </p>
+      <p class="eyebrow">نمای امروز</p>
+      <h1>{{ request.user.first_name|default:request.user.username }}، وضعیت کارهایت آماده است.</h1>
+      <p>مهلت‌های نزدیک، پیشرفت کارها و تازه‌ترین رویدادهای فضاهای کاری را یکجا ببین.</p>
 
       <div class="actions">
-        <a
-          class="btn btn-primary"
-          href="{% url 'workspaces:list' %}"
-        >
-          <svg class="tf-icon">
-            <use href="#icon-workspace"></use>
-          </svg>
-
-          Workspaceها
-        </a>
-
-        <a
-          class="btn btn-soft"
-          href="{% url 'notifications:list' %}"
-        >
-          <svg class="tf-icon">
-            <use href="#icon-bell"></use>
-          </svg>
-
+        <a class="btn btn-primary" href="{% url 'workspaces:list' %}">فضاهای کاری</a>
+        <a class="btn btn-soft" href="{% url 'notifications:list' %}">
           اعلان‌ها
-
           {% if summary.unread_notifications_count %}
-            <span class="badge badge-warning">
-              {{ summary.unread_notifications_count }}
-            </span>
+            <span class="badge badge-warning">{{ summary.unread_notifications_count }}</span>
           {% endif %}
         </a>
       </div>
@@ -90,275 +37,89 @@
   </div>
 </section>
 
-<section
-  class="stat-grid dashboard-stat-grid"
->
-  <article
-    class="stat-card stat-card--icon"
-    data-reveal
-    data-tilt
-  >
-    <span class="stat-card__icon">
-      <svg class="tf-icon">
-        <use href="#icon-workspace"></use>
-      </svg>
-    </span>
-
-    <div>
-      <div class="stat-label">
-        Workspaceها
-      </div>
-
-      <div class="stat-value">
-        {{ summary.workspaces_count }}
-      </div>
-    </div>
+<section class="stat-grid dashboard-stat-grid" aria-label="خلاصه وضعیت">
+  <article class="stat-card" data-reveal>
+    <div class="stat-label">فضاهای کاری</div>
+    <div class="stat-value">{{ summary.workspaces_count }}</div>
   </article>
-
-  <article
-    class="stat-card stat-card--icon"
-    data-reveal
-    data-tilt
-  >
-    <span class="stat-card__icon">
-      <svg class="tf-icon">
-        <use href="#icon-board"></use>
-      </svg>
-    </span>
-
-    <div>
-      <div class="stat-label">
-        Boardهای فعال
-      </div>
-
-      <div class="stat-value">
-        {{ summary.boards_count }}
-      </div>
-    </div>
+  <article class="stat-card" data-reveal>
+    <div class="stat-label">بردهای فعال</div>
+    <div class="stat-value">{{ summary.boards_count }}</div>
   </article>
-
-  <article
-    class="stat-card stat-card--icon"
-    data-reveal
-    data-tilt
-  >
-    <span class="stat-card__icon">
-      <svg class="tf-icon">
-        <use href="#icon-check-square"></use>
-      </svg>
-    </span>
-
-    <div>
-      <div class="stat-label">
-        Taskهای واگذارشده
-      </div>
-
-      <div class="stat-value">
-        {{ summary.assigned_tasks_count }}
-      </div>
-    </div>
+  <article class="stat-card" data-reveal>
+    <div class="stat-label">کارهای واگذارشده</div>
+    <div class="stat-value">{{ summary.assigned_tasks_count }}</div>
   </article>
-
-  <article
-    class="stat-card stat-card--icon"
-    data-reveal
-    data-tilt
-  >
-    <span class="stat-card__icon">
-      <svg class="tf-icon">
-        <use href="#icon-alert"></use>
-      </svg>
-    </span>
-
-    <div>
-      <div class="stat-label">
-        عقب‌افتاده
-      </div>
-
-      <div class="stat-value">
-        {{ summary.overdue_tasks_count }}
-      </div>
-    </div>
+  <article class="stat-card" data-reveal>
+    <div class="stat-label">عقب‌افتاده</div>
+    <div class="stat-value">{{ summary.overdue_tasks_count }}</div>
   </article>
-
-  <article
-    class="stat-card stat-card--icon"
-    data-reveal
-    data-tilt
-  >
-    <span class="stat-card__icon">
-      <svg class="tf-icon">
-        <use href="#icon-calendar"></use>
-      </svg>
-    </span>
-
-    <div>
-      <div class="stat-label">
-        موعد هفت روز آینده
-      </div>
-
-      <div class="stat-value">
-        {{ summary.due_soon_tasks_count }}
-      </div>
-    </div>
+  <article class="stat-card" data-reveal>
+    <div class="stat-label">مهلت هفت روز آینده</div>
+    <div class="stat-value">{{ summary.due_soon_tasks_count }}</div>
   </article>
-
-  <article
-    class="stat-card stat-card--icon"
-    data-reveal
-    data-tilt
-  >
-    <span class="stat-card__icon">
-      <svg class="tf-icon">
-        <use href="#icon-check"></use>
-      </svg>
-    </span>
-
-    <div>
-      <div class="stat-label">
-        انجام‌شده
-      </div>
-
-      <div class="stat-value">
-        {{ summary.completed_tasks_count }}
-      </div>
-    </div>
+  <article class="stat-card" data-reveal>
+    <div class="stat-label">انجام‌شده</div>
+    <div class="stat-value">{{ summary.completed_tasks_count }}</div>
   </article>
 </section>
 
 <section class="dashboard-grid">
-  <article
-    class="panel"
-    data-reveal
-  >
+  <article class="panel" data-reveal>
     <div class="spread workspace-section-head">
       <div>
-        <h2 class="card-title">
-          <svg class="tf-icon title-icon">
-            <use href="#icon-zap"></use>
-          </svg>
-
-          پیشرفت Taskهای من
-        </h2>
-
-        <p class="card-text">
-          Taskهای لغوشده در محاسبه پیشرفت
-          قرار نمی‌گیرند.
-        </p>
+        <h2 class="card-title">پیشرفت کارهای من</h2>
+        <p class="card-text">کارهای لغوشده در این محاسبه قرار نمی‌گیرند.</p>
       </div>
-
-      <span class="badge badge-primary">
-        {{ user_progress.progress_percentage }}٪
-      </span>
+      <strong>{{ user_progress.progress_percentage }}٪</strong>
     </div>
 
     <progress
       max="100"
       value="{{ user_progress.progress_percentage }}"
-      aria-label="درصد پیشرفت Taskهای کاربر"
-    >
-      {{ user_progress.progress_percentage }}٪
-    </progress>
+      aria-label="درصد پیشرفت کارهای کاربر"
+    >{{ user_progress.progress_percentage }}٪</progress>
 
-    <div class="meta-row">
-      <span class="badge">
-        کل:
-        {{ user_progress.total }}
-      </span>
-
-      <span class="badge badge-success">
-        تکمیل:
-        {{ user_progress.completed }}
-      </span>
-
-      <span class="badge badge-info">
-        در حال انجام:
-        {{ user_progress.in_progress }}
-      </span>
-
-      <span class="badge badge-warning">
-        مسدود:
-        {{ user_progress.blocked }}
-      </span>
+    <div class="meta-row" aria-label="جزئیات پیشرفت">
+      <span>کل: {{ user_progress.total }}</span>
+      <span>تکمیل: {{ user_progress.completed }}</span>
+      <span>در حال انجام: {{ user_progress.in_progress }}</span>
+      <span>مسدود: {{ user_progress.blocked }}</span>
     </div>
   </article>
 
-  <article
-    class="panel"
-    data-reveal
-  >
+  <article class="panel" data-reveal>
     <div class="spread workspace-section-head">
-      <div>
-        <h2 class="card-title">
-          <svg class="tf-icon title-icon">
-            <use href="#icon-bell"></use>
-          </svg>
-
-          اعلان‌های اخیر
-        </h2>
-      </div>
-
-      <a
-        class="btn btn-ghost"
-        href="{% url 'notifications:list' %}"
-      >
-        مشاهده همه
-      </a>
+      <h2 class="card-title">اعلان‌های اخیر</h2>
+      <a class="btn btn-ghost" href="{% url 'notifications:list' %}">مشاهده همه</a>
     </div>
 
     <div class="dashboard-workspace-list">
       {% for notification in recent_notifications %}
         <a
           class="dashboard-workspace-item"
-          href="{{ notification.target_url|default:'#' }}"
+          href="{% if notification.target_url %}{{ notification.target_url }}{% else %}{% url 'notifications:list' %}{% endif %}"
         >
-          <span class="dashboard-workspace-item__mark">
-            <svg class="tf-icon">
-              <use href="#icon-bell"></use>
-            </svg>
-          </span>
-
           <span class="dashboard-workspace-item__copy">
-            <strong>
-              {{ notification.title }}
-            </strong>
-
-            <small>
-              {{ notification.message|truncatechars:90 }}
-            </small>
+            <strong data-localize-product-copy>{{ notification.title }}</strong>
+            <small data-localize-product-copy>{{ notification.message|truncatechars:90 }}</small>
           </span>
-
-          {% if not notification.is_read %}
-            <span class="badge badge-warning">
-              جدید
-            </span>
-          {% endif %}
+          {% if not notification.is_read %}<span class="badge badge-warning">جدید</span>{% endif %}
         </a>
       {% empty %}
         <div class="empty-state dashboard-empty-state">
-          <h3>
-            اعلانی وجود ندارد
-          </h3>
+          <h3>اعلان تازه‌ای نداری</h3>
+          <p class="card-text">وقتی رویداد مهمی رخ دهد، اینجا نمایش داده می‌شود.</p>
+          <a class="btn btn-ghost" href="{% url 'notifications:list' %}">مرکز اعلان‌ها</a>
         </div>
       {% endfor %}
     </div>
   </article>
 </section>
 
-<section
-  class="workspace-list-section"
-  data-reveal
->
-  <div class="spread workspace-section-head">
-    <div>
-      <h2 class="card-title">
-        <svg class="tf-icon title-icon">
-          <use href="#icon-alert"></use>
-        </svg>
-
-        Taskهای عقب‌افتاده
-      </h2>
-    </div>
+<section class="workspace-list-section" data-reveal>
+  <div class="workspace-section-head">
+    <h2 class="card-title">کارهای عقب‌افتاده</h2>
   </div>
 
   {% if overdue_tasks %}
@@ -367,63 +128,28 @@
         <article class="workspace-card">
           <div class="workspace-card__main">
             <div class="workspace-card__content">
-              <h3>
-                {{ task.title }}
-              </h3>
-
-              <p>
-                {{ task.column.board.workspace.name }}
-                /
-                {{ task.column.board.title }}
-              </p>
+              <h3>{{ task.title }}</h3>
+              <p>{{ task.column.board.workspace.name }} / {{ task.column.board.title }}</p>
             </div>
-
             <div class="meta-row">
-              <span class="badge badge-danger">
-                موعد:
-                {{ task.due_at|date:"Y/m/d H:i" }}
-              </span>
-
-              <span class="badge">
-                {{ task.get_status_display }}
-              </span>
+              <span class="badge badge-danger">مهلت: {{ task.due_at|date:"Y/m/d H:i" }}</span>
+              <span>{{ task.get_status_display }}</span>
             </div>
           </div>
-
           <footer class="workspace-card__footer">
-            <a
-              class="btn btn-primary"
-              href="{% url 'tasks:detail' task.column.board.workspace_id task.column.board_id task.column_id task.pk %}"
-            >
-              مشاهده Task
-            </a>
+            <a class="btn btn-primary" href="{% url 'tasks:detail' task.column.board.workspace_id task.column.board_id task.column_id task.pk %}">مشاهده کار</a>
           </footer>
         </article>
       {% endfor %}
     </div>
   {% else %}
-    <div class="empty-state">
-      <h3>
-        Task عقب‌افتاده‌ای نداری
-      </h3>
-    </div>
+    <div class="empty-state"><h3>کار عقب‌افتاده‌ای نداری</h3><p>همه‌چیز فعلاً طبق برنامه پیش می‌رود.</p></div>
   {% endif %}
 </section>
 
-<section
-  class="workspace-list-section"
-  data-reveal
->
-  <div class="spread workspace-section-head">
-    <div>
-      <h2 class="card-title">
-        <svg class="tf-icon title-icon">
-          <use href="#icon-calendar"></use>
-        </svg>
-
-        موعدهای نزدیک
-      </h2>
-    </div>
+<section class="workspace-list-section" data-reveal>
+  <div class="workspace-section-head">
+    <h2 class="card-title">مهلت‌های نزدیک</h2>
   </div>
 
   {% if due_soon_tasks %}
@@ -432,69 +158,29 @@
         <article class="workspace-card">
           <div class="workspace-card__main">
             <div class="workspace-card__content">
-              <h3>
-                {{ task.title }}
-              </h3>
-
-              <p>
-                {{ task.column.board.workspace.name }}
-                /
-                {{ task.column.board.title }}
-              </p>
+              <h3>{{ task.title }}</h3>
+              <p>{{ task.column.board.workspace.name }} / {{ task.column.board.title }}</p>
             </div>
-
             <div class="meta-row">
-              <span class="badge badge-warning">
-                {{ task.due_at|date:"Y/m/d H:i" }}
-              </span>
-
-              <span class="badge">
-                {{ task.get_priority_display }}
-              </span>
+              <span class="badge badge-warning">{{ task.due_at|date:"Y/m/d H:i" }}</span>
+              <span>{{ task.get_priority_display }}</span>
             </div>
           </div>
-
           <footer class="workspace-card__footer">
-            <a
-              class="btn btn-primary"
-              href="{% url 'tasks:detail' task.column.board.workspace_id task.column.board_id task.column_id task.pk %}"
-            >
-              مشاهده Task
-            </a>
+            <a class="btn btn-primary" href="{% url 'tasks:detail' task.column.board.workspace_id task.column.board_id task.column_id task.pk %}">مشاهده کار</a>
           </footer>
         </article>
       {% endfor %}
     </div>
   {% else %}
-    <div class="empty-state">
-      <h3>
-        موعد نزدیکی وجود ندارد
-      </h3>
-    </div>
+    <div class="empty-state"><h3>مهلت نزدیکی وجود ندارد</h3><p>برای هفت روز آینده کاری سررسید نمی‌شود.</p></div>
   {% endif %}
 </section>
 
-<section
-  class="workspace-list-section"
-  data-reveal
->
+<section class="workspace-list-section" data-reveal>
   <div class="spread workspace-section-head">
-    <div>
-      <h2 class="card-title">
-        <svg class="tf-icon title-icon">
-          <use href="#icon-workspace"></use>
-        </svg>
-
-        وضعیت Workspaceها
-      </h2>
-    </div>
-
-    <a
-      class="btn btn-ghost"
-      href="{% url 'workspaces:list' %}"
-    >
-      مشاهده همه
-    </a>
+    <h2 class="card-title">وضعیت فضاهای کاری</h2>
+    <a class="btn btn-ghost" href="{% url 'workspaces:list' %}">مشاهده همه</a>
   </div>
 
   {% if workspace_summaries %}
@@ -503,190 +189,79 @@
         <article class="workspace-card">
           <div class="workspace-card__main">
             <div class="workspace-card__content">
-              <h3>
-                {{ item.workspace.name }}
-              </h3>
-
-              <p>
-                {{ item.workspace.description|default:"بدون توضیح"|truncatechars:100 }}
-              </p>
+              <h3>{{ item.workspace.name }}</h3>
+              <p>{{ item.workspace.description|default:"بدون توضیح"|truncatechars:100 }}</p>
             </div>
-
             <div class="meta-row">
-              <span class="badge">
-                {{ item.boards_count }}
-                Board
-              </span>
-
-              <span class="badge badge-info">
-                {{ item.tasks_count }}
-                Task
-              </span>
-
-              {% if item.overdue_tasks_count %}
-                <span class="badge badge-danger">
-                  {{ item.overdue_tasks_count }}
-                  عقب‌افتاده
-                </span>
-              {% endif %}
+              <span>{{ item.boards_count }} برد</span>
+              <span>{{ item.tasks_count }} کار</span>
+              {% if item.overdue_tasks_count %}<span class="badge badge-danger">{{ item.overdue_tasks_count }} عقب‌افتاده</span>{% endif %}
             </div>
-
-            <progress
-              max="100"
-              value="{{ item.progress_percentage }}"
-            >
-              {{ item.progress_percentage }}٪
-            </progress>
-
-            <strong>
-              {{ item.progress_percentage }}٪
-              پیشرفت
-            </strong>
+            <progress max="100" value="{{ item.progress_percentage }}" aria-label="پیشرفت {{ item.workspace.name }}">{{ item.progress_percentage }}٪</progress>
+            <strong>{{ item.progress_percentage }}٪ پیشرفت</strong>
           </div>
-
           <footer class="workspace-card__footer">
-            <a
-              class="btn btn-primary"
-              href="{% url 'workspaces:detail' item.workspace.pk %}"
-            >
-              ورود به Workspace
-            </a>
+            <a class="btn btn-primary" href="{% url 'workspaces:detail' item.workspace.pk %}">باز کردن فضای کاری</a>
           </footer>
         </article>
       {% endfor %}
     </div>
   {% else %}
     <div class="empty-state">
-      <h3>
-        هنوز Workspace فعالی نداری
-      </h3>
+      <h3>هنوز فضای کاری فعالی نداری</h3>
+      <p>یک فضای کاری بساز تا پروژه‌ها و همکارانت را سامان بدهی.</p>
+      <a class="btn btn-primary" href="{% url 'workspaces:create' %}">ساخت فضای کاری</a>
     </div>
   {% endif %}
 </section>
 
-<section
-  class="workspace-list-section"
-  data-reveal
->
-  <div class="spread workspace-section-head">
-    <div>
-      <h2 class="card-title">
-        <svg class="tf-icon title-icon">
-          <use href="#icon-board"></use>
-        </svg>
-
-        Boardهای اخیر
-      </h2>
-    </div>
-  </div>
+<section class="workspace-list-section" data-reveal>
+  <div class="workspace-section-head"><h2 class="card-title">بردهای اخیر</h2></div>
 
   {% if board_summaries %}
     <div class="workspace-grid">
       {% for item in board_summaries %}
         <article class="workspace-card">
           <div class="workspace-card__main">
-            <div class="workspace-card__content">
-              <h3>
-                {{ item.board.title }}
-              </h3>
-
-              <p>
-                {{ item.workspace.name }}
-              </p>
-            </div>
-
-            <div class="meta-row">
-              <span class="badge">
-                {{ item.columns_count }}
-                ستون
-              </span>
-
-              <span class="badge badge-info">
-                {{ item.tasks_count }}
-                Task
-              </span>
-            </div>
-
-            <progress
-              max="100"
-              value="{{ item.progress_percentage }}"
-            >
-              {{ item.progress_percentage }}٪
-            </progress>
-
-            <strong>
-              {{ item.progress_percentage }}٪
-              پیشرفت
-            </strong>
+            <div class="workspace-card__content"><h3>{{ item.board.title }}</h3><p>{{ item.workspace.name }}</p></div>
+            <div class="meta-row"><span>{{ item.columns_count }} ستون</span><span>{{ item.tasks_count }} کار</span></div>
+            <progress max="100" value="{{ item.progress_percentage }}" aria-label="پیشرفت {{ item.board.title }}">{{ item.progress_percentage }}٪</progress>
+            <strong>{{ item.progress_percentage }}٪ پیشرفت</strong>
           </div>
-
           <footer class="workspace-card__footer">
-            <a
-              class="btn btn-primary"
-              href="{% url 'boards:detail' item.workspace.pk item.board.pk %}"
-            >
-              مشاهده Board
-            </a>
+            <a class="btn btn-primary" href="{% url 'boards:detail' item.workspace.pk item.board.pk %}">مشاهده برد</a>
           </footer>
         </article>
       {% endfor %}
     </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>هنوز برد فعالی نداری</h3>
+      <p>پس از ورود به یک فضای کاری می‌توانی بردهای آن را ببینی یا برد تازه‌ای بسازی.</p>
+      <a class="btn btn-ghost" href="{% url 'workspaces:list' %}">رفتن به فضاهای کاری</a>
+    </div>
   {% endif %}
 </section>
 
-<section
-  class="workspace-list-section"
-  data-reveal
->
-  <div class="spread workspace-section-head">
-    <div>
-      <h2 class="card-title">
-        <svg class="tf-icon title-icon">
-          <use href="#icon-clock"></use>
-        </svg>
-
-        فعالیت‌های اخیر
-      </h2>
-    </div>
-  </div>
-
+<section class="workspace-list-section" data-reveal>
+  <div class="workspace-section-head"><h2 class="card-title">فعالیت‌های اخیر</h2></div>
   <div class="dashboard-workspace-list">
     {% for activity in recent_activities %}
       <a
         class="dashboard-workspace-item"
         href="{% url 'tasks:detail' activity.task.column.board.workspace_id activity.task.column.board_id activity.task.column_id activity.task_id %}"
       >
-        <span class="dashboard-workspace-item__mark">
-          <svg class="tf-icon">
-            <use href="#icon-zap"></use>
-          </svg>
-        </span>
-
         <span class="dashboard-workspace-item__copy">
-          <strong>
-            {{ activity.get_action_display }}
-          </strong>
-
+          <strong data-localize-product-copy>{{ activity.get_action_display }}</strong>
           <small>
-            {{ activity.task.title }}
-            ·
-            {% if activity.actor %}
-              {{ activity.actor.get_full_name|default:activity.actor.username }}
-            {% else %}
-              سیستم
-            {% endif %}
-            ·
-            {{ activity.created_at|timesince }}
-            پیش
+            {{ activity.task.title }} ·
+            {% if activity.actor %}{{ activity.actor.get_full_name|default:activity.actor.username }}{% else %}سیستم{% endif %}
+            · {{ activity.created_at|timesince }} پیش
           </small>
         </span>
       </a>
     {% empty %}
-      <div class="empty-state dashboard-empty-state">
-        <h3>
-          هنوز فعالیتی ثبت نشده است
-        </h3>
-      </div>
+      <div class="empty-state dashboard-empty-state"><h3>هنوز فعالیتی ثبت نشده است</h3><p>با شروع کار روی پروژه‌ها، رویدادها اینجا دیده می‌شوند.</p></div>
     {% endfor %}
   </div>
 </section>

@@ -20,7 +20,7 @@
 
 {% block content %}
 <section
-  class="workspace-detail-hero animated-border"
+  class="workspace-detail-hero"
   data-reveal
 >
   <div
@@ -65,7 +65,7 @@
       {% if board.description %}
         {{ board.description }}
       {% else %}
-        برای این Board هنوز توضیحی ثبت نشده است.
+        برای این برد هنوز توضیحی ثبت نشده است.
       {% endif %}
     </p>
   </div>
@@ -83,7 +83,7 @@
           <use href="#icon-edit"></use>
         </svg>
 
-        ویرایش Board
+        ویرایش برد
       </a>
     {% endif %}
 
@@ -105,7 +105,7 @@
             <use href="#icon-archive"></use>
           </svg>
 
-          آرشیو Board
+          آرشیو برد
         </button>
       </form>
     {% endif %}
@@ -121,7 +121,7 @@
         <use href="#icon-arrow-right"></use>
       </svg>
 
-      همه Boardها
+      همه بردها
     </a>
   </div>
 </section>
@@ -130,7 +130,6 @@
   <article
     class="stat-card stat-card--icon"
     data-reveal
-    data-tilt
   >
     <span class="stat-card__icon">
       <svg
@@ -155,7 +154,6 @@
   <article
     class="stat-card stat-card--icon"
     data-reveal
-    data-tilt
   >
     <span class="stat-card__icon">
       <svg
@@ -184,7 +182,6 @@
   <article
     class="stat-card stat-card--icon"
     data-reveal
-    data-tilt
   >
     <span class="stat-card__icon">
       <svg
@@ -209,7 +206,6 @@
   <article
     class="stat-card stat-card--icon"
     data-reveal
-    data-tilt
   >
     <span class="stat-card__icon">
       <svg
@@ -246,12 +242,12 @@
           <use href="#icon-columns"></use>
         </svg>
 
-        ستون‌های Board
+        ستون‌های برد
       </h2>
 
       <p class="card-text">
         ستون‌ها جریان انجام کارها را در این
-        Board مشخص می‌کنند.
+        برد مشخص می‌کنند.
       </p>
     </div>
 
@@ -320,7 +316,7 @@
         data-drag-enabled="{{ can_drag_tasks|yesno:'true,false' }}"
         data-column-drag-enabled="{{ can_drag_columns|yesno:'true,false' }}"
         data-column-count="{{ columns_count }}"
-        aria-label="ستون‌های Board {{ board.title }}"
+        aria-label="ستون‌های برد {{ board.title }}"
       >
         {% for column in columns %}
           {% include "columns/includes/_board_column_card.html" with column=column column_number=forloop.counter is_first=forloop.first is_last=forloop.last %}
@@ -345,7 +341,7 @@
       <p class="page-subtitle">
         ستون‌هایی مانند «برای انجام»،
         «در حال انجام» و «انجام‌شده»
-        جریان کار Board را تشکیل می‌دهند.
+        جریان کار برد را تشکیل می‌دهند.
       </p>
 
       {% if can_create_column %}
@@ -364,7 +360,7 @@
         </a>
       {% else %}
         <span class="badge badge-info">
-          نقش Viewer فقط اجازه مشاهده دارد
+          نقش مشاهده‌گر فقط اجازه مشاهده دارد
         </span>
       {% endif %}
     </div>
@@ -385,11 +381,11 @@
           <use href="#icon-info"></use>
         </svg>
 
-        اطلاعات Board
+        اطلاعات برد
       </h2>
 
       <p class="card-text">
-        اطلاعات ثبت‌شده درباره این Board.
+        اطلاعات ثبت‌شده درباره این برد.
       </p>
     </div>
   </div>
@@ -397,7 +393,7 @@
   <div class="info-list">
     <div class="info-row">
       <span>
-        Workspace
+        فضای کاری
       </span>
 
       <strong>
@@ -443,14 +439,19 @@
   {{ block.super }}
 
   {% if can_drag_tasks or can_drag_columns %}
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"
+      integrity="sha384-DgmC6Xe2bSN2WjTDXzWYbUbxyhNP+NNkGDR/g78pCXV7E7rcVTGxVg0uIVCUUcBc"
+      crossorigin="anonymous"
+    ></script>
   {% endif %}
 
   {% if can_drag_tasks %}
-    <script src="{% static 'js/task-drag-drop.js' %}"></script>
+    <script defer src="{% static 'js/task-drag-drop.js' %}"></script>
   {% endif %}
 
   {% if can_drag_columns %}
-    <script src="{% static 'js/column-drag-drop.js' %}"></script>
+    <script defer src="{% static 'js/column-drag-drop.js' %}"></script>
   {% endif %}
 {% endblock extra_js %}

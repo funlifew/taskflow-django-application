@@ -1,0 +1,44 @@
+{% load static %}
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <title>TaskFlow | دسترسی محدود</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+  <script>
+    try {
+      const theme = localStorage.getItem("taskflow-theme");
+      document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light";
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/glass-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ui-stabilization.css' %}">
+</head>
+<body class="error-page" data-page="error">
+  {% include "includes/icon_sprite.html" %}
+  <a class="skip-link" href="#main-content">رفتن به محتوای اصلی</a>
+
+  <nav class="landing-nav" aria-label="ناوبری صفحه خطا">
+    <div class="container landing-nav-inner">
+      <a class="brand" href="/"><span class="brand-mark">T</span><span>TaskFlow</span></a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="تغییر پوسته رنگی"><span data-theme-icon aria-hidden="true">🌙</span></button>
+    </div>
+  </nav>
+
+  <main class="container page" id="main-content">
+    <section class="empty-state glass-panel" aria-labelledby="error-title">
+      <span class="badge badge-warning">خطای ۴۰۳</span>
+      <div class="empty-icon" aria-hidden="true"><svg class="tf-icon"><use href="#icon-shield-check"></use></svg></div>
+      <h1 id="error-title">به این بخش دسترسی نداری</h1>
+      <p class="page-subtitle">ممکن است نقش فعلی تو اجازه مشاهده این صفحه را ندهد. از مدیر فضای کاری راهنمایی بگیر.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/">بازگشت امن به صفحهٔ اصلی</a>
+      </div>
+    </section>
+  </main>
+  <script defer src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
