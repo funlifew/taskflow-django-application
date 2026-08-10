@@ -286,3 +286,15 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python,django,dotenv
 
+
+
+# =========================================================
+# TaskFlow runtime / deployment artifacts
+# =========================================================
+
+staticfiles/
+test-media/
+
+.env*
+!.env.example
+!.env.production.example
