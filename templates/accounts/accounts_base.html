@@ -9,7 +9,7 @@
   <title>{% block title %}TaskFlow{% endblock title %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
 
-  <script>
+  <script nonce="{{ csp_nonce }}">
     (() => {
       try {
         const saved = localStorage.getItem("taskflow-theme");

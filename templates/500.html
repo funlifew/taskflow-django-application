@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#0b1020">
   <title>TaskFlow | خطای داخلی</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
-  <script>
+  <script nonce="{{ csp_nonce }}">
     try {
       const theme = localStorage.getItem("taskflow-theme");
       document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light";
