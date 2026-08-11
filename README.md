@@ -1,434 +1,858 @@
 <div align="center">
 
-# 🚀 TaskFlow
+# ✨ TaskFlow
 
-### A modern, secure and scalable task management platform built with Django
+### Persian-first collaborative task management built with Django
 
-<p>
-  TaskFlow is a Persian-first collaborative task management application designed around
-  workspaces, role-based permissions and secure team collaboration.
-</p>
+<p> A portfolio project focused on backend architecture, transactional business logic, role-based access control, testing, interactive taًsk workflows, and modern RTL UI/UX. </p>
 
-[![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge\&logo=python\&logoColor=white)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/Django-6.0-092E20?style=for-the-badge\&logo=django\&logoColor=white)](https://www.djangoproject.com/)
-[![Redis](https://img.shields.io/badge/Redis-Cache-DC382D?style=for-the-badge\&logo=redis\&logoColor=white)](https://redis.io/)
-[![Poetry](https://img.shields.io/badge/Poetry-Dependency_Manager-60A5FA?style=for-the-badge\&logo=poetry\&logoColor=white)](https://python-poetry.org/)
-[![Tests](https://img.shields.io/badge/Tests-Automated-success?style=for-the-badge\&logo=pytest\&logoColor=white)](#-testing)
-[![Status](https://img.shields.io/badge/Status-Active_Development-orange?style=for-the-badge)](#-project-status)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](#-license)
+
+
+
+
+
+\
 
 <br>
 
+[Overview](#-overview) ·
 [Features](#-features) ·
-[Architecture](#-project-architecture) ·
-[Installation](#-getting-started) ·
-[Testing](#-testing) ·
-[Roadmap](#-roadmap)
+[Architecture](#-architecture) ·
+[Stack](#-technology-stack) ·
+[Setup](#-getting-started) ·
+[Tests](#-testing) ·
+[Roadmap](#-remaining-roadmap)
 
 </div>
 
 ---
 
-## 📖 About TaskFlow
+## 📖 Overview
 
-**TaskFlow** is a server-rendered task management application built with Django.
+**TaskFlow** is a full-stack Django portfolio project for collaborative task and project management.
 
-The project is being developed as a production-oriented backend portfolio project, with an emphasis on:
+The project was built primarily to demonstrate backend engineering and application architecture skills rather than to operate as a commercial production service.
 
-* Clean application architecture
-* Secure authentication flows
-* Role-based access control
-* Transaction-safe business logic
+Its main focus areas are:
+
+* Django application architecture
+* Service and selector layers
+* Role-based authorization
+* Resource hierarchy validation
+* Transaction-safe mutations
+* Database constraints
+* Drag-and-drop ordering
+* Notification workflows
+* Email verification
+* Redis-backed coordination
 * Automated testing
-* Reusable Django components
-* Responsive Persian RTL user interface
+* Responsive Persian RTL interfaces
+* Modern frontend interaction and motion
 
-TaskFlow is not just a collection of CRUD pages. Its architecture is designed to support a complete collaborative workflow:
+TaskFlow follows the hierarchy:
 
 ```text
 Workspace
 └── Board
     └── Column
         └── Task
+            ├── Comments
+            └── Activity history
 ```
 
-The authentication, dashboard and workspace foundations are already implemented. Boards, columns and tasks are the next major development phases.
+The application is server-rendered with Django Templates while JavaScript is used selectively for richer interactions such as drag-and-drop, responsive navigation, notifications, Three.js visuals, and UI motion.
 
 ---
 
-## ✨ Features
+## 🎯 Project Purpose
 
-### 🔐 Authentication and Accounts
+TaskFlow is a **portfolio and learning project**.
+
+It is intended to demonstrate how I approach:
+
+* Domain modeling
+* Business rules
+* Database integrity
+* Permissions
+* Transactions
+* Reusable application services
+* Query organization
+* Testing
+* Frontend/backend integration
+* Maintainable Django project structure
+
+The repository also contains environment-specific deployment configuration for PostgreSQL, Redis, SMTP, CSP, Gunicorn, and HTTPS-related Django settings.
+
+Those configurations exist to demonstrate deployment awareness and environment separation.
+
+They should not be interpreted as a claim that TaskFlow is currently operated as a production SaaS.
+
+---
+
+# ✨ Features
+
+## 🔐 Authentication & Accounts
+
+TaskFlow includes a complete custom authentication flow.
+
+### Account lifecycle
 
 * Custom Django user model
-* User registration
-* Case-insensitive unique email addresses
-* Automatic email normalization
-* Inactive accounts before email verification
-* Secure account activation tokens
-* Email verification flow
-* Activation email resend
-* Redis-backed resend cooldown
-* Protection against account enumeration
-* Login and logout
+* Registration
+* Normalized email addresses
+* Case-insensitive email uniqueness
+* Inactive account creation
+* Email verification before activation
+* Secure activation tokens
+* Activation-link validation
+* Activation resend flow
+* Resend cooldown
+* Login
+* Logout
 * Password reset by email
 * Authenticated password change
 * Session preservation after password change
 
-### 👤 User Profile
+### Activation protection
 
-* Personal profile page
-* First name and last name editing
-* Username editing
-* Case-insensitive username validation
-* Personal biography
-* Profile avatar upload
-* Supported avatar formats:
+Activation email resends use an atomic cache lock.
 
-  * JPG
-  * JPEG
-  * PNG
-  * WEBP
-  * GIF
-* Maximum avatar size validation
-* Secure randomized avatar filenames
-* User-specific avatar directories
-
-### 🏢 Workspace Management
-
-* Create workspaces
-* View accessible workspaces
-* Search workspaces
-* Update workspaces
-* Delete workspaces
-* Archive-aware access control
-* Workspace member listing
-* Workspace statistics
-* Membership roles
-* Role-based permission checks
-* Workspace invitation system
-* Email invitation delivery
-* Invitation expiration
-* Invitation acceptance
-* Invitation rejection
-* Duplicate invitation protection
-* Transaction-safe invitation processing
-* Concurrent request protection using database row locks
-
-### 🛡️ Role-Based Access Control
-
-TaskFlow currently supports four workspace roles:
-
-| Role       | Capabilities                                                                     |
-| ---------- | -------------------------------------------------------------------------------- |
-| **Owner**  | Full workspace control, member management, role management, editing and deletion |
-| **Admin**  | Invite users and manage members or viewers                                       |
-| **Member** | Access workspace content and member information                                  |
-| **Viewer** | Read-only workspace access                                                       |
-
-Important permission rules include:
-
-* A workspace owner cannot be removed through the member removal flow.
-* Only the owner can promote another user to Admin.
-* Admins cannot update or remove other Admins.
-* Members and Viewers cannot invite or manage users.
-* Archived workspaces cannot be accessed through normal workspace routes.
-* Workspace invitations cannot grant the Owner role.
-
-### 🎨 User Interface
-
-* Persian-first interface
-* RTL layout
-* Responsive design
-* Reusable Django templates
-* Custom form components
-* Styled validation messages
-* Role badges
-* User avatars
-* Workspace cards
-* Authentication pages
-* Profile pages
-* Member management pages
-* Invitation pages
-* Custom error pages
-
-### 🧪 Automated Tests
-
-The project includes automated tests for:
-
-* User model behavior
-* Email normalization
-* Database constraints
-* Registration forms
-* Profile forms
-* Authentication tokens
-* Activation email services
-* Redis cooldown behavior
-* Registration flow
-* Account activation
-* Login and logout
-* Password reset
-* Password change
-* Dashboard access
-* Profile updates
-* Avatar validation
-* Workspace models
-* Workspace forms
-* Workspace services
-* Workspace invitations
-* Workspace permissions
-* Workspace views
-* Member role management
-
----
-
-## 🔒 Security and Reliability
-
-TaskFlow applies several defensive patterns throughout the application.
-
-### Authentication security
-
-* Users remain inactive before email verification.
-* Activation tokens become invalid after account activation.
-* Activation tokens depend on the user's email and verification state.
-* Email addresses are unique regardless of letter casing.
-* Resend responses do not reveal whether an account exists.
-
-### Rate limiting
-
-Activation emails use an atomic Redis cache lock:
+Example cache key:
 
 ```text
 user:<user-id>:verification:resend-lock
 ```
 
-This prevents repeated or concurrent activation-email requests during the cooldown period.
+This prevents duplicate concurrent resend requests during the cooldown period.
 
-### Transaction safety
+---
 
-Important business operations are executed inside database transactions.
+## 👤 Profile Management
 
-Invitation acceptance and rejection use:
+Users can manage their personal profile.
+
+Supported functionality includes:
+
+* First name
+* Last name
+* Username
+* Biography
+* Avatar upload
+* Avatar replacement
+* Image-type validation
+* File-size validation
+* Randomized stored filenames
+* User-specific avatar paths
+
+Supported image formats include:
+
+```text
+JPG
+JPEG
+PNG
+WEBP
+GIF
+```
+
+---
+
+# 🏢 Workspaces
+
+Workspaces are the highest-level collaborative resource.
+
+Users can:
+
+* Create workspaces
+* View accessible workspaces
+* Search workspaces
+* Update workspaces
+* Archive workspaces
+* Restore archived workspaces
+* Permanently remove eligible archived resources
+* View workspace members
+* Invite users
+* Accept invitations
+* Reject invitations
+* Manage member roles
+* Remove eligible members
+
+Invitation handling includes:
+
+* Expiration
+* Unique tokens
+* Email ownership checks
+* Duplicate invitation protection
+* Transactional acceptance
+* Transactional rejection
+* Database row locking
+
+---
+
+# 🛡️ Role-Based Access Control
+
+TaskFlow currently supports four workspace roles:
+
+| Role       | Capabilities                                                         |
+| ---------- | -------------------------------------------------------------------- |
+| **Owner**  | Full workspace control and ownership-level administration            |
+| **Admin**  | Workspace administration and member management within defined limits |
+| **Member** | Collaborative write access to project content                        |
+| **Viewer** | Read-only access                                                     |
+
+Examples of enforced rules:
+
+* The Owner cannot be removed using the normal membership removal workflow.
+* Only the Owner can grant Admin privileges.
+* Admins cannot modify or remove other Admins.
+* Members cannot manage workspace membership.
+* Viewers cannot mutate collaborative resources.
+* Archived resources are excluded from normal active-resource flows.
+* Invitations cannot grant ownership.
+* Backend permission checks remain authoritative even when UI controls are hidden.
+
+Permissions are enforced at the backend rather than relying only on presentation logic.
+
+---
+
+# 🗂️ Boards
+
+Each workspace can contain multiple boards.
+
+Board functionality includes:
+
+* Board creation
+* Board editing
+* Board listing
+* Board detail pages
+* Archive
+* Restore
+* Permanent deletion of eligible archived boards
+* Board-level permission enforcement
+* Active/archived scoping
+* Progress summaries
+* Timestamp propagation from child mutations
+
+---
+
+# 🧱 Columns
+
+Boards contain ordered columns.
+
+Column functionality includes:
+
+* Create
+* Edit
+* Archive
+* Restore
+* Permanent deletion
+* Ordered positioning
+* Previous/next movement
+* Drag-and-drop reordering
+* Server-side ordering validation
+* Position normalization
+* Transactional updates
+
+Active column positions are kept contiguous.
+
+Reordering preserves the database uniqueness constraint by temporarily staging positions before the final order is written.
+
+---
+
+# ✅ Tasks
+
+Tasks form the main workflow unit of TaskFlow.
+
+A task supports:
+
+* Title
+* Description
+* Priority
+* Status
+* Assignee
+* Creator
+* Due date
+* Column position
+* Archive state
+* Archive timestamp
+
+## Task priority
+
+Available priorities:
+
+```text
+Low
+Medium
+High
+Urgent
+```
+
+## Task status
+
+Available statuses:
+
+```text
+To do
+In progress
+Blocked
+Done
+Canceled
+```
+
+## Assignment rules
+
+Tasks can only be assigned to users who are eligible members of the related workspace.
+
+Assignment validation is enforced in backend domain logic rather than only through forms.
+
+---
+
+# ↕️ Task Ordering & Movement
+
+Tasks support rich reordering behavior.
+
+Users with write access can:
+
+* Reorder a task inside the same column
+* Move a task between columns
+* Use drag-and-drop
+* Use server-rendered fallback movement controls
+
+The ordering implementation includes:
+
+* Transactional row locking
+* Temporary position staging
+* Position normalization
+* Optimistic frontend updates
+* Backend response reconciliation
+* Rollback on request failure
+* CSRF protection
+* Permission-aware interaction
+* Viewer read-only mode
+
+Column and Task drag operations are coordinated so overlapping writes do not conflict.
+
+---
+
+# 💬 Task Comments
+
+Tasks support collaborative comments.
+
+Features include:
+
+* Comment creation
+* Author editing
+* Soft deletion
+* Administrative moderation
+* Deleted-comment tracking
+* Comment timestamps
+* Comment author retention behavior
+
+Comment deletion stores:
+
+* Delete state
+* Deletion time
+* Deleting user
+
+Database constraints ensure the deletion state remains internally consistent.
+
+---
+
+# 🕒 Activity History
+
+Important task mutations are recorded as structured activity events.
+
+Tracked actions include:
+
+* Task creation
+* General updates
+* Status changes
+* Assignee changes
+* Movement between columns
+* Reordering
+* Comment creation
+* Comment updates
+* Comment deletion
+* Archive
+* Restore
+
+Activity entries contain structured JSON metadata where appropriate.
+
+This provides a reusable audit-style event history without introducing implicit Django signals.
+
+---
+
+# 🔔 Notifications
+
+TaskFlow includes an in-app notification domain.
+
+Supported notification events include:
+
+* Task assignment
+* Task reassignment
+* Task status changes
+* New task comments
+* Workspace invitations
+* Workspace role changes
+* Workspace membership removal
+
+Notification functionality includes:
+
+* Per-user inbox
+* Read/unread state
+* Unread counts
+* Header badge
+* Header dropdown
+* Mark one as read
+* Mark all as read
+* Related-object navigation
+* Safe redirect validation
+* User-scoped access
+
+Self-notifications are avoided where appropriate.
+
+---
+
+# 📊 Dashboard
+
+The dashboard is built from real application data rather than placeholder statistics.
+
+It includes:
+
+* Accessible workspace count
+* Active board count
+* Assigned task count
+* Completed task count
+* Overdue tasks
+* Upcoming deadlines
+* Personal progress
+* Workspace progress
+* Board progress
+* Recently assigned tasks
+* Recent task activity
+* Recent notifications
+
+Dashboard queries are scoped to resources the authenticated user is actually allowed to access.
+
+Archived workspace, board, column, and task hierarchies are excluded from normal active metrics.
+
+---
+
+# 🎨 UI / UX
+
+TaskFlow uses a Persian-first interface designed for RTL layouts.
+
+Frontend highlights include:
+
+* Full RTL layout
+* Persian interface terminology
+* Responsive mobile-first design
+* Light and dark themes
+* Glassmorphism-inspired visual system
+* Animated backgrounds
+* Three.js visual effects
+* GSAP motion
+* Responsive desktop sidebar
+* Mobile bottom navigation
+* Scrollable mobile drawer
+* Accessible focus handling
+* Reduced-motion support
+* Accessible notification interactions
+* Touch-friendly controls
+* Responsive board scrolling
+
+Interactive visual effects are treated as enhancements rather than requirements for basic application functionality.
+
+---
+
+# 🧠 Engineering Highlights
+
+TaskFlow intentionally contains several patterns that go beyond basic CRUD.
+
+## Service layer
+
+Mutation-heavy business logic is moved away from HTTP views and into reusable services.
+
+Examples include:
+
+```text
+Workspace lifecycle
+Workspace invitations
+Membership management
+Board lifecycle
+Column lifecycle
+Column reordering
+Task lifecycle
+Task reordering
+Task comments
+Task activity
+Notification delivery
+Account activation
+```
+
+Views remain primarily responsible for:
+
+* HTTP input
+* Forms
+* Messages
+* Redirects
+* JSON parsing
+* Response construction
+
+---
+
+## Selector layer
+
+Reusable ORM-heavy read operations are organized into selectors.
+
+This keeps complex query composition out of templates and reduces duplication between views and metrics.
+
+---
+
+## Transaction safety
+
+Important mutations use:
 
 ```python
 transaction.atomic()
+```
+
+and, where concurrent access matters:
+
+```python
 select_for_update()
 ```
 
-This prevents two simultaneous requests from processing the same invitation incorrectly.
+This is used in workflows such as:
 
-### Permission safety
-
-Permissions are enforced in backend mixins and querysets rather than only being hidden in the user interface.
-
-Unauthorized users receive the appropriate:
-
-* Login redirect
-* `403 Forbidden`
-* `404 Not Found`
-
-response depending on the operation.
+* Invitation processing
+* Account activation
+* Column reordering
+* Task reordering
+* Lifecycle mutations
 
 ---
 
-## 🧰 Technology Stack
+## Database constraints
 
-### Backend
+The project uses database constraints for important invariants such as:
 
-| Technology      | Usage                               |
-| --------------- | ----------------------------------- |
-| Python 3.14+    | Main programming language           |
-| Django 6        | Web framework                       |
-| SQLite          | Current development database        |
-| Redis           | Cache and activation-email cooldown |
-| django-redis    | Django cache integration            |
-| hiredis         | Faster Redis protocol parsing       |
-| Pillow          | Avatar and image handling           |
-| python-decouple | Environment variable management     |
+* Active task position uniqueness
+* Active column position uniqueness
+* Archive-state consistency
+* Comment deletion consistency
+* Notification read-state consistency
 
-### Development
-
-| Technology           | Usage                                         |
-| -------------------- | --------------------------------------------- |
-| Poetry               | Dependency and virtual environment management |
-| Django TestCase      | Automated application tests                   |
-| Django Debug Toolbar | Development diagnostics                       |
-| Redisboard           | Redis monitoring through Django Admin         |
-| IPython              | Improved interactive shell                    |
-
-### Frontend
-
-* Django Templates
-* HTML5
-* CSS3
-* Vanilla JavaScript
-* Responsive RTL design
+Application validation and database constraints are used together where appropriate.
 
 ---
 
-## 🗂️ Project Architecture
+## Explicit domain events
+
+Task activity and notifications are triggered through explicit service integration.
+
+The project intentionally avoids relying on a large implicit signal architecture for business workflows.
+
+This keeps side effects easier to trace and test.
+
+---
+
+# 🚀 Environment Architecture
+
+TaskFlow separates Django settings into dedicated environments:
+
+```text
+config/settings/
+├── base.py
+├── development.py
+├── test.py
+└── production.py
+```
+
+## Development
+
+Development uses:
+
+* SQLite
+* Console email backend
+* Debug Toolbar
+* Optional Redis
+* Optional RedisBoard
+
+Redis is not required for basic local development.
+
+## Test
+
+The isolated test environment uses:
+
+* In-memory SQLite
+* Local-memory cache
+* In-memory email backend
+* Separate test media storage
+
+The test suite does not require external Redis, PostgreSQL, or SMTP services.
+
+## Deployment profile
+
+The repository also contains an optional deployment-oriented settings profile demonstrating integration with:
+
+* PostgreSQL
+* Redis
+* SMTP
+* Gunicorn
+* Secure cookies
+* HTTPS settings
+* HSTS
+* Content Security Policy
+* Manifest static files
+* Structured logging
+
+This configuration exists as part of the engineering portfolio and deployment-learning scope.
+
+TaskFlow is not presented as a currently hosted production service.
+
+---
+
+# 💾 Caching
+
+Django's cache abstraction is used in the project.
+
+Current concrete cache usage includes the account activation resend lock.
+
+Development can optionally use Redis.
+
+The deployment-oriented configuration uses Redis as a shared cache backend.
+
+Generalized application caching for dashboard metrics and selector results is intentionally still limited and remains an area for future improvement.
+
+---
+
+# 📧 Email
+
+TaskFlow currently generates email for workflows including:
+
+* Account activation
+* Activation resend
+* Password reset
+* Workspace invitations
+
+Email templates support both text and HTML where implemented.
+
+## Development
+
+Development uses Django's console email backend.
+
+Emails and links appear directly in the terminal.
+
+## Tests
+
+Tests use Django's in-memory email backend.
+
+## Deployment profile
+
+The deployment-oriented settings support SMTP configuration through environment variables.
+
+Email delivery is currently synchronous.
+
+The project does not yet implement:
+
+* Background email queues
+* Celery workers
+* Retry scheduling
+* Delivery analytics
+* Bounce processing
+* Provider-specific webhooks
+
+Those features are outside the current portfolio scope unless added later.
+
+---
+
+# 🧰 Technology Stack
+
+## Backend
+
+| Technology               | Purpose                              |
+| ------------------------ | ------------------------------------ |
+| **Python 3.14+**         | Primary programming language         |
+| **Django 6**             | Web framework                        |
+| **SQLite**               | Local development and tests          |
+| **PostgreSQL / Psycopg** | Deployment-oriented database support |
+| **Redis**                | Shared cache support                 |
+| **django-redis**         | Django cache backend integration     |
+| **hiredis**              | Redis protocol parsing               |
+| **Pillow**               | Avatar and image processing          |
+| **python-decouple**      | Environment configuration            |
+| **Gunicorn**             | WSGI deployment configuration        |
+
+## Frontend
+
+| Technology             | Purpose                       |
+| ---------------------- | ----------------------------- |
+| **Django Templates**   | Server-rendered frontend      |
+| **HTML5**              | Semantic structure            |
+| **CSS3**               | Responsive RTL interface      |
+| **Vanilla JavaScript** | Client-side interaction       |
+| **Three.js**           | Animated 3D background        |
+| **GSAP**               | Interface motion              |
+| **SortableJS**         | Task and column drag-and-drop |
+
+## Development
+
+| Technology               | Purpose                   |
+| ------------------------ | ------------------------- |
+| **Poetry**               | Dependency management     |
+| **Django TestCase**      | Automated tests           |
+| **Django Debug Toolbar** | Development diagnostics   |
+| **RedisBoard**           | Optional Redis inspection |
+| **IPython**              | Development shell         |
+
+---
+
+# 🗂️ Architecture
 
 ```text
 taskflow-django-application/
 │
 ├── apps/
 │   ├── accounts/
-│   │   ├── models.py
-│   │   ├── forms.py
-│   │   ├── services.py
-│   │   ├── tokens.py
-│   │   ├── views.py
-│   │   ├── urls.py
-│   │   └── tests/
-│   │
-│   ├── dashboard/
-│   │   ├── forms.py
-│   │   ├── views.py
-│   │   ├── urls.py
-│   │   └── tests/
-│   │
-│   ├── workspaces/
-│   │   ├── models.py
-│   │   ├── forms.py
-│   │   ├── services.py
-│   │   ├── views.py
-│   │   ├── urls.py
-│   │   └── tests/
-│   │
 │   ├── boards/
-│   ├── tasks/
+│   ├── columns/
+│   ├── core/
+│   ├── dashboard/
 │   ├── notifications/
-│   └── core/
-│       ├── models.py
-│       ├── mixins.py
-│       └── cache_keys.py
+│   ├── tasks/
+│   └── workspaces/
 │
 ├── config/
-│   ├── settings.py
-│   ├── urls.py
+│   ├── settings/
+│   │   ├── base.py
+│   │   ├── development.py
+│   │   ├── test.py
+│   │   └── production.py
+│   │
 │   ├── asgi.py
+│   ├── urls.py
 │   └── wsgi.py
 │
 ├── static/
+│   ├── css/
+│   └── js/
+│
 ├── templates/
-├── media/
+│
 ├── manage.py
+├── gunicorn.conf.py
 ├── pyproject.toml
 ├── poetry.lock
 ├── .env.example
+├── .env.production.example
 └── README.md
 ```
 
-### Application responsibilities
+## Application responsibilities
 
-| Application     | Responsibility                                                  |
-| --------------- | --------------------------------------------------------------- |
-| `accounts`      | User model, registration, authentication and email verification |
-| `dashboard`     | Dashboard and user profile management                           |
-| `workspaces`    | Workspace CRUD, memberships, roles and invitations              |
-| `boards`        | Board and column management — planned                           |
-| `tasks`         | Task lifecycle and assignment — planned                         |
-| `notifications` | User notifications — planned                                    |
-| `core`          | Shared models, permission mixins and utility functions          |
+| Application     | Responsibility                                             |
+| --------------- | ---------------------------------------------------------- |
+| `accounts`      | Users, registration, authentication and email verification |
+| `workspaces`    | Workspaces, memberships, roles and invitations             |
+| `boards`        | Board lifecycle and board access                           |
+| `columns`       | Column lifecycle and ordering                              |
+| `tasks`         | Tasks, comments, activities and reordering                 |
+| `notifications` | In-app notification persistence and read state             |
+| `dashboard`     | User dashboard, metrics and profile                        |
+| `core`          | Shared models, permissions and utilities                   |
 
 ---
 
-## 🚀 Getting Started
+# 🚀 Getting Started
 
-### Prerequisites
+## Requirements
 
-Before installing the project, make sure you have:
+You need:
 
-* Python 3.14 or newer
+* Python 3.14+
 * Poetry
-* Redis
 * Git
 
-### 1. Clone the repository
+Redis is optional for normal local development.
+
+---
+
+## 1. Clone the project
 
 ```bash
 git clone https://github.com/funlifew/taskflow-django-application.git
 cd taskflow-django-application
 ```
 
-### 2. Install dependencies
+---
+
+## 2. Install dependencies
 
 ```bash
 poetry install
 ```
 
-### 3. Configure environment variables
+---
 
-Copy the provided example:
+## 3. Configure the development environment
+
+Copy the example file:
 
 ```bash
 cp .env.example .env
 ```
 
-On Windows Command Prompt:
+Windows CMD:
 
 ```cmd
 copy .env.example .env
 ```
 
-Default development configuration:
+Basic local development works without Redis.
+
+Example configuration:
 
 ```env
-SECRET_KEY=replace-this-with-a-secure-secret-key
-DEBUG=True
+DJANGO_SETTINGS_MODULE=config.settings.development
 
-REDIS_URL=redis://localhost:6379/1
+DEV_USE_REDIS=False
+
+REDIS_URL=redis://127.0.0.1:6379/1
+
+ENABLE_REDISBOARD=False
 ```
 
-Generate a secure Django secret key:
+---
 
-```bash
-poetry run python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-```
-
-Paste the generated value into `.env`.
-
-### 4. Start Redis
-
-Using an installed Redis server:
-
-```bash
-redis-server
-```
-
-Or using Docker:
-
-```bash
-docker run --name taskflow-redis \
-  -p 6379:6379 \
-  -d redis:alpine
-```
-
-### 5. Apply database migrations
+## 4. Apply migrations
 
 ```bash
 poetry run python manage.py migrate
 ```
 
-### 6. Create an administrator
+---
+
+## 5. Create a superuser
 
 ```bash
 poetry run python manage.py createsuperuser
 ```
 
-### 7. Run the development server
+---
+
+## 6. Start the development server
 
 ```bash
 poetry run python manage.py runserver
 ```
 
-Open the application at:
+Open:
 
 ```text
 http://127.0.0.1:8000/
 ```
 
-Django Admin is available at:
+Django Admin:
 
 ```text
 http://127.0.0.1:8000/admin/
@@ -436,236 +860,311 @@ http://127.0.0.1:8000/admin/
 
 ---
 
-## 📧 Development Email Behavior
+# ⚡ Optional Redis Development
 
-The development configuration uses Django's console email backend.
+To test Redis-backed functionality locally:
 
-Activation links, password-reset links and workspace invitations are printed directly in the terminal running the Django server.
+```env
+DEV_USE_REDIS=True
+REDIS_URL=redis://127.0.0.1:6379/1
+```
+
+Then run Redis locally or with Docker:
+
+```bash
+docker run \
+  --name taskflow-redis \
+  -p 6379:6379 \
+  -d redis:alpine
+```
+
+Redis is not required when `DEV_USE_REDIS=False`.
+
+---
+
+# 📧 Development Email Behavior
+
+Development uses Django's console backend.
+
+For example, account activation or password-reset emails are printed into the terminal:
+
+```text
+Subject: فعالسازی حساب TaskFlow
+
+http://127.0.0.1:8000/...
+```
+
+No external email provider is required for development.
+
+---
+
+# 🧪 Testing
+
+Use the isolated test settings:
+
+```bash
+poetry run python manage.py test \
+  --settings=config.settings.test \
+  -v 2
+```
+
+Run a specific application:
+
+```bash
+poetry run python manage.py test \
+  apps.tasks.tests \
+  --settings=config.settings.test \
+  -v 2
+```
+
+Run Django system checks:
+
+```bash
+poetry run python manage.py check \
+  --settings=config.settings.development
+```
+
+Check for missing migrations:
+
+```bash
+poetry run python manage.py makemigrations \
+  --check \
+  --dry-run \
+  --settings=config.settings.test
+```
+
+The test environment is isolated from external infrastructure so the project can be tested without PostgreSQL, Redis, or SMTP.
+
+---
+
+# 📌 Current Status
+
+The core portfolio application is largely implemented.
+
+## Completed
+
+* [x] Custom user model
+* [x] Registration
+* [x] Email verification
+* [x] Password reset
+* [x] Profile management
+* [x] Avatar uploads
+* [x] Workspace CRUD
+* [x] Workspace memberships
+* [x] Workspace roles
+* [x] Workspace invitations
+* [x] Board CRUD
+* [x] Board archive/restore
+* [x] Column CRUD
+* [x] Column ordering
+* [x] Column drag-and-drop
+* [x] Task CRUD
+* [x] Task assignment
+* [x] Task priorities
+* [x] Task statuses
+* [x] Due dates
+* [x] Task archive/restore
+* [x] Task movement
+* [x] Task drag-and-drop
+* [x] Task comments
+* [x] Task activity history
+* [x] In-app notifications
+* [x] Notification header integration
+* [x] Dashboard metrics
+* [x] Workspace progress
+* [x] Board progress
+* [x] Persian RTL interface
+* [x] Mobile-first UI
+* [x] Three.js background
+* [x] GSAP motion
+* [x] Dark/light themes
+* [x] Environment-specific Django settings
+* [x] PostgreSQL configuration
+* [x] Redis deployment configuration
+* [x] SMTP configuration
+* [x] CSP configuration
+* [x] Automated regression tests
+
+---
+
+# 🗺️ Remaining Roadmap
+
+The core functionality is complete enough to serve as a backend portfolio project.
+
+Remaining work is primarily focused on refinement, engineering depth, testing, and presentation.
+
+## Phase 1 — Email Reliability
+
+* [ ] Audit every email-producing workflow
+* [ ] Centralize shared email construction where useful
+* [ ] Add stronger email-delivery tests
+* [ ] Improve failure handling
+* [ ] Improve logging around delivery failures
+* [ ] Review activation, reset and invitation templates
+* [ ] Consider a provider abstraction if it improves the portfolio
+
+Background queues are optional and should only be added if they meaningfully demonstrate architecture rather than adding unnecessary complexity.
+
+---
+
+## Phase 2 — Redis Application Caching
+
+* [ ] Define a cache-key convention
+* [ ] Identify expensive dashboard queries
+* [ ] Cache selected user dashboard summaries
+* [ ] Cache selected workspace/board aggregates
+* [ ] Add explicit invalidation
+* [ ] Test stale-cache scenarios
+* [ ] Test cache failure behavior
+* [ ] Prevent cache stampedes where relevant
+
+Avoid full-page caching for user-specific authenticated pages.
+
+---
+
+## Phase 3 — Permission & Hierarchy Audit
+
+Perform a dedicated authorization audit covering:
+
+```text
+Anonymous
+Outsider
+Viewer
+Member
+Admin
+Owner
+```
+
+against:
+
+```text
+Workspace
+Board
+Column
+Task
+Comment
+Notification
+Invitation
+Archive
+Restore
+Reordering
+```
+
+Test resource-ID tampering across unrelated hierarchies.
 
 Example:
 
 ```text
-Content-Type: text/plain
-Subject: فعالسازی حساب TaskFlow
+Workspace A
+└── Board A
+    └── Column A
 
-http://127.0.0.1:8000/activate/<uid>/<token>/
+Workspace B
+└── Board B
+    └── Column B
 ```
 
-A production deployment should replace the console backend with a real email provider.
+Requests mixing IDs from different hierarchies must fail safely.
 
 ---
 
-## 🧪 Testing
+## Phase 4 — Archive / Restore Integrity
 
-Run all project tests:
-
-```bash
-poetry run python manage.py test -v 2
-```
-
-Run only Account and Authentication tests:
-
-```bash
-poetry run python manage.py test apps.accounts.tests -v 2
-```
-
-Run Dashboard tests:
-
-```bash
-poetry run python manage.py test apps.dashboard.tests -v 2
-```
-
-Run Workspace tests:
-
-```bash
-poetry run python manage.py test apps.workspaces.tests -v 2
-```
-
-Run all currently implemented application tests:
-
-```bash
-poetry run python manage.py test \
-  apps.accounts.tests \
-  apps.dashboard.tests \
-  apps.workspaces.tests \
-  -v 2
-```
-
-Run Django's system checks:
-
-```bash
-poetry run python manage.py check
-```
-
-### Test isolation
-
-Tests override external infrastructure where appropriate.
-
-For example, account tests use Django's in-memory cache instead of requiring a running Redis server. This keeps the test suite:
-
-* Fast
-* Deterministic
-* Independent
-* Easy to run in CI environments
+* [ ] Audit workspace archive behavior
+* [ ] Audit board archive behavior
+* [ ] Audit column archive behavior
+* [ ] Audit task archive behavior
+* [ ] Verify child-resource visibility
+* [ ] Verify restore ordering
+* [ ] Verify permanent-deletion restrictions
+* [ ] Test nested archived-resource edge cases
 
 ---
 
-## 📌 Project Status
+## Phase 5 — Engineering Quality
 
-TaskFlow is currently under active development.
-
-### Completed foundations
-
-* [x] Custom user model
-* [x] Registration system
-* [x] Email verification
-* [x] Activation resend cooldown
-* [x] Login and logout
-* [x] Password reset
-* [x] Password change
-* [x] Dashboard
-* [x] Profile management
-* [x] Avatar upload and validation
-* [x] Workspace CRUD
-* [x] Workspace memberships
-* [x] Role-based permissions
-* [x] Workspace invitations
-* [x] Invitation expiration
-* [x] Automated tests for implemented applications
-* [x] Responsive Persian RTL interface
+* [ ] Add GitHub Actions
+* [ ] Run the full test suite in CI
+* [ ] Add coverage measurement
+* [ ] Publish a coverage badge
+* [ ] Add linting/formatting checks
+* [ ] Add security-oriented test cases
+* [ ] Remove remaining dead code
+* [ ] Review database indexes
+* [ ] Run query-count checks on expensive views
 
 ---
 
-## 🗺️ Roadmap
+## Phase 6 — Portfolio Presentation
 
-### Phase 1 — Foundation
-
-* [x] Accounts and authentication
-* [x] User profiles
-* [x] Workspace management
-* [x] Team memberships
-* [x] Workspace invitations
-* [x] Permission system
-* [x] Automated tests
-
-### Phase 2 — Boards and Columns
-
-* [ ] Board model
-* [ ] Board CRUD
-* [ ] Board permissions
-* [ ] Column model
-* [ ] Column ordering
-* [ ] Archive functionality
-* [ ] Board and column tests
-
-### Phase 3 — Tasks
-
-* [ ] Task model
-* [ ] Task CRUD
-* [ ] Task assignment
-* [ ] Due dates
-* [ ] Priorities
-* [ ] Task status
-* [ ] Task movement between columns
-* [ ] Task ordering
-* [ ] Task tests
-
-### Phase 4 — Collaboration
-
-* [ ] Labels
-* [ ] Checklists
-* [ ] Comments
-* [ ] Activity history
-* [ ] Mentions
-* [ ] Notifications
-
-### Phase 5 — Production Readiness
-
-* [ ] PostgreSQL
-* [ ] Docker and Docker Compose
-* [ ] GitHub Actions CI
-* [ ] Test coverage report
-* [ ] Structured logging
-* [ ] Production email provider
-* [ ] Static file production setup
-* [ ] Deployment documentation
-* [ ] Live deployment
+* [ ] Add application screenshots
+* [ ] Add a short demo GIF/video
+* [ ] Add an architecture diagram
+* [ ] Add a permissions matrix
+* [ ] Add a data-model diagram
+* [ ] Improve GitHub repository description
+* [ ] Add repository topics
+* [ ] Add a proper LICENSE file
+* [ ] Add example demo data or seed tooling
+* [ ] Document the most interesting engineering decisions
 
 ---
 
-## 🤝 Contributing
+## Phase 7 — Final Stabilization
 
-Contributions, suggestions and bug reports are welcome.
+* [ ] Full regression pass
+* [ ] Mobile QA
+* [ ] RTL QA
+* [ ] Accessibility pass
+* [ ] Dark/light theme pass
+* [ ] Drag-and-drop QA
+* [ ] Email-flow QA
+* [ ] Cache behavior QA
+* [ ] Permission audit
+* [ ] Archive/restore audit
+* [ ] Final README review
 
-### Development workflow
-
-1. Fork the repository.
-2. Create a feature branch:
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-3. Make your changes.
-4. Add or update tests.
-5. Run the test suite:
-
-```bash
-poetry run python manage.py test
-```
-
-6. Commit your changes:
-
-```bash
-git commit -m "Add your feature"
-```
-
-7. Push the branch:
-
-```bash
-git push origin feature/your-feature-name
-```
-
-8. Open a Pull Request.
-
-Please keep changes focused and include tests for new business logic.
+At that point, the project can be considered complete as a portfolio project.
 
 ---
 
-## 🐛 Reporting Issues
+# 🚫 Intentional Non-Goals
 
-When reporting a bug, include:
+TaskFlow does not need to become a large commercial SaaS to fulfill its portfolio purpose.
 
-* A clear description of the problem
-* Steps to reproduce it
-* Expected behavior
-* Actual behavior
-* Python version
-* Django version
-* Operating system
-* Relevant logs or screenshots
+The following are intentionally optional:
 
-Issues can be submitted through the repository's GitHub Issues section.
+* Kubernetes
+* Microservices
+* Event streaming
+* Kafka
+* Complex background-worker infrastructure
+* Real-time collaborative editing
+* WebSockets everywhere
+* Multi-region deployment
+* Full observability platforms
+* Large-scale distributed caching
+* Premature service decomposition
 
----
-
-## 📄 License
-
-The project is distributed under the **MIT License**.
-
-A standalone `LICENSE` file should be added to the repository before the first public release.
+Additional infrastructure should only be introduced when it demonstrates a meaningful engineering decision.
 
 ---
 
-## 👨‍💻 Author
+# 📄 License
+
+The project metadata declares the project as MIT licensed.
+
+A standalone `LICENSE` file should still be added to the repository.
+
+---
+
+# 👨‍💻 Author
 
 <div align="center">
 
 ### Mehdi Radfar
 
-Backend Developer focused on Python, Django and FastAPI.
-
-[![GitHub](https://img.shields.io/badge/GitHub-funlifew-181717?style=for-the-badge\&logo=github)](https://github.com/funlifew)
+Backend Developer focused on **Python, Django and FastAPI**.
 
 </div>
 
@@ -673,10 +1172,9 @@ Backend Developer focused on Python, Django and FastAPI.
 
 <div align="center">
 
-### ⭐ Support the Project
+### ⭐ TaskFlow
 
-If you find TaskFlow useful or interesting, consider giving the repository a star.
-
-Made with Python, Django and a lot of attention to clean backend architecture.
+Built as a backend engineering portfolio project with an emphasis on architecture,
+permissions, transactional workflows, testing, and thoughtful user experience.
 
 </div>
