@@ -9,6 +9,10 @@ from apps.notifications.services import (
     WorkspaceNotificationService,
 )
 
+from apps.dashboard.cache import (
+    schedule_dashboard_cache_invalidation,
+)
+
 from .models import(
     Workspace,
     WorkspaceInvitation,
@@ -45,6 +49,12 @@ def create_workspace(
         workspace=workspace,
         user=owner,
         role=WorkspaceMembership.Role.OWNER,
+    )
+    
+    schedule_dashboard_cache_invalidation(
+        user_ids=(
+            owner.pk,
+        ),
     )
     
     return workspace
@@ -243,6 +253,12 @@ def remove_workspace_membership(
         )
     )
 
+    schedule_dashboard_cache_invalidation(
+        user_ids=(
+            recipient.pk,
+        ),
+    )
+    
     return member_name
 
 def send_workspace_invitation_email(
@@ -456,6 +472,13 @@ def accept_workspace_invitation(
             "این دعوت منقضی شده است."
         )
 
+    if created:
+        schedule_dashboard_cache_invalidation(
+            user_ids=(
+                user.pk,
+            ),
+        )
+    
     return membership, created
 
 def decline_workspace_invitation(

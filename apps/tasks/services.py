@@ -14,6 +14,10 @@ from .models import (
     TaskActivity,
 )
 
+from apps.dashboard.cache import (
+    schedule_dashboard_cache_invalidation,
+)
+
 
 class TaskScopeService:
     @staticmethod
@@ -344,6 +348,18 @@ class TaskLifecycleService:
             board=board,
             columns=(column,),
         )
+        
+        schedule_dashboard_cache_invalidation(
+            user_ids=(
+                task.assignee_id,
+            ),
+            workspace_ids=(
+                workspace.pk,
+            ),
+            board_ids=(
+                board.pk,
+            ),
+        )
 
         return task, board, column
 
@@ -477,6 +493,32 @@ class TaskLifecycleService:
             board=board,
             columns=(column,),
         )
+        
+        cache_affected_user_ids = set()
+
+        if assignee_changed:
+            if old_assignee_id is not None:
+                cache_affected_user_ids.add(
+                    old_assignee_id
+                )
+
+            if task.assignee_id is not None:
+                cache_affected_user_ids.add(
+                    task.assignee_id
+                )
+
+        if "due_at" in changed_fields:
+            if task.assignee_id is not None:
+                cache_affected_user_ids.add(
+                    task.assignee_id
+                )
+
+        if cache_affected_user_ids:
+            schedule_dashboard_cache_invalidation(
+                user_ids=(
+                    cache_affected_user_ids
+                ),
+            )
 
         return task, board, column
 
@@ -559,6 +601,18 @@ class TaskLifecycleService:
             board=board,
             columns=(column,),
         )
+        
+        schedule_dashboard_cache_invalidation(
+            user_ids=(
+                task.assignee_id,
+            ),
+            workspace_ids=(
+                workspace.pk,
+            ),
+            board_ids=(
+                board.pk,
+            ),
+        )
 
         return task, board, column
 
@@ -621,6 +675,18 @@ class TaskLifecycleService:
         TaskTouchService.touch(
             board=board,
             columns=(column,),
+        )
+        
+        schedule_dashboard_cache_invalidation(
+            user_ids=(
+                task.assignee_id,
+            ),
+            workspace_ids=(
+                workspace.pk,
+            ),
+            board_ids=(
+                board.pk,
+            ),
         )
 
         return task, board, column
@@ -685,6 +751,18 @@ class TaskLifecycleService:
         TaskTouchService.touch(
             board=board,
             columns=(column,),
+        )
+        
+        schedule_dashboard_cache_invalidation(
+            user_ids=(
+                task.assignee_id,
+            ),
+            workspace_ids=(
+                workspace.pk,
+            ),
+            board_ids=(
+                board.pk,
+            ),
         )
 
         return task, board, column

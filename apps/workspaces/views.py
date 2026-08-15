@@ -29,6 +29,11 @@ from apps.core.mixins import (
     WorkspacePermissionMixin,
 )
 
+from apps.dashboard.cache import (
+    get_workspace_participant_user_ids,
+    schedule_dashboard_cache_invalidation,
+)
+
 from .forms import (
     WorkspaceForm,
     WorkspaceInviteForm,
@@ -307,14 +312,46 @@ class WorkspaceDeleteView(
     context_object_name = "workspace"
     success_url = reverse_lazy("workspaces:list")
 
-    def form_valid(self, form):
-        workspace_name = self.object.name
+    def form_valid(
+        self,
+        form,
+    ):
+        workspace_name = (
+            self.object.name
+        )
 
-        response = super().form_valid(form)
+        workspace_id = (
+            self.object.pk
+        )
+
+        participant_user_ids = (
+            get_workspace_participant_user_ids(
+                workspace_id
+            )
+        )
+
+        response = (
+            super().form_valid(
+                form
+            )
+        )
+
+        schedule_dashboard_cache_invalidation(
+            user_ids=(
+                participant_user_ids
+            ),
+            workspace_ids=(
+                workspace_id,
+            ),
+        )
 
         messages.success(
             self.request,
-            f'Workspace «{workspace_name}» حذف شد.',
+            (
+                f"فضای کاری "
+                f"«{workspace_name}» "
+                "حذف شد."
+            ),
         )
 
         return response

@@ -3,6 +3,10 @@ from django.shortcuts import get_object_or_404
 
 from apps.boards.models import Board
 
+from apps.dashboard.cache import (
+    schedule_dashboard_cache_invalidation,
+)
+
 from .models import Column
 
 class ColumnLifecycleService:
@@ -168,6 +172,18 @@ class ColumnLifecycleService:
             board=locked_board,
         )
         
+        schedule_dashboard_cache_invalidation(
+            workspace_ids=(
+                locked_board.workspace_id,
+            ),
+            board_ids=(
+                locked_board.pk,
+            ),
+            participant_workspace_ids=(
+                locked_board.workspace_id,
+            ),
+        )
+        
         return (
             locked_column,
             locked_board,
@@ -210,6 +226,18 @@ class ColumnLifecycleService:
         
         cls._touch_board(
             board=locked_board,
+        )
+        
+        schedule_dashboard_cache_invalidation(
+            workspace_ids=(
+                locked_board.workspace_id,
+            ),
+            board_ids=(
+                locked_board.pk,
+            ),
+            participant_workspace_ids=(
+                locked_board.workspace_id,
+            ),
         )
         
         return (
