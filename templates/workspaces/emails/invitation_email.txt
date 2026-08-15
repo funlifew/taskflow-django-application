@@ -1,13 +1,17 @@
 سلام
 
 {{ invited_by.get_full_name|default:invited_by.username }}
-شما را به فضای کاری زیر دعوت کرده است:
+شما را به فضای کاری «{{ workspace.name }}» در TaskFlow دعوت کرده است.
 
-{{ workspace.name }}
-
-نقش شما:
+نقش پیشنهادی:
 {{ invitation.get_role_display }}
 
-برای مشاهده دعوت روی لینک زیر کلیک کنید:
+این دعوت تا {{ invitation.expires_at|date:"Y/m/d H:i" }} معتبر است.
+
+برای مشاهده و پاسخ به دعوت، پیوند زیر را باز کنید:
 
 {{ invitation_url }}
+
+اگر این دعوت برای شما نیست، می‌توانید این ایمیل را نادیده بگیرید.
+
+TaskFlow

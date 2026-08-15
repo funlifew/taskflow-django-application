@@ -1,27 +1,118 @@
-<!doctype html>
-<html lang="fa" dir="rtl">
-<body style="font-family: Tahoma, sans-serif; line-height: 1.8;">
-  <h2>دعوت به TaskFlow</h2>
+{% extends "emails/base.html" %}
+
+{% block title %}
+  دعوت به فضای کاری TaskFlow
+{% endblock title %}
+
+{% block preheader %}
+  شما به یک فضای کاری در TaskFlow دعوت شده‌اید.
+{% endblock preheader %}
+
+{% block content %}
+  <h1
+    style="
+      margin:0 0 18px;
+      font-size:22px;
+      line-height:1.6;
+    "
+  >
+    دعوت به فضای کاری
+  </h1>
 
   <p>
-    {{ invited_by.get_full_name|default:invited_by.username }}
+    <strong>
+      {{ invited_by.get_full_name|default:invited_by.username }}
+    </strong>
+
     شما را به فضای کاری زیر دعوت کرده است:
   </p>
 
-  <h3>{{ workspace.name }}</h3>
+  <div
+    style="
+      margin:20px 0;
+      padding:18px;
+      border:1px solid #e6e9f2;
+      border-radius:14px;
+      background:#f8f9fc;
+    "
+  >
+    <div
+      style="
+        font-size:18px;
+        font-weight:700;
+      "
+    >
+      {{ workspace.name }}
+    </div>
 
-  <p>
-    نقش پیشنهادی:
-    <strong>{{ invitation.get_role_display }}</strong>
-  </p>
+    <div
+      style="
+        margin-top:8px;
+        color:#636a80;
+        font-size:12px;
+      "
+    >
+      نقش پیشنهادی:
+      <strong>
+        {{ invitation.get_role_display }}
+      </strong>
+    </div>
 
-  <p>
+    <div
+      style="
+        margin-top:6px;
+        color:#8a91a5;
+        font-size:11px;
+      "
+    >
+      معتبر تا:
+      {{ invitation.expires_at|date:"Y/m/d H:i" }}
+    </div>
+  </div>
+
+  <p
+    style="
+      margin:24px 0;
+      text-align:center;
+    "
+  >
     <a
       href="{{ invitation_url }}"
-      style="display:inline-block;padding:12px 18px;background:#635bff;color:#fff;text-decoration:none;border-radius:12px;"
+      style="
+        display:inline-block;
+        padding:12px 22px;
+        background:#6758e8;
+        color:#ffffff;
+        text-decoration:none;
+        border-radius:12px;
+        font-weight:700;
+      "
     >
       مشاهده دعوت
     </a>
   </p>
-</body>
-</html>
+
+  <p
+    style="
+      margin:20px 0 8px;
+      color:#686f83;
+      font-size:12px;
+    "
+  >
+    اگر دکمه کار نکرد:
+  </p>
+
+  <p
+    dir="ltr"
+    style="
+      padding:12px;
+      background:#f5f6fa;
+      border-radius:10px;
+      font-size:11px;
+      word-break:break-all;
+      text-align:left;
+    "
+  >
+    {{ invitation_url }}
+  </p>
+{% endblock content %}
