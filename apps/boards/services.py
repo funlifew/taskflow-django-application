@@ -3,6 +3,10 @@ from django.shortcuts import get_object_or_404
 
 from apps.workspaces.models import Workspace
 
+from apps.dashboard.cache import (
+    schedule_dashboard_cache_invalidation,
+)
+
 from .models import Board
 
 class BoardLifecycleService:
@@ -60,6 +64,12 @@ class BoardLifecycleService:
         
         board.full_clean()
         board.save()
+        
+        schedule_dashboard_cache_invalidation(
+            participant_workspace_ids=(
+                locked_workspace.pk,
+            ),
+        )
 
         return board
     
@@ -115,6 +125,18 @@ class BoardLifecycleService:
             ]
         )
         
+        schedule_dashboard_cache_invalidation(
+            workspace_ids=(
+                locked_board.workspace_id,
+            ),
+            board_ids=(
+                locked_board.pk,
+            ),
+            participant_workspace_ids=(
+                locked_board.workspace_id,
+            ),
+        )
+        
         return locked_board
     
     @classmethod
@@ -137,6 +159,18 @@ class BoardLifecycleService:
                 "is_archived",
                 "updated_at",
             ]
+        )
+        
+        schedule_dashboard_cache_invalidation(
+            workspace_ids=(
+                locked_board.workspace_id,
+            ),
+            board_ids=(
+                locked_board.pk,
+            ),
+            participant_workspace_ids=(
+                locked_board.workspace_id,
+            ),
         )
 
         return locked_board

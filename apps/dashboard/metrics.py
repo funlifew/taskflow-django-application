@@ -28,6 +28,13 @@ from .selectors import (
     get_user_assigned_tasks,
 )
 
+from .cache import (
+    get_cached_board_progress,
+    get_cached_user_dashboard_summary,
+    get_cached_user_task_progress,
+    get_cached_workspace_progress,
+)
+
 DASHBOARD_DUE_SOON_DAYS = 7
 
 PROGRESS_ELIGIBLE_STATUSES = (
@@ -138,12 +145,22 @@ def get_user_task_progress(
     *,
     user,
 ):
-    return get_task_queryset_progress(
-        queryset=(
-            get_user_assigned_tasks(
-                user=user,
+    def calculate():
+        return (
+            get_task_queryset_progress(
+                queryset=(
+                    get_user_assigned_tasks(
+                        user=user,
+                    )
+                ),
             )
-        ),
+        )
+
+    return (
+        get_cached_user_task_progress(
+            user_id=user.pk,
+            factory=calculate,
+        )
     )
 
 def get_workspace_progress(
@@ -151,49 +168,67 @@ def get_workspace_progress(
     user,
     workspace,
 ):
-    queryset = (
-        get_accessible_active_tasks(
-            user=user,
+    def calculate():
+        queryset = (
+            get_accessible_active_tasks(
+                user=user,
+            )
+            .filter(
+                column__board__workspace=(
+                    workspace
+                ),
+            )
         )
-        .filter(
-            column__board__workspace=workspace,
+
+        return (
+            get_task_queryset_progress(
+                queryset=queryset,
+            )
+        )
+
+    return (
+        get_cached_workspace_progress(
+            user_id=user.pk,
+            workspace_id=workspace.pk,
+            factory=calculate,
         )
     )
-    
-    return get_task_queryset_progress(
-        queryset=queryset,
-    )
-    
+
 def get_board_progress(
     *,
     user,
     board,
 ):
-    queryset = (
-        get_accessible_active_tasks(
-            user=user,
+    def calculate():
+        queryset = (
+            get_accessible_active_tasks(
+                user=user,
+            )
+            .filter(
+                column__board=board,
+            )
         )
-        .filter(
-            column__board=board,
+
+        return (
+            get_task_queryset_progress(
+                queryset=queryset,
+            )
+        )
+
+    return (
+        get_cached_board_progress(
+            user_id=user.pk,
+            board_id=board.pk,
+            factory=calculate,
         )
     )
 
-    return get_task_queryset_progress(
-        queryset=queryset,
-    )
-
-
-def get_user_dashboard_summary(
+def _calculate_user_dashboard_core_summary(
     *,
     user,
-    now=None,
-    due_soon_days=(
-        DASHBOARD_DUE_SOON_DAYS
-    ),
+    now,
+    due_soon_days,
 ):
-    if now is None:
-        now = timezone.now()
-
     due_until = (
         now
         + timedelta(
@@ -234,7 +269,9 @@ def get_user_dashboard_summary(
             completed_tasks_count=Count(
                 "pk",
                 filter=Q(
-                    status=Task.Status.DONE,
+                    status=(
+                        Task.Status.DONE
+                    ),
                 ),
             ),
         )
@@ -254,6 +291,45 @@ def get_user_dashboard_summary(
             .count()
         ),
         **task_counts,
+    }
+
+def get_user_dashboard_summary(
+    *,
+    user,
+    now=None,
+    due_soon_days=(
+        DASHBOARD_DUE_SOON_DAYS
+    ),
+):
+    if now is None:
+        now = timezone.now()
+
+    core_summary = (
+        get_cached_user_dashboard_summary(
+            user_id=user.pk,
+            due_soon_days=(
+                due_soon_days
+            ),
+            factory=lambda: (
+                _calculate_user_dashboard_core_summary(
+                    user=user,
+                    now=now,
+                    due_soon_days=(
+                        due_soon_days
+                    ),
+                )
+            ),
+        )
+    )
+
+    return {
+        **core_summary,
+
+        # Intentionally live.
+        #
+        # Notification read-state changes
+        # should not require Dashboard
+        # cache invalidation.
         "unread_notifications_count": (
             get_unread_notifications_count(
                 user=user,

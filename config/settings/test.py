@@ -45,6 +45,11 @@ CACHES = {
     },
 }
 
+# Application-level caching is disabled by
+# default for existing unit tests.
+#
+# Dedicated cache tests explicitly enable it.
+DASHBOARD_CACHE_ENABLED = False
 
 # ---------------------------------------------------------
 # Test email
