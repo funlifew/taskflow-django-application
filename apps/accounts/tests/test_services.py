@@ -13,8 +13,6 @@ from django.contrib.auth import (
 from apps.accounts.services import (
     AccountLifecycleService,
     acquire_activation_email_lock,
-    can_send_activation_email,
-    mark_activation_email_send,
     release_activation_email_lock,
     send_activation_email,
     send_activation_email_with_cooldown,
@@ -58,26 +56,6 @@ class ActivationEmailServiceTests(
             ),
         )
 
-    def test_can_send_returns_true_without_lock(self):
-        self.assertTrue(
-            can_send_activation_email(
-                self.inactive_user
-            )
-        )
-
-    def test_mark_activation_email_send_creates_lock(
-        self,
-    ):
-        mark_activation_email_send(
-            self.inactive_user
-        )
-
-        self.assertFalse(
-            can_send_activation_email(
-                self.inactive_user
-            )
-        )
-
     def test_acquire_lock_only_succeeds_once(self):
         first_result = (
             acquire_activation_email_lock(
@@ -108,35 +86,54 @@ class ActivationEmailServiceTests(
             )
         )
 
-    def test_send_activation_email(self):
+    def test_send_activation_email(
+        self,
+    ):
         send_activation_email(
             self.request,
             self.inactive_user,
         )
 
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(
+            len(mail.outbox),
+            1,
+        )
 
         email = mail.outbox[0]
 
         self.assertEqual(
             email.to,
-            [self.inactive_user.email],
+            [
+                self.inactive_user.email,
+            ],
         )
-        self.assertIn(
-            "فعالسازی حساب TaskFlow",
+
+        self.assertEqual(
             email.subject,
+            "فعال‌سازی حساب TaskFlow",
         )
+
+        self.assertIn(
+            (
+                f"سلام "
+                f"{self.inactive_user.get_full_name()}"
+            ),
+            email.body,
+        )
+
         self.assertIn(
             "/activate/",
             email.body,
         )
-        self.assertIn(
-            str(self.inactive_user.pk),
-            email.body,
-        )
+
         self.assertEqual(
             len(email.alternatives),
             1,
+        )
+
+        self.assertEqual(
+            email.alternatives[0].mimetype,
+            "text/html",
         )
 
     def test_send_with_cooldown_sends_first_email(
