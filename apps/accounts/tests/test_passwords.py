@@ -1,3 +1,8 @@
+from unittest.mock import patch
+
+from apps.core.emailing import (
+    EmailDeliveryError,
+)
 from django.contrib.auth.tokens import (
     default_token_generator,
 )
@@ -208,6 +213,42 @@ class PasswordResetViewTests(
                 "password_reset_complete.html"
             ),
         )
+    
+    @patch(
+        (
+            "apps.accounts.forms."
+            "send_templated_email"
+        ),
+        side_effect=EmailDeliveryError(
+            "SMTP unavailable"
+        ),
+    )
+    def test_email_backend_failure_does_not_crash_reset_view(
+        self,
+        mocked_send,
+    ):
+        response = self.client.post(
+            reverse(
+                "accounts:password_reset"
+            ),
+            {
+                "email": (
+                    self.active_user.email
+                ),
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                (
+                    "accounts:"
+                    "password_reset_done"
+                )
+            ),
+        )
+
+        mocked_send.assert_called_once()
 
 
 class PasswordChangeViewTests(

@@ -1,3 +1,11 @@
+from unittest.mock import (
+    patch,
+)
+
+from apps.core.emailing import (
+    EmailDeliveryError,
+)
+
 from datetime import timedelta
 
 from django.core import mail
@@ -16,6 +24,7 @@ from apps.workspaces.services import (
     decline_workspace_invitation,
     expire_stale_workspace_invitations,
     send_workspace_invitation_email,
+    send_workspace_invitation_email_safely,
 )
 
 from apps.workspaces.tests.base import WorkspaceTestBase
@@ -426,4 +435,163 @@ class InvitationEmailServiceTests(
         self.assertEqual(
             len(email.alternatives),
             1,
+        )
+    
+    def test_invitation_email_uses_persian_subject(
+        self,
+    ):
+        invitation = (
+            self.create_invitation()
+        )
+
+        request = (
+            RequestFactory().get(
+                "/",
+                HTTP_HOST="testserver",
+            )
+        )
+
+        send_workspace_invitation_email(
+            request,
+            invitation,
+        )
+
+        email = mail.outbox[0]
+
+        self.assertIn(
+            "دعوت به فضای کاری",
+            email.subject,
+        )
+
+        self.assertIn(
+            self.workspace.name,
+            email.subject,
+        )
+
+        self.assertNotIn(
+            "Workspace",
+            email.subject,
+        )
+
+
+    @patch(
+        (
+            "apps.workspaces.services."
+            "send_workspace_invitation_email"
+        ),
+        side_effect=EmailDeliveryError(
+            "SMTP unavailable"
+        ),
+    )
+    def test_safe_invitation_sender_does_not_raise(
+        self,
+        mocked_send,
+    ):
+        invitation = (
+            self.create_invitation()
+        )
+
+        request = (
+            RequestFactory().get(
+                "/",
+                HTTP_HOST="testserver",
+            )
+        )
+
+        result = (
+            send_workspace_invitation_email_safely(
+                request=request,
+                invitation_id=(
+                    invitation.pk
+                ),
+            )
+        )
+
+        self.assertFalse(
+            result
+        )
+
+
+    def test_safe_sender_handles_missing_invitation(
+        self,
+    ):
+        request = (
+            RequestFactory().get(
+                "/",
+                HTTP_HOST="testserver",
+            )
+        )
+
+        result = (
+            send_workspace_invitation_email_safely(
+                request=request,
+                invitation_id=999999,
+            )
+        )
+
+        self.assertFalse(
+            result
+        )
+
+class InvitationEmailCommitTests(
+    WorkspaceTestBase
+):
+    @patch(
+        (
+            "apps.workspaces.services."
+            "send_workspace_invitation_email_safely"
+        ),
+        return_value=False,
+    )
+    def test_email_failure_after_commit_does_not_rollback_invitation(
+        self,
+        mocked_sender,
+    ):
+        from apps.workspaces.services import (
+            create_workspace_invitation,
+        )
+
+        request = (
+            RequestFactory().get(
+                "/",
+                HTTP_HOST="testserver",
+            )
+        )
+
+        with self.captureOnCommitCallbacks(
+            execute=True
+        ):
+            invitation = (
+                create_workspace_invitation(
+                    request=request,
+                    workspace=(
+                        self.workspace
+                    ),
+                    invited_by=(
+                        self.owner
+                    ),
+                    email=(
+                        self.invited_user.email
+                    ),
+                    role=(
+                        WorkspaceMembership
+                        .Role
+                        .MEMBER
+                    ),
+                )
+            )
+
+        self.assertTrue(
+            WorkspaceInvitation.objects
+            .filter(
+                pk=invitation.pk
+            )
+            .exists()
+        )
+
+        mocked_sender.assert_called_once_with(
+            request=request,
+            invitation_id=(
+                invitation.pk
+            ),
         )

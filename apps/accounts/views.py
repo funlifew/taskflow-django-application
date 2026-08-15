@@ -32,6 +32,7 @@ from apps.core.mixins import (
 from .forms import (
     RegisterForm,
     ResendActivationEmailForm,
+    TaskFlowPasswordResetForm,
 )
 from .services import (
     AccountLifecycleService,
@@ -302,12 +303,36 @@ class ResendActivationEmailView(IfAuthenticatedRedirectDashboard, FormView):
         )
     
 # Password Resets
-class PasswordResetView(auth_views.PasswordResetView):
-    template_name = 'accounts/password_reset.html'
-    email_template_name = 'accounts/emails/password_reset_email.txt'
-    html_email_template_name = 'accounts/emails/password_reset_email.html'
-    subject_template_name = 'accounts/emails/password_reset_subject.txt'
-    success_url = reverse_lazy('accounts:password_reset_done')
+class PasswordResetView(
+    auth_views.PasswordResetView
+):
+    template_name = (
+        "accounts/password_reset.html"
+    )
+
+    form_class = (
+        TaskFlowPasswordResetForm
+    )
+
+    email_template_name = (
+        "accounts/emails/"
+        "password_reset_email.txt"
+    )
+
+    html_email_template_name = (
+        "accounts/emails/"
+        "password_reset_email.html"
+    )
+
+    subject_template_name = (
+        "accounts/emails/"
+        "password_reset_subject.txt"
+    )
+
+    success_url = reverse_lazy(
+        "accounts:"
+        "password_reset_done"
+    )
 
 class PasswordResetDoneView(auth_views.PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'

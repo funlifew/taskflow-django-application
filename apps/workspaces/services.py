@@ -1,6 +1,6 @@
-from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
+import logging
+from datetime import timedelta
+
 from django.db import transaction
 from django.utils import timezone
 from django.urls import reverse
@@ -15,7 +15,15 @@ from .models import(
     WorkspaceMembership,
 )
 
-from datetime import timedelta
+from apps.core.emailing import (
+    EmailDeliveryError,
+    TemplatedEmail,
+    send_templated_email,
+)
+
+logger = logging.getLogger(
+    __name__
+)
 
 WORKSPACE_INVITATION_LIFETIME = timedelta(days=3)
 
@@ -73,11 +81,15 @@ def create_workspace_invitation(
     )
     
     transaction.on_commit(
-        lambda: send_workspace_invitation_email(
-            request,
-            invitation,
+    lambda invitation_id=invitation.pk: (
+        send_workspace_invitation_email_safely(
+            request=request,
+            invitation_id=(
+                invitation_id
+            ),
         )
     )
+)
     
     return invitation
 
@@ -235,49 +247,120 @@ def remove_workspace_membership(
 
 def send_workspace_invitation_email(
     request,
-    invitation
+    invitation,
 ) -> None:
     invitation_path = reverse(
-        'workspaces:invitation_detail',
+        (
+            "workspaces:"
+            "invitation_detail"
+        ),
         kwargs={
-            'token': invitation.token,
+            "token": (
+                invitation.token
+            ),
         },
     )
-    
-    invitation_url = request.build_absolute_uri(
-        invitation_path
+
+    invitation_url = (
+        request.build_absolute_uri(
+            invitation_path
+        )
     )
-    
+
     context = {
-        "invitation": invitation,
-        "workspace": invitation.workspace,
-        'invited_by': invitation.invited_by,
-        "invitation_url": invitation_url,
+        "invitation": (
+            invitation
+        ),
+        "workspace": (
+            invitation.workspace
+        ),
+        "invited_by": (
+            invitation.invited_by
+        ),
+        "invitation_url": (
+            invitation_url
+        ),
     }
-    
-    text_body = render_to_string(
-        "workspaces/emails/invitation_email.txt",
-        context,
+
+    send_templated_email(
+        TemplatedEmail(
+            category=(
+                "workspace_invitation"
+            ),
+            subject_template=(
+                "workspaces/emails/"
+                "invitation_subject.txt"
+            ),
+            text_template=(
+                "workspaces/emails/"
+                "invitation_email.txt"
+            ),
+            html_template=(
+                "workspaces/emails/"
+                "invitation_email.html"
+            ),
+            recipients=(
+                invitation.email,
+            ),
+            context=context,
+        )
     )
-    
-    html_body = render_to_string(
-        'workspaces/emails/invitation_email.html',
-        context,
+
+
+def send_workspace_invitation_email_safely(
+    *,
+    request,
+    invitation_id,
+) -> bool:
+    invitation = (
+        WorkspaceInvitation.objects
+        .select_related(
+            "workspace",
+            "invited_by",
+        )
+        .filter(
+            pk=invitation_id
+        )
+        .first()
     )
-    
-    email = EmailMultiAlternatives(
-        subject=f"دعوت به Workspace {invitation.workspace.name}",
-        body=text_body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[invitation.email],
-    )
-    
-    email.attach_alternative(
-        html_body,
-        'text/html',
-    )
-    
-    email.send()
+
+    if invitation is None:
+        logger.warning(
+            (
+                "Workspace invitation "
+                "email skipped because "
+                "invitation no longer "
+                "exists. invitation_id=%s"
+            ),
+            invitation_id,
+        )
+
+        return False
+
+    try:
+        send_workspace_invitation_email(
+            request,
+            invitation,
+        )
+
+    except EmailDeliveryError:
+        # Already logged by the
+        # central email gateway.
+        return False
+
+    except Exception:
+        logger.exception(
+            (
+                "Unexpected workspace "
+                "invitation email failure. "
+                "invitation_id=%s"
+            ),
+            invitation_id,
+        )
+
+        return False
+
+    return True
 
 def expire_stale_workspace_invitations(
     *,

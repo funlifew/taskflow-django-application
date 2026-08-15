@@ -1,0 +1,138 @@
+<!doctype html>
+
+<html
+  lang="fa"
+  dir="rtl"
+>
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>
+    {% block title %}
+      TaskFlow
+    {% endblock title %}
+  </title>
+</head>
+
+<body
+  style="
+    margin:0;
+    padding:0;
+    background:#f3f5fb;
+    color:#171b2e;
+    font-family:Tahoma,Arial,sans-serif;
+    direction:rtl;
+  "
+>
+  <div
+    style="
+      display:none;
+      max-height:0;
+      overflow:hidden;
+      opacity:0;
+    "
+  >
+    {% block preheader %}
+    {% endblock preheader %}
+  </div>
+
+  <table
+    role="presentation"
+    width="100%"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    style="
+      width:100%;
+      background:#f3f5fb;
+      padding:32px 12px;
+    "
+  >
+    <tr>
+      <td align="center">
+        <table
+          role="presentation"
+          width="100%"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          style="
+            width:100%;
+            max-width:600px;
+            background:#ffffff;
+            border:1px solid #e2e6f2;
+            border-radius:20px;
+            overflow:hidden;
+          "
+        >
+          <tr>
+            <td
+              style="
+                padding:24px 28px 18px;
+                border-bottom:1px solid #edf0f7;
+              "
+            >
+              <div
+                style="
+                  font-size:22px;
+                  font-weight:700;
+                  color:#6758e8;
+                "
+              >
+                TaskFlow
+              </div>
+
+              <div
+                style="
+                  margin-top:4px;
+                  font-size:12px;
+                  color:#747b91;
+                "
+              >
+                مدیریت ساده‌تر جریان کار
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td
+              style="
+                padding:28px;
+                font-size:14px;
+                line-height:2;
+              "
+            >
+              {% block content %}
+              {% endblock content %}
+            </td>
+          </tr>
+
+          <tr>
+            <td
+              style="
+                padding:18px 28px;
+                border-top:1px solid #edf0f7;
+                color:#8a91a5;
+                font-size:11px;
+                line-height:1.8;
+              "
+            >
+              این پیام به‌صورت خودکار توسط TaskFlow ارسال شده است.
+
+              <br>
+
+              لطفاً اطلاعات حساس یا رمز عبور خود را
+              در پاسخ به این ایمیل ارسال نکنید.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
