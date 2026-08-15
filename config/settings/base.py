@@ -284,6 +284,46 @@ CACHES = {
     },
 }
 
+# ---------------------------------------------------------
+# Dashboard application cache
+# ---------------------------------------------------------
+
+DASHBOARD_CACHE_ENABLED = config(
+    "DASHBOARD_CACHE_ENABLED",
+    cast=bool,
+    default=True,
+)
+
+DASHBOARD_SUMMARY_CACHE_TTL = config(
+    "DASHBOARD_SUMMARY_CACHE_TTL",
+    cast=int,
+    default=60,
+)
+
+DASHBOARD_PROGRESS_CACHE_TTL = config(
+    "DASHBOARD_PROGRESS_CACHE_TTL",
+    cast=int,
+    default=300,
+)
+
+DASHBOARD_CACHE_LOCK_TTL = config(
+    "DASHBOARD_CACHE_LOCK_TTL",
+    cast=int,
+    default=5,
+)
+
+DASHBOARD_CACHE_WAIT_ATTEMPTS = config(
+    "DASHBOARD_CACHE_WAIT_ATTEMPTS",
+    cast=int,
+    default=4,
+)
+
+DASHBOARD_CACHE_WAIT_INTERVAL = config(
+    "DASHBOARD_CACHE_WAIT_INTERVAL",
+    cast=float,
+    default=0.02,
+)
+
 
 # ---------------------------------------------------------
 # Authentication redirects
