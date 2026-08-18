@@ -21,7 +21,6 @@ def create_random_avatar():
     random_number = randint(1, 10)
     return f'avatars/default/{random_number}.png'
 
-# Create your models here.
 
 class User(AbstractUser):
     last_name = models.CharField(_('نام خانوادگی'), null=False, blank=False)
