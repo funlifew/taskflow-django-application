@@ -5,6 +5,9 @@ from django.utils import timezone
 
 from apps.boards.models import Board
 from apps.columns.models import Column
+from apps.dashboard.cache import (
+    schedule_dashboard_cache_invalidation,
+)
 from apps.notifications.services import (
     TaskNotificationService,
 )
@@ -12,10 +15,6 @@ from apps.notifications.services import (
 from .models import (
     Task,
     TaskActivity,
-)
-
-from apps.dashboard.cache import (
-    schedule_dashboard_cache_invalidation,
 )
 
 

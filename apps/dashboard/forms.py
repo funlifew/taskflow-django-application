@@ -106,10 +106,10 @@ class ProfileUpdateForm(forms.ModelForm):
 
         if duplicate_exists:
             raise forms.ValidationError(
-                (
+                
                     "این نام کاربری قبلاً "
                     "ثبت شده است."
-                )
+                
             )
 
         return username
@@ -134,19 +134,19 @@ class ProfileUpdateForm(forms.ModelForm):
             not in ALLOWED_AVATAR_CONTENT_TYPES
         ):
             raise forms.ValidationError(
-                (
+                
                     "فقط تصاویر "
                     "JPG/JPEG/PNG/WEBP/GIF "
                     "مجاز هستند."
-                )
+                
             )
 
         if avatar.size > MAX_AVATAR_SIZE_BYTES:
             raise forms.ValidationError(
-                (
+                
                     "حجم تصویر نباید بیشتر "
                     "از 5 مگابایت باشد."
-                )
+                
             )
 
         return avatar

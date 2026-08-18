@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.tasks.models import Task
 from apps.tasks.tests.base import TaskTestBase
 
 

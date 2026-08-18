@@ -17,6 +17,7 @@ from .selectors import (
 )
 from .services import NotificationService
 
+
 def get_safe_redirect_url(
     *,
     request,

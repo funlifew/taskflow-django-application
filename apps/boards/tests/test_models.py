@@ -1,5 +1,4 @@
 from apps.boards.models import Board
-
 from apps.boards.tests.base import BoardTestBase
 
 

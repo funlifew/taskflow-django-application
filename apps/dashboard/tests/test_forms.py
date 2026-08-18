@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from apps.dashboard.forms import (
     ProfileUpdateForm,
 )
-
 from apps.dashboard.tests.base import DashboardTestBase
 
 

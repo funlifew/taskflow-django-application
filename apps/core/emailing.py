@@ -1,5 +1,4 @@
 import logging
-
 from collections.abc import (
     Mapping,
 )
@@ -85,11 +84,11 @@ def _normalize_recipients(
     
     if not normalized:
         raise ValueError(
-            (
+            
                 "Transactional email "
                 "requires at least one "
                 "recipient."
-            )
+            
         )
     
     return normalized
@@ -116,10 +115,10 @@ def _render_subject(
     
     if not subject:
         raise ValueError(
-            (
+            
                 "Email subject template "
                 "rendered an empty subject."
-            )
+            
         )
     
     return subject
@@ -189,10 +188,10 @@ def send_templated_email(
         )
 
         raise EmailDeliveryError(
-            (
+            
                 "Could not deliver "
                 f"{email.category} email."
-            )
+            
         ) from exc
 
     if sent_count != 1:
@@ -209,10 +208,10 @@ def send_templated_email(
         )
 
         raise EmailDeliveryError(
-            (
+            
                 "Email backend did not "
                 "confirm delivery."
-            )
+            
         )
 
     logger.info(

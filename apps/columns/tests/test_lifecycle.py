@@ -1,7 +1,6 @@
 from django.urls import reverse
 
 from apps.columns.models import Column
-
 from apps.columns.tests.base import ColumnTestBase
 
 

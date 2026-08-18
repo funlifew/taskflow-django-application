@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Workspace, WorkspaceMembership, WorkspaceInvitation
+from .models import Workspace, WorkspaceInvitation, WorkspaceMembership
 
 # Register your models here.
 

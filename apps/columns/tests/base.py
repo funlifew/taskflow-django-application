@@ -1,7 +1,6 @@
 from apps.boards.tests.base import (
     BoardTestBase,
 )
-
 from apps.columns.models import Column
 
 

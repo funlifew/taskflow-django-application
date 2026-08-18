@@ -1,6 +1,5 @@
 from .base import *
 
-
 SECRET_KEY = (
     "taskflow-test-secret-key-"
     "not-for-production"

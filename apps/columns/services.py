@@ -2,12 +2,12 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from apps.boards.models import Board
-
 from apps.dashboard.cache import (
     schedule_dashboard_cache_invalidation,
 )
 
 from .models import Column
+
 
 class ColumnLifecycleService:
     @staticmethod

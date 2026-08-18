@@ -1,13 +1,13 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 
-from apps.workspaces.models import Workspace
-
 from apps.dashboard.cache import (
     schedule_dashboard_cache_invalidation,
 )
+from apps.workspaces.models import Workspace
 
 from .models import Board
+
 
 class BoardLifecycleService:
     @staticmethod

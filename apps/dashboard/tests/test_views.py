@@ -9,14 +9,13 @@ from django.test import override_settings
 from django.urls import reverse
 from PIL import Image
 
+from apps.dashboard.tests.base import DashboardTestBase
 from apps.notifications.models import (
     Notification,
 )
 from apps.tasks.tests.base import (
     TaskTestBase,
 )
-
-from apps.dashboard.tests.base import DashboardTestBase
 
 
 class DashboardAuthenticationTests(

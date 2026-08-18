@@ -1,5 +1,6 @@
 from .models import Notification
 
+
 def get_user_notifications(
     *,
     user,

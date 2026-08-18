@@ -1,13 +1,13 @@
 from unittest.mock import patch
 
+from django.contrib.auth import (
+    get_user_model,
+)
 from django.core import mail
 from django.core.cache import cache
 from django.test import (
     RequestFactory,
     override_settings,
-)
-from django.contrib.auth import (
-    get_user_model,
 )
 
 from apps.accounts.services import (
@@ -17,12 +17,10 @@ from apps.accounts.services import (
     send_activation_email,
     send_activation_email_with_cooldown,
 )
-
+from apps.accounts.tests.base import TEST_CACHES, AccountsTestBase
 from apps.core.cache_keys import (
     verification_resend_key,
 )
-
-from apps.accounts.tests.base import AccountsTestBase, TEST_CACHES
 
 User = get_user_model()
 

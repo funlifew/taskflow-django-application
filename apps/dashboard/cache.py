@@ -1,6 +1,5 @@
 import logging
 import uuid
-
 from collections.abc import (
     Callable,
     Iterable,
@@ -18,7 +17,6 @@ from apps.workspaces.models import (
     Workspace,
     WorkspaceMembership,
 )
-
 
 logger = logging.getLogger(
     __name__

@@ -7,11 +7,11 @@ from django.shortcuts import (
 )
 from django.utils import timezone
 
-from apps.workspaces.models import (
-    WorkspaceMembership,
-)
 from apps.notifications.services import (
     TaskNotificationService,
+)
+from apps.workspaces.models import (
+    WorkspaceMembership,
 )
 
 from .models import (
@@ -23,7 +23,6 @@ from .services import (
     TaskScopeService,
     TaskTouchService,
 )
-
 
 COMMENT_MODERATOR_ROLES = (
     WorkspaceMembership.Role.OWNER,

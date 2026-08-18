@@ -11,6 +11,7 @@ from apps.boards.models import Board
 
 from .models import Column
 
+
 class ColumnReorderingService:
     TEMPORARY_POSITION_GAP = 1024
     

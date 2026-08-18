@@ -10,9 +10,7 @@ from django.db import (
 )
 
 from apps.columns.models import Column
-
 from apps.columns.tests.base import ColumnTestBase
-
 
 User = get_user_model()
 

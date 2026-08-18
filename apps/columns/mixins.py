@@ -6,6 +6,7 @@ from apps.boards.mixins import (
 
 from .models import Column
 
+
 class ColumnObjectMixin(
     BoardObjectMixin
 ):

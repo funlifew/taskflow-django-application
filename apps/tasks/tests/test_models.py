@@ -18,7 +18,6 @@ from apps.tasks.models import (
 )
 from apps.tasks.tests.base import TaskTestBase
 
-
 User = get_user_model()
 
 

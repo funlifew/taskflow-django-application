@@ -18,7 +18,6 @@ from apps.tasks.models import (
     TaskActivity,
     TaskComment,
 )
-
 from apps.tasks.tests.collaboration_base import (
     TaskCollaborationTestBase,
 )

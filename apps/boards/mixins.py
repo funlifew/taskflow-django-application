@@ -5,7 +5,6 @@ from apps.workspaces.models import WorkspaceMembership
 
 from .models import Board
 
-
 BOARD_WRITE_ROLES = (
     WorkspaceMembership.Role.OWNER,
     WorkspaceMembership.Role.ADMIN,

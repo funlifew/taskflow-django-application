@@ -1,8 +1,7 @@
+from apps.accounts.tests.base import AccountsTestBase
 from apps.accounts.tokens import (
     account_activation_token,
 )
-
-from apps.accounts.tests.base import AccountsTestBase
 
 
 class AccountActivationTokenTests(

@@ -11,9 +11,9 @@ from django.views.generic import (
 
 from .forms import BoardForm
 from .mixins import (
-    ArchiveBoardObjectMixin,
     BOARD_DELETE_ROLES,
     BOARD_WRITE_ROLES,
+    ArchiveBoardObjectMixin,
     BoardDeleteRequiredMixin,
     BoardObjectMixin,
     BoardReadRequiredMixin,

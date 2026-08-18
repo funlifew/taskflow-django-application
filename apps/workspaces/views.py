@@ -28,7 +28,6 @@ from apps.core.mixins import (
     WorkspaceAdminRequiredMixin,
     WorkspacePermissionMixin,
 )
-
 from apps.dashboard.cache import (
     get_workspace_participant_user_ids,
     schedule_dashboard_cache_invalidation,

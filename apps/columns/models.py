@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Max, Q
 
-
 from apps.boards.models import Board
 from apps.core.models import TimeStampedModel
 
