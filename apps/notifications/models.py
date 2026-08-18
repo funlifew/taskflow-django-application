@@ -9,7 +9,6 @@ from apps.core.models import (
     TimeStampedModel,
 )
 
-# Create your models here.
 
 class NotificationQueryset(models.QuerySet):
     def for_recipient(
