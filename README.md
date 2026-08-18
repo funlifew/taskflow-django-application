@@ -6,12 +6,14 @@
 
 Django 6 · Python 3.14 · PostgreSQL · Redis · Gunicorn · Nginx · Docker Compose
 
+[![CI](https://github.com/funlifew/taskflow-django-application/actions/workflows/ci.yml/badge.svg)](https://github.com/funlifew/taskflow-django-application/actions/workflows/ci.yml)
+
 [Overview](#overview) ·
-[Engineering Highlights](#engineering-highlights) ·
-[Features](#features) ·
-[Architecture](#architecture) ·
+[Preview](#preview) ·
+[Architecture](docs/ARCHITECTURE.md) ·
+[Data Model](docs/DATA_MODEL.md) ·
+[Permissions](docs/PERMISSIONS.md) ·
 [Docker](#docker) ·
-[Development](#local-development) ·
 [Testing](#testing)
 
 </div>
@@ -57,6 +59,27 @@ TaskFlow uses Django Templates for server-rendered pages and adds JavaScript onl
 
 ---
 
+## Preview
+
+<p align="center">
+  <img
+    src="docs/assets/screenshots/board.webp"
+    alt="TaskFlow board workflow"
+    width="100%"
+  >
+</p>
+
+TaskFlow provides a Persian-first RTL workflow for collaborative project management, with role-aware interactions, drag-and-drop ordering and responsive layouts.
+
+Additional views:
+
+[Dashboard](docs/assets/screenshots/dashboard.webp) ·
+[Task detail](docs/assets/screenshots/task-detail.webp) ·
+[Workspace members](docs/assets/screenshots/members.webp) ·
+[Mobile](docs/assets/screenshots/mobile.webp)
+
+---
+
 ## Engineering Highlights
 
 TaskFlow goes beyond basic CRUD by focusing on the behavior around the data.
@@ -77,6 +100,7 @@ TaskFlow goes beyond basic CRUD by focusing on the behavior around the data.
 | Quality | Ruff linting |
 | Runtime | Gunicorn behind Nginx |
 | Containers | Django + PostgreSQL + Redis + Nginx with Docker Compose |
+| CI | GitHub Actions quality, migration, test and Docker build checks |
 
 ---
 
@@ -672,13 +696,14 @@ Visual effects are progressive enhancements and are not required for the core wo
 
 ## Project status
 
-TaskFlow's main application functionality is complete.
+TaskFlow's main application and engineering scope is complete.
 
-Completed engineering work includes:
+Completed work includes:
 
 - Authentication and account lifecycle
 - Workspace collaboration
 - Role-based authorization
+- Nested-resource security regression coverage
 - Boards, columns and tasks
 - Transactional reordering
 - Comments and activity history
@@ -690,18 +715,18 @@ Completed engineering work includes:
 - PostgreSQL deployment profile
 - Ruff linting
 - Dockerized application runtime
+- GitHub Actions CI
+- Architecture documentation
+- Data-model documentation
+- Permission documentation
+- Portfolio screenshots
 
-The remaining work is intentionally limited to portfolio finishing work:
+The remaining work is limited to:
 
 ```text
-GitHub Actions CI
-Screenshots and diagrams
 Final manual QA
-Portfolio presentation
-v1.0 freeze
-```
-
-No major product features are planned before the portfolio version is considered complete.
+v1.0 release
+Project freeze
 
 ---
 

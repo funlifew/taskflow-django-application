@@ -13,7 +13,6 @@ from .constants import (
     TASK_ASSIGNABLE_ROLES,
 )
 
-# Create your models here.
 
 class TaskQuerySet(models.QuerySet):
     def active(self):
