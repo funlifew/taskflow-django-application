@@ -298,3 +298,6 @@ test-media/
 .env*
 !.env.example
 !.env.production.example
+!.env.docker.example
+.env
+.env.docker
