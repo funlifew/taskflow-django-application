@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
+
 from apps.columns.mixins import ColumnObjectMixin
+
 from .models import Task, TaskComment
 
 

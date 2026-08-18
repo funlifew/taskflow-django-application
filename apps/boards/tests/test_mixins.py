@@ -9,12 +9,11 @@ from apps.boards.mixins import (
     BoardReadRequiredMixin,
     BoardWriteRequiredMixin,
 )
+from apps.boards.tests.base import BoardTestBase
 from apps.workspaces.models import (
     Workspace,
     WorkspaceMembership,
 )
-
-from apps.boards.tests.base import BoardTestBase
 
 
 class BoardReadProbeView(

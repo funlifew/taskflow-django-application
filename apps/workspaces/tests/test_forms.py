@@ -8,7 +8,6 @@ from apps.workspaces.forms import (
     WorkspaceMembershipUpdateForm,
 )
 from apps.workspaces.models import WorkspaceMembership
-
 from apps.workspaces.tests.base import WorkspaceTestBase
 
 

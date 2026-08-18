@@ -7,12 +7,6 @@ from django.http import Http404
 from django.urls import reverse
 from django.utils import timezone
 
-from django.core.exceptions import (
-    ValidationError,
-)
-from django.urls import reverse
-from django.utils import timezone
-
 from apps.boards.models import Board
 from apps.columns.models import Column
 from apps.columns.reordering import (

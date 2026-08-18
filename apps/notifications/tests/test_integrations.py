@@ -3,6 +3,9 @@ from django.test import RequestFactory
 from apps.notifications.models import (
     Notification,
 )
+from apps.notifications.tests.base import (
+    NotificationTestBase,
+)
 from apps.tasks.collaboration import (
     TaskCommentService,
 )
@@ -17,10 +20,6 @@ from apps.workspaces.services import (
     create_workspace_invitation,
     remove_workspace_membership,
     update_workspace_membership_role,
-)
-
-from apps.notifications.tests.base import (
-    NotificationTestBase,
 )
 
 

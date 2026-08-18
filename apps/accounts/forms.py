@@ -154,10 +154,10 @@ class RegisterForm(
         ):
             raise (
                 forms.ValidationError(
-                    (
+                    
                         "این ایمیل قبلاً "
                         "ثبت شده است."
-                    )
+                    
                 )
             )
 

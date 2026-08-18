@@ -1,12 +1,7 @@
+from datetime import timedelta
 from unittest.mock import (
     patch,
 )
-
-from apps.core.emailing import (
-    EmailDeliveryError,
-)
-
-from datetime import timedelta
 
 from django.core import mail
 from django.test import (
@@ -15,6 +10,9 @@ from django.test import (
 )
 from django.utils import timezone
 
+from apps.core.emailing import (
+    EmailDeliveryError,
+)
 from apps.workspaces.models import (
     WorkspaceInvitation,
     WorkspaceMembership,
@@ -26,7 +24,6 @@ from apps.workspaces.services import (
     send_workspace_invitation_email,
     send_workspace_invitation_email_safely,
 )
-
 from apps.workspaces.tests.base import WorkspaceTestBase
 
 

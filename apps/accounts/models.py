@@ -1,12 +1,12 @@
+from pathlib import Path
+from random import randint
+from uuid import uuid4
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
-from random import randint
-from uuid import uuid4
-from pathlib import Path
-import os
 
 def user_directory_path(instance, filename):
     extension = Path(filename).suffix.lower()

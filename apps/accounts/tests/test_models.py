@@ -8,9 +8,7 @@ from apps.accounts.models import (
     create_random_avatar,
     user_directory_path,
 )
-
 from apps.accounts.tests.base import AccountsTestBase
-
 
 User = get_user_model()
 

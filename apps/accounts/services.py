@@ -25,7 +25,6 @@ from .tokens import (
     account_activation_token,
 )
 
-
 logger = logging.getLogger(
     __name__
 )

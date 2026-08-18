@@ -3,7 +3,6 @@ from .selectors import (
     get_unread_notifications_count,
 )
 
-
 HEADER_NOTIFICATIONS_LIMIT = 6
 
 def notifications_context(request):

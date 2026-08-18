@@ -15,17 +15,9 @@ from django.utils import timezone
 from apps.notifications.selectors import (
     get_unread_notifications_count,
 )
-
 from apps.tasks.models import Task
 from apps.workspaces.models import (
     WorkspaceMembership,
-)
-
-from .selectors import (
-    get_accessible_active_tasks,
-    get_accessible_boards,
-    get_accessible_workspaces,
-    get_user_assigned_tasks,
 )
 
 from .cache import (
@@ -33,6 +25,12 @@ from .cache import (
     get_cached_user_dashboard_summary,
     get_cached_user_task_progress,
     get_cached_workspace_progress,
+)
+from .selectors import (
+    get_accessible_active_tasks,
+    get_accessible_boards,
+    get_accessible_workspaces,
+    get_user_assigned_tasks,
 )
 
 DASHBOARD_DUE_SOON_DAYS = 7

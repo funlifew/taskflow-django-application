@@ -10,7 +10,6 @@ from apps.workspaces.models import (
     WorkspaceMembership,
 )
 
-
 User = get_user_model()
 
 

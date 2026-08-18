@@ -33,7 +33,6 @@ from apps.tasks.tests.base import (
     TaskTestBase,
 )
 
-
 CACHE_SETTINGS = {
     "DASHBOARD_CACHE_ENABLED": True,
     "DASHBOARD_SUMMARY_CACHE_TTL": 60,
@@ -353,18 +352,14 @@ class DashboardCacheTests(
             )
         )
 
-        first_workspace_progress = (
-            get_workspace_progress(
-                user=self.member,
-                workspace=self.workspace,
-            )
+        get_workspace_progress(
+            user=self.member,
+            workspace=self.workspace,
         )
 
-        first_board_progress = (
-            get_board_progress(
-                user=self.member,
-                board=self.board,
-            )
+        get_board_progress(
+            user=self.member,
+            board=self.board,
         )
 
         self.assertEqual(

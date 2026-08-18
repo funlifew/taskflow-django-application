@@ -1,24 +1,17 @@
 import logging
 import time
-
 from collections.abc import (
     Callable,
-)
-from typing import (
-    TypeVar,
 )
 
 from django.core.cache import (
     cache,
 )
 
-
 logger = logging.getLogger(
     __name__
 )
 
-
-T = TypeVar("T")
 
 _CACHE_MISS = object()
 
@@ -136,7 +129,7 @@ def safe_cache_add(
         return None
 
 
-def cache_get_or_compute(
+def cache_get_or_compute[T](
     *,
     key: str,
     factory: Callable[[], T],
@@ -191,12 +184,6 @@ def cache_get_or_compute(
 
         return value
 
-    # Another request is currently
-    # populating this exact cache key.
-    #
-    # Wait very briefly for the result
-    # instead of immediately repeating
-    # the expensive DB query.
     for _ in range(
         max(
             wait_attempts,
@@ -217,8 +204,4 @@ def cache_get_or_compute(
         if hit:
             return cached_value
 
-    # Never block the user for cache.
-    #
-    # If the lock holder is slow or failed,
-    # calculate the value directly.
     return factory()

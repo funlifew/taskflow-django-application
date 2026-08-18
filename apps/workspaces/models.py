@@ -1,10 +1,10 @@
-from django.db import models
+import uuid
+
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
 
 from apps.core.models import TimeStampedModel
-
-import uuid
 
 # Create your models here.
 

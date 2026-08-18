@@ -40,7 +40,6 @@ from .services import (
 )
 from .tokens import account_activation_token
 
-
 logger = logging.getLogger(__name__)
 
 User = get_user_model()

@@ -1,6 +1,5 @@
-from apps.workspaces.tests.base import WorkspaceTestBase
-
 from apps.boards.models import Board
+from apps.workspaces.tests.base import WorkspaceTestBase
 
 
 class BoardTestBase(WorkspaceTestBase):

@@ -10,7 +10,6 @@ from apps.tasks.models import (
 )
 from apps.workspaces.models import Workspace
 
-
 UNFINISHED_TASK_STATUSES = (
     Task.Status.TODO,
     Task.Status.IN_PROGRESS,

@@ -1,8 +1,5 @@
 from unittest.mock import patch
 
-from apps.core.emailing import (
-    EmailDeliveryError,
-)
 from django.contrib.auth.tokens import (
     default_token_generator,
 )
@@ -15,6 +12,9 @@ from django.utils.http import (
 )
 
 from apps.accounts.tests.base import AccountsTestBase
+from apps.core.emailing import (
+    EmailDeliveryError,
+)
 
 
 @override_settings(
@@ -241,10 +241,10 @@ class PasswordResetViewTests(
         self.assertRedirects(
             response,
             reverse(
-                (
+                
                     "accounts:"
                     "password_reset_done"
-                )
+                
             ),
         )
 

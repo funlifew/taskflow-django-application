@@ -1,9 +1,10 @@
-from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect
 
 from apps.workspaces.models import Workspace, WorkspaceMembership
+
 
 class IfAuthenticatedRedirectDashboard:
     def dispatch(self, request, *args, **kwargs):

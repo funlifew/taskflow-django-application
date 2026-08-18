@@ -87,10 +87,10 @@ class TemplatedEmailTests(
         )
 
     @patch(
-        (
+        
             "apps.core.emailing."
             "render_to_string"
-        )
+        
     )
     def test_builds_multipart_email(
         self,
@@ -148,10 +148,10 @@ class TemplatedEmailTests(
         )
 
     @patch(
-        (
+        
             "apps.core.emailing."
             "render_to_string"
-        )
+        
     )
     def test_uses_default_sender(
         self,
@@ -176,10 +176,10 @@ class TemplatedEmailTests(
         )
 
     @patch(
-        (
+        
             "apps.core.emailing."
             "render_to_string"
-        )
+        
     )
     def test_recipient_duplicates_are_removed(
         self,
@@ -210,10 +210,10 @@ class TemplatedEmailTests(
         )
 
     @patch(
-        (
+        
             "apps.core.emailing."
             "render_to_string"
-        )
+        
     )
     def test_empty_recipient_list_is_rejected(
         self,
@@ -233,10 +233,10 @@ class TemplatedEmailTests(
             )
 
     @patch(
-        (
+        
             "apps.core.emailing."
             "render_to_string"
-        )
+        
     )
     def test_send_delivers_message(
         self,
@@ -264,10 +264,10 @@ class TemplatedEmailTests(
         return_value=0,
     )
     @patch(
-        (
+        
             "apps.core.emailing."
             "render_to_string"
-        )
+        
     )
     def test_zero_delivery_count_is_failure(
         self,
@@ -296,10 +296,10 @@ class TemplatedEmailTests(
         ),
     )
     @patch(
-        (
+        
             "apps.core.emailing."
             "render_to_string"
-        )
+        
     )
     def test_backend_exception_is_wrapped(
         self,

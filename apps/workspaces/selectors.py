@@ -15,6 +15,7 @@ from .models import (
     WorkspaceMembership,
 )
 
+
 def get_workspace_list_queryset(
     *,
     queryset,

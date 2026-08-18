@@ -2,9 +2,8 @@ from django.urls import reverse
 
 from apps.boards.models import Board
 from apps.columns.models import Column
-from apps.workspaces.models import Workspace
-
 from apps.columns.tests.base import ColumnTestBase
+from apps.workspaces.models import Workspace
 
 
 class ColumnCreateViewTests(

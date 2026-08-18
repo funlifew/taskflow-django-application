@@ -11,12 +11,10 @@ from django.utils.http import (
     urlsafe_base64_encode,
 )
 
+from apps.accounts.tests.base import TEST_CACHES, AccountsTestBase
 from apps.accounts.tokens import (
     account_activation_token,
 )
-
-from apps.accounts.tests.base import AccountsTestBase, TEST_CACHES
-
 
 User = get_user_model()
 

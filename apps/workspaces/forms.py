@@ -1,6 +1,7 @@
 from django import forms
 from django.utils import timezone
-from .models import Workspace, WorkspaceMembership, WorkspaceInvitation
+
+from .models import Workspace, WorkspaceInvitation, WorkspaceMembership
 
 
 class WorkspaceForm(forms.ModelForm):

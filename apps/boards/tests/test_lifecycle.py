@@ -1,11 +1,9 @@
 from django.urls import reverse
 
+from apps.boards.tests.base import BoardTestBase
 from apps.workspaces.models import (
     Workspace,
-    WorkspaceMembership,
 )
-
-from apps.boards.tests.base import BoardTestBase
 
 
 class BoardLifecycleTestBase(BoardTestBase):

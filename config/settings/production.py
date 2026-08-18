@@ -6,7 +6,6 @@ from django.utils.csp import CSP
 
 from .base import *
 
-
 # ---------------------------------------------------------
 # Core production settings
 # ---------------------------------------------------------
@@ -166,11 +165,11 @@ if (
     and EMAIL_USE_SSL
 ):
     raise ImproperlyConfigured(
-        (
+        
             "EMAIL_USE_TLS and "
             "EMAIL_USE_SSL cannot "
             "both be enabled."
-        )
+        
     )
 
 DEFAULT_FROM_EMAIL = config(

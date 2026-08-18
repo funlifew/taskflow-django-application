@@ -10,7 +10,6 @@ from apps.workspaces.models import (
     WorkspaceInvitation,
     WorkspaceMembership,
 )
-
 from apps.workspaces.tests.base import WorkspaceTestBase
 
 

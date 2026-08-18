@@ -4,6 +4,7 @@ from .models import (
     TaskComment,
 )
 
+
 def get_task_navigation(
     *,
     task,

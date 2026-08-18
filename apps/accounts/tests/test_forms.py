@@ -2,7 +2,6 @@ from apps.accounts.forms import (
     RegisterForm,
     ResendActivationEmailForm,
 )
-
 from apps.accounts.tests.base import AccountsTestBase
 
 
