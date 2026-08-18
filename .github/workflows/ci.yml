@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  quality-and-tests:
+    name: Quality & Tests
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Poetry
+        run: pipx install "poetry>=2,<3"
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: poetry
+          cache-dependency-path: poetry.lock
+
+      - name: Use CI Python with Poetry
+        run: poetry env use python
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Show environment
+        run: |
+          python --version
+          poetry --version
+          poetry run python --version
+          poetry check
+
+      - name: Run Ruff
+        run: |
+          poetry run ruff check \
+            apps \
+            config \
+            manage.py \
+            gunicorn.conf.py
+
+      - name: Run Django system checks
+        run: |
+          poetry run python manage.py check \
+            --settings=config.settings.test
+
+      - name: Check migrations
+        run: |
+          poetry run python manage.py makemigrations \
+            --check \
+            --dry-run \
+            --settings=config.settings.test
+
+      - name: Run test suite
+        run: |
+          poetry run python manage.py test \
+            --settings=config.settings.test
+
+
+  docker-build:
+    name: Docker Build
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Prepare Docker environment
+        run: cp .env.docker.example .env.docker
+
+      - name: Validate Docker Compose
+        run: |
+          docker compose \
+            --env-file .env.docker \
+            config
+
+      - name: Build TaskFlow image
+        run: |
+          docker build \
+            --tag taskflow:ci \
+            .
