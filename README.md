@@ -696,37 +696,28 @@ Visual effects are progressive enhancements and are not required for the core wo
 
 ## Project status
 
-TaskFlow's main application and engineering scope is complete.
+**TaskFlow v1.0.0 is complete and frozen as a portfolio release.**
 
-Completed work includes:
+The project demonstrates:
 
-- Authentication and account lifecycle
-- Workspace collaboration
+- Django backend architecture
 - Role-based authorization
-- Nested-resource security regression coverage
-- Boards, columns and tasks
-- Transactional reordering
-- Comments and activity history
-- Notifications
-- Dashboard metrics
-- Transactional email reliability
+- Nested-resource security
+- Transaction-safe domain workflows
+- PostgreSQL
 - Redis application caching
-- Environment-specific settings
-- PostgreSQL deployment profile
+- Transactional email
+- Automated testing
 - Ruff linting
-- Dockerized application runtime
+- Docker Compose
+- Nginx and Gunicorn
 - GitHub Actions CI
-- Architecture documentation
-- Data-model documentation
-- Permission documentation
-- Portfolio screenshots
+- Responsive Persian RTL UI
+- Architecture, data-model and permission documentation
 
-The remaining work is limited to:
+TaskFlow has reached its intended portfolio scope.
 
-```text
-Final manual QA
-v1.0 release
-Project freeze
+No additional product features are planned for v1.0.
 
 ---
 
