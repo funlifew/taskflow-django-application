@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from apps.core.models import TimeStampedModel
 
-# Create your models here.
 
 class Workspace(TimeStampedModel):
     name = models.CharField(

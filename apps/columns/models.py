@@ -5,7 +5,6 @@ from django.db.models import Max, Q
 from apps.boards.models import Board
 from apps.core.models import TimeStampedModel
 
-# Create your models here.
 
 class ColumnQuerySet(models.QuerySet):
     def active(self):

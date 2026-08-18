@@ -4,7 +4,6 @@ from django.db import models
 from apps.core.models import TimeStampedModel
 from apps.workspaces.models import Workspace
 
-# Create your models here.
 
 class Board(TimeStampedModel):
     workspace = models.ForeignKey(
