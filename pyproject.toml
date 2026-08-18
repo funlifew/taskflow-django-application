@@ -1,7 +1,7 @@
 [project]
 name = "taskflow"
 version = "0.1.0"
-description = ""
+description = "Persian-first collaborative task management portfolio application built with Django."
 authors = [
     {name = "Mehdi Radfar",email = "81019265+funlifew@users.noreply.github.com"}
 ]
@@ -61,5 +61,6 @@ known-first-party = ["apps", "config"]
 
 [tool.ruff.lint.per-file-ignores]
 "config/settings/development.py" = ["F403", "F405"]
+"config/settings/docker.py" = ["F403", "F405"]
 "config/settings/production.py" = ["F403", "F405"]
 "config/settings/test.py" = ["F403", "F405"]

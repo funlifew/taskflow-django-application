@@ -1,0 +1,48 @@
+# Git
+.git
+.github
+
+# Editors
+.idea
+.vscode
+
+# Python
+__pycache__
+*.py[cod]
+*.pyo
+*.pyd
+.venv
+.pytest_cache
+.ruff_cache
+.mypy_cache
+
+# Local databases
+db.sqlite3
+db.sqlite3-journal
+
+# Environment secrets
+.env
+.env.docker
+
+# Generated/static runtime data
+staticfiles
+test-media
+
+# User uploads
+media/*
+!media/.gitkeep
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov
+coverage.xml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-only documentation not needed at runtime
+README.md
+LICENSE
+LICENCE

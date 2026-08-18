@@ -357,3 +357,9 @@ assets/** linguist-vendored
 
 # Make sure Python is counted
 *.py linguist-detectable=true
+
+# Docker/Linux runtime files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+docker/*.sh text eol=lf
+docker/nginx/*.conf text eol=lf
